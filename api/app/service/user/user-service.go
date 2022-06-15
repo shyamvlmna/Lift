@@ -1,13 +1,13 @@
 package user
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/app/database"
+	"github.com/shayamvlmna/cab-booking-app/app/models"
 )
 
 func AddUser(newUser *models.User) error {
 
-	database.AddUser(newUser)
+	database.InsertUser(newUser)
 	return nil
 }
 

@@ -1,12 +1,11 @@
 package controllers
 
 import (
-	// "fmt"
-	"net/http"
-
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/service/user"
+	"github.com/shayamvlmna/cab-booking-app/app/models"
+	"github.com/shayamvlmna/cab-booking-app/app/service/user"
 	"gorm.io/gorm"
+
+	"net/http"
 	// "golang.org/x/crypto/bcrypt"
 )
 
@@ -29,7 +28,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 		Password:    password,
 	}
 
-	err :=user.AddUser(&newUser)
+	err := user.AddUser(&newUser)
 }
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	// phonenumber := r.FormValue("phonenumber")
@@ -43,5 +42,5 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	// 	fmt.Println(err)
 	// }
 
-	err := user.GetUser()
+	// err := user.GetUser()
 }

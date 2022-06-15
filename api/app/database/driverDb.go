@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/app/models"
 	"gorm.io/gorm"
 )
 
@@ -18,10 +18,10 @@ func OpenDriverDb() (*gorm.DB, error) {
 	return Db, nil
 }
 
-func AddDriver(){
+func AddDriver() {
 
 }
-func FindDriver(){
+func FindDriver() {
 
 }
 func UpdateDriver() {

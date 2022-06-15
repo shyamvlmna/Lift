@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/app/models"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ func OpenUserDb() (*gorm.DB, error) {
 	return Db, nil
 }
 
-func AddUser(newUser *models.User) {
+func InsertUser(newUser *models.User) {
 
 }
 

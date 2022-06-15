@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	routes "github.com/shayamvlmna/cab-booking-app/pkg/routes"
+	"github.com/shayamvlmna/cab-booking-app/app/routes"
 )
 
 func main() {

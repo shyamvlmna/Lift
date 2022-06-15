@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"fmt"
+
 	"net/http"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/app/database"
+	"github.com/shayamvlmna/cab-booking-app/app/models"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
