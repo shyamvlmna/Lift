@@ -14,5 +14,7 @@ func Router() *mux.Router {
 	}()
 
 	r.HandleFunc("/", controllers.Index).Methods("GET")
+	r.HandleFunc("/cab", controllers.Cab).Methods("GET")
+
 	return r
 }
