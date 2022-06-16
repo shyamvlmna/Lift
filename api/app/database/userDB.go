@@ -20,22 +20,23 @@ func OpenUserDb() (*gorm.DB, error) {
 	fmt.Println("user db opened")
 	return Db, nil
 }
-func closeUserdb(db *gorm.DB) {
 
-	sqlDb, err := db.DB()
-	if err != nil {
-		fmt.Println(err)
-	}
-	sqlDb.Close()
-	fmt.Println("user db closed")
-}
+// func closeUserdb(db *gorm.DB) {
+
+// 	sqlDb, err := db.DB()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	sqlDb.Close()
+// 	fmt.Println("user db closed")
+// }
 func FindUser(key string) (models.User, bool) {
 
 	db, err := OpenUserDb()
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer closeUserdb(db)
+	// defer closeUserdb(db)
 	user := &models.User{}
 	result := db.Where("phone_number=?", key).First(&user)
 
@@ -53,7 +54,7 @@ func InsertUser(user *models.User) error {
 	if err != nil {
 		return err
 	}
-	defer closeUserdb(db)
+	// defer closeUserdb(db)
 	result := db.Create(user)
 
 	return result.Error

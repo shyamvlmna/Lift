@@ -21,15 +21,15 @@ func OpenDriverDb() (*gorm.DB, error) {
 	return Db, nil
 }
 
-func closeDriverdb(db *gorm.DB) {
+// func closeDriverdb(db *gorm.DB) {
 
-	sqlDb, err := db.DB()
-	if err != nil {
-		fmt.Println(err)
-	}
-	sqlDb.Close()
-	fmt.Println("driver db closed")
-}
+// 	sqlDb, err := db.DB()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	sqlDb.Close()
+// 	fmt.Println("driver db closed")
+// }
 
 func FindDriver(key string) (models.Driver, bool) {
 
@@ -37,7 +37,7 @@ func FindDriver(key string) (models.Driver, bool) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer closeDriverdb(db)
+	// defer closeDriverdb(db)
 	driver := &models.Driver{}
 	result := db.Where("phone_number=?", key).First(&driver)
 
@@ -52,7 +52,7 @@ func InsertDriver(driver *models.Driver) error {
 	if err != nil {
 		return err
 	}
-	defer closeDriverdb(db)
+	// defer closeDriverdb(db)
 	result := db.Create(driver)
 
 	return result.Error
