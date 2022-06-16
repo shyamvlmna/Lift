@@ -6,12 +6,14 @@ import (
 )
 
 func AddUser(newUser *models.User) error {
-
-	database.InsertUser(newUser)
-	return nil
+	return database.InsertUser(newUser)
 }
 
 func GetUser() error {
 	database.FindUser()
 	return nil
+}
+
+func IsUserExists(key string) bool {
+	return database.CheckUser(key)
 }

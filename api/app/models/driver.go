@@ -6,7 +6,7 @@ type Driver struct {
 	gorm.Model
 	FirstName   string  `gorm:"not null" json:"drvrfirstname"`
 	LastName    string  `json:"drvrlastname"`
-	PhoneNumber int     `gorm:"not null;unique" json:"drvrphonenumber"`
+	PhoneNumber string     `gorm:"not null;unique" json:"drvrphonenumber"`
 	Email       string  `gorm:"not null;unique" json:"drvremail"`
 	Password    string  `gorm:"not null" json:"drvrpassword"`
 }

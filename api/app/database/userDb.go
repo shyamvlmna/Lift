@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	"github.com/shayamvlmna/cab-booking-app/app/models"
 	"gorm.io/gorm"
 )
@@ -15,12 +17,48 @@ func OpenUserDb() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("user db opened")
 	return Db, nil
 }
+func closeUserdb(db *gorm.DB) {
 
-func InsertUser(newUser *models.User) {
+	sqlDb, err := db.DB()
+	if err != nil {
+		fmt.Println(err)
+	}
+	sqlDb.Close()
+	fmt.Println("user db closed")
+}
+func CheckUser(key string) bool {
+
+	db, err := OpenUserDb()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer closeUserdb(db)
+	user := &models.User{}
+	result := db.Where("phone_number=?", key).First(&user)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return false
+	} else {
+		return true
+	}
 
 }
+func InsertUser(user *models.User) error {
+
+	db, err := OpenUserDb()
+	if err != nil {
+		return err
+	}
+	defer closeUserdb(db)
+	result := db.Create(user)
+
+	return result.Error
+}
+
+
 
 func FindUser() {
 
