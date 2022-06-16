@@ -9,10 +9,11 @@ func AddDriver(newDriver *models.Driver) error {
 	return database.InsertDriver(newDriver)
 }
 
-func GetDriver(key string) error {
-	database.FindDriver(key)
-	return nil
+func GetDriver(key string) models.Driver {
+	driver, _ := database.FindDriver(key)
+	return driver
 }
 func IsDriverExists(key string) bool {
-	return database.CheckDriver(key)
+	_, err := database.FindDriver(key)
+	return err
 }

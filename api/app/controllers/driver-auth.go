@@ -14,10 +14,14 @@ import (
 func DriverAuth(w http.ResponseWriter, r *http.Request) {
 	phonenumber := r.FormValue("drvrphonenumber")
 	if driver.IsDriverExists(phonenumber) {
-		// UserLogin(w, r)
-		http.Redirect(w, r, "/driver/login", 200)
+
+		DriverLogin(w, r) //get the enter driver password page
+
+		// http.Redirect(w, r, "/driver/login", 200)
 	} else {
-		DriverSignUp(w, r)
+
+		DriverSignUp(w, r) //get the enter driver password page
+
 		// http.Redirect(w, r, "/driver/signup", 200)
 	}
 }
@@ -52,8 +56,15 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 }
 func DriverLogin(w http.ResponseWriter, r *http.Request) {
 
-	// err := driver.GetDriver()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	password := r.FormValue("drvrpassword")
+	phonenumber := r.FormValue("drvrphonenumber")
+
+	driver := driver.GetDriver(phonenumber)
+
+	if err := bcrypt.CompareHashAndPassword([]byte(driver.Password), []byte(password)); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Print("driver login success")
+	}
+
 }

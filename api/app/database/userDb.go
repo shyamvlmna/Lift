@@ -29,7 +29,7 @@ func closeUserdb(db *gorm.DB) {
 	sqlDb.Close()
 	fmt.Println("user db closed")
 }
-func CheckUser(key string) bool {
+func FindUser(key string) (models.User, bool) {
 
 	db, err := OpenUserDb()
 	if err != nil {
@@ -40,12 +40,13 @@ func CheckUser(key string) bool {
 	result := db.Where("phone_number=?", key).First(&user)
 
 	if result.Error == gorm.ErrRecordNotFound {
-		return false
+		return *user, false
 	} else {
-		return true
+		return *user, true
 	}
 
 }
+
 func InsertUser(user *models.User) error {
 
 	db, err := OpenUserDb()
@@ -56,12 +57,6 @@ func InsertUser(user *models.User) error {
 	result := db.Create(user)
 
 	return result.Error
-}
-
-
-
-func FindUser() {
-
 }
 
 func UpdateUser() {

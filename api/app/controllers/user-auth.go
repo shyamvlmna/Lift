@@ -14,11 +14,15 @@ import (
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	phonenumber := r.FormValue("usrphonenumber")
 	if user.IsUserExists(phonenumber) {
-		// UserLogin(w, r)
-		http.Redirect(w, r, "/user/login", 200)
+
+		UserLogin(w, r) //get the enter user password page
+
+		// http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 	} else {
-		// UserSignUp(w, r)
-		http.Redirect(w, r, "/user/signup", 200)
+
+		UserSignUp(w, r) //get the user signup page
+
+		// http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
 
 	}
 }
@@ -51,16 +55,15 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	// email := r.FormValue("usremail")
-	// password := r.FormValue("usrpassword")
-	// phonenumber := r.FormValue("usrphonenumber")
+	password := r.FormValue("usrpassword")
+	phonenumber := r.FormValue("usrphonenumber")
 
-	// user, err := GetUser(phonenumber)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-	// 	fmt.Println(err)
-	// }
+	user := user.GetUser(phonenumber)
 
-	// err := user.GetUser()
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Print("user login success")
+	}
+
 }

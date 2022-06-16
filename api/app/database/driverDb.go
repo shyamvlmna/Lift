@@ -31,7 +31,7 @@ func closeDriverdb(db *gorm.DB) {
 	fmt.Println("driver db closed")
 }
 
-func CheckDriver(key string) bool {
+func FindDriver(key string) (models.Driver, bool) {
 
 	db, err := OpenDriverDb()
 	if err != nil {
@@ -42,9 +42,9 @@ func CheckDriver(key string) bool {
 	result := db.Where("phone_number=?", key).First(&driver)
 
 	if result.Error == gorm.ErrRecordNotFound {
-		return false
+		return *driver, false
 	} else {
-		return true
+		return *driver, true
 	}
 }
 func InsertDriver(driver *models.Driver) error {
@@ -56,16 +56,6 @@ func InsertDriver(driver *models.Driver) error {
 	result := db.Create(driver)
 
 	return result.Error
-}
-
-func FindDriver(key string) (models.Driver, error) {
-	db, err := OpenDriverDb()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer closeDriverdb(db)
-	driver := models.Driver{}
-	return driver, nil
 }
 
 func UpdateDriver() {

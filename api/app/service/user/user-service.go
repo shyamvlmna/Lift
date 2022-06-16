@@ -9,11 +9,13 @@ func AddUser(newUser *models.User) error {
 	return database.InsertUser(newUser)
 }
 
-func GetUser() error {
-	database.FindUser()
-	return nil
+func GetUser(key string) models.User {
+	user, _ := database.FindUser(key)
+	return user
+
 }
 
 func IsUserExists(key string) bool {
-	return database.CheckUser(key)
+	_, err := database.FindUser(key)
+	return err
 }
