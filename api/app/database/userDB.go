@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/shayamvlmna/cab-booking-app/app/models"
 	"gorm.io/gorm"
@@ -30,24 +31,8 @@ func OpenUserDb() (*gorm.DB, error) {
 // 	sqlDb.Close()
 // 	fmt.Println("user db closed")
 // }
-func FindUser(key string) (models.User, bool) {
 
-	db, err := OpenUserDb()
-	if err != nil {
-		fmt.Println(err)
-	}
-	// defer closeUserdb(db)
-	user := &models.User{}
-	result := db.Where("phone_number=?", key).First(&user)
-
-	if result.Error == gorm.ErrRecordNotFound {
-		return *user, false
-	} else {
-		return *user, true
-	}
-
-}
-
+//receive a user model and insert it into the user database
 func InsertUser(user *models.User) error {
 
 	db, err := OpenUserDb()
@@ -60,6 +45,35 @@ func InsertUser(user *models.User) error {
 	return result.Error
 }
 
-func UpdateUser() {
+func FindUser(key, value string) (models.User, bool) {
 
+	db, err := OpenUserDb()
+	if err != nil {
+		fmt.Println(err)
+	}
+	// defer closeUserdb(db)
+	user := &models.User{}
+	result := db.Where(key+"=?", value).First(&user)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return *user, false
+	} else {
+		return *user, true
+	}
+
+}
+
+func UpdateUser(updatedUser *models.User) {
+	db, err := OpenUserDb()
+	if err != nil {
+		fmt.Println(err)
+	}
+	user := &models.User{}
+	id := strconv.Itoa(int(updatedUser.ID))
+	db.Where("id=?", id).First(&user)
+	db.Model(&user).Updates(models.User{
+		FirstName: updatedUser.FirstName,
+		LastName:  updatedUser.LastName,
+		Email:     updatedUser.Email,
+	})
 }

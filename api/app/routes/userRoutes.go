@@ -6,18 +6,15 @@ import (
 )
 
 func UserRoutes(r *mux.Router) {
+
 	userRouter := r.PathPrefix("/user").Subrouter()
 
-	// userRouter.HandleFunc("/signup", controllers.EnterNumber).Methods("GET")
-	// userRouter.HandleFunc("/login", controllers.SearchNumber).Methods("GET")
-
 	userRouter.HandleFunc("/auth", controllers.UserAuth).Methods("POST")
-
 	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods("POST")
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
-	userRouter.HandleFunc("/update", controllers.UpdateUserProfile).Methods("GET")
-
-	userRouter.HandleFunc("/logout", controllers.UserLogin)
-	userRouter.HandleFunc("/userhome", controllers.UserLogin)
+	userRouter.HandleFunc("/userhome", controllers.UserLogin).Methods("GET")
+	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods("GET")
+	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods("POST")
+	userRouter.HandleFunc("/logout", controllers.UserLogin).Methods("GET")
 
 }

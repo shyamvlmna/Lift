@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("lets Go...")
+	fmt.Println("server is up and running")
 
 	r := routes.Router()
 

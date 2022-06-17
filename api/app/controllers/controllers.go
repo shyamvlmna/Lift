@@ -18,7 +18,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == http.ErrNoCookie {
 			w.WriteHeader(http.StatusUnauthorized)
-			IndexTemp.ExecuteTemplate(w, "index.html", nil)
+			IndexTemp.ExecuteTemplate(w, "appIndex.html", nil)
 			fmt.Println("Index Page")
 		}
 	}
