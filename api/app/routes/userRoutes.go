@@ -16,4 +16,8 @@ func UserRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods("POST")
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
 	userRouter.HandleFunc("/update", controllers.UpdateUserProfile).Methods("GET")
+
+	userRouter.HandleFunc("/logout", controllers.UserLogin)
+	userRouter.HandleFunc("/userhome", controllers.UserLogin)
+
 }

@@ -17,19 +17,30 @@ import (
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	phonenumber := r.FormValue("usrphonenumber")
 	if user.IsUserExists(phonenumber) {
-
-		UserLogin(w, r) //get the enter user password page
+		data := map[string]string{
+			"phone": phonenumber,
+		}
+		// UserLogin(w, r) //get the enter user password page
+		UserTemp.ExecuteTemplate(w, "loginform.html", data)
 
 		// http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 
 	} else {
-
-		UserSignUp(w, r) //get the user signup page
+		data := map[string]string{
+			"phone": phonenumber,
+		}
+		UserTemp.ExecuteTemplate(w, "signupform.html", data)
+		// UserSignUp(w, r) //get the user signup page
 
 		// http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
 
 	}
 }
+
+func UserHome(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func UserSignUp(w http.ResponseWriter, r *http.Request) {
 
 	firstname := r.FormValue("usrfirstname")
@@ -51,14 +62,19 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 
 	if err := user.AddUser(&newUser); err != nil {
 		fmt.Println(err)
+		data := map[any]any{
+			"err": err,
+		}
+		UserTemp.ExecuteTemplate(w, "signupform.html", data)
 	} else {
 		fmt.Println("user added")
+		UserLogin(w, r)
 	}
 
 }
+
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 
-	// email := r.FormValue("usremail")
 	password := r.FormValue("usrpassword")
 	phonenumber := r.FormValue("usrphonenumber")
 
@@ -80,7 +96,13 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		Path:    "/user",
 		Expires: time.Now().Add(time.Minute * 30),
 	})
-
+	data := map[string]any{
+		"userid":    user.ID,
+		"firstname": user.FirstName,
+		"lastname":  user.LastName,
+		"email":     user.Email,
+	}
+	UserTemp.ExecuteTemplate(w, "userhome.html", data)
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -93,8 +115,8 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-
-	isAuthorized, err := auth.IsAuthorized(c.Value)
+	validateUser(c.Value)
+	// usrphone, err := auth.ValidateJWT(c.Value)
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			fmt.Println(err)
@@ -102,8 +124,18 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	if isAuthorized {
-		fmt.Println("valid user")
-	}
+	// user := user.GetUser(usrphone)
+
+	// if authorized {
+	// 	fmt.Println("valid user")
+	// }
+
+}
+
+func validateUser(tknstr string) {
+	// user, err := auth.ValidateJWT(tknstr)
+	// if err != nil {
+
+	// }
 
 }

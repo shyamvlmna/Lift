@@ -15,6 +15,5 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
 	driverRouter.HandleFunc("/addcab", controllers.AddCab)
 	driverRouter.HandleFunc("/regtodrive", controllers.RegisterDriver)
-	
 
 }

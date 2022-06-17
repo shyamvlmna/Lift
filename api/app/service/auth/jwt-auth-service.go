@@ -10,17 +10,17 @@ import (
 )
 
 type Claims struct {
-	Username string `json:"username"`
+	Usrphone string `json:"userphonenumber"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(username string) (string, error) {
+func GenerateJWT(usrphone string) (string, error) {
 
 	godotenv.Load()
 	key := []byte(os.Getenv("jwtSecretKey"))
 
 	claims := Claims{
-		Username: username,
+		Usrphone: usrphone,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Minute * 25)},
 		},
@@ -35,7 +35,7 @@ func GenerateJWT(username string) (string, error) {
 	return tokenstring, nil
 }
 
-func IsAuthorized(tokenstring string) (bool, error) {
+func ValidateJWT(tokenstring string) (string, error) {
 	godotenv.Load()
 	key := []byte(os.Getenv("jwtSecretKey"))
 
@@ -45,11 +45,11 @@ func IsAuthorized(tokenstring string) (bool, error) {
 	})
 
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	if !tkn.Valid {
-		return false, errors.New("http.StatusUnauthorized")
+		return "", errors.New("http.StatusUnauthorized")
 	}
-	return true, nil
+	return claims.Usrphone, nil
 }
