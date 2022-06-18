@@ -12,15 +12,28 @@ func AddUser(newUser *models.User) error {
 	return database.InsertUser(newUser)
 }
 
-//accepts a key and a value to a user from the
-//user database. key indicate the field in the database
-//value is the value of the field
-//eg:if searching using id key is "id" and value is the
-//id of the user to search
-//returns a user model
+//returns a user model by accepting a key and a value
+//eg:if searching using id, key is "id" and value is the id of the user to search
 func GetUser(key, value string) models.User {
 	user, _ := database.FindUser(key, value)
 	return user
+
+}
+
+//return all users in the database
+func GetUsers() []models.User {
+
+	return *database.GetUsers()
+}
+
+//update a user by accepting the updated user fields
+//only update fields with null values
+func UpdateUser(user *models.User) error {
+	return database.UpdateUser(user)
+}
+
+//delete user from the database by the id
+func DeleteUser(id string) {
 
 }
 
@@ -28,8 +41,4 @@ func GetUser(key, value string) models.User {
 func IsUserExists(key, value string) bool {
 	_, err := database.FindUser(key, value)
 	return err
-}
-
-func UpdateUser(user *models.User) {
-	database.UpdateUser(user)
 }

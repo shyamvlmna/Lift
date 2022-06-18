@@ -2,21 +2,20 @@ package controllers
 
 import (
 	"fmt"
-	"strconv"
+	"net/http"
 	"time"
-
-	// "github.com/golang-jwt/jwt/v4"
-	"github.com/gorilla/mux"
-	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
-	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
-	"net/http"
+	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
+	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
+//Check if the user already exist in the system.
+//Redirect to the user login page if user exists.
+//Redirect to the user signup page if user is new.
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	phonenumber := r.FormValue("usrphonenumber")
 
@@ -27,35 +26,17 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 		"phone": phonenumber,
 	}
 	if user.IsUserExists("phone_number", phonenumber) {
-		UserTemp.ExecuteTemplate(w, "userLoginForm.html", data)
+		userTemp.ExecuteTemplate(w, "userLoginForm.html", data)
 		return
 	} else {
-		UserTemp.ExecuteTemplate(w, "userSignupForm.html", data)
+		userTemp.ExecuteTemplate(w, "userSignupForm.html", data)
 	}
 }
 
-func UserHome(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("jwt-token")
-	if err == http.ErrNoCookie {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-	tokenstring := c.Value
-	phone, errr := auth.ValidateJWT(tokenstring)
-	fmt.Println("phone from jwt", phone)
-	if errr != nil {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-	user := user.GetUser("phone_number", phone)
-	data := map[string]any{
-		"userid":    user.ID,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	UserTemp.ExecuteTemplate(w, "userhome.html", data)
-
-}
-
+//Create a user model with values from the fronted.
+//Pass the newly created user model to user services
+//to insert the new user to the database.
+//Login the user and open user home after successful signup.
 func UserSignUp(w http.ResponseWriter, r *http.Request) {
 
 	firstname := r.FormValue("usrfirstname")
@@ -84,13 +65,17 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 		data := map[any]any{
 			"err": err,
 		}
-		UserTemp.ExecuteTemplate(w, "userSignupForm.html", data)
+		userTemp.ExecuteTemplate(w, "userSignupForm.html", data)
 	} else {
 		fmt.Println("user added")
 		UserLogin(w, r)
 	}
 }
 
+//get the existing user by phone number from the database.
+//Validate the entered password with stored hash password.
+//Generate a JWT token for the user after successful login.
+//Store the JWT token in the cookie
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	phonenumber := r.FormValue("usrphonenumber")
@@ -105,7 +90,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		data := map[any]any{
 			"err": "invalid password",
 		}
-		UserTemp.ExecuteTemplate(w, "userLoginForm.html", data)
+		userTemp.ExecuteTemplate(w, "userLoginForm.html", data)
 		return
 	}
 
@@ -127,76 +112,11 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		"lastname":  user.LastName,
 		"email":     user.Email,
 	}
-	UserTemp.ExecuteTemplate(w, "userhome.html", data)
+	userTemp.ExecuteTemplate(w, "userhome.html", data)
 }
 
-func EditUserProfile(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id := params["id"]
-	user := user.GetUser("id", id)
-	data := map[any]any{
-		"userid":    id,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	fmt.Println(user.Email)
-	w.Header().Add("id", id)
-	UserTemp.ExecuteTemplate(w, "editUserProfile.html", data)
-}
-func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
-	fmt.Println("id from head", id)
-	firstname := r.FormValue("usrfirstname")
-	lastname := r.FormValue("usrlastname")
-	email := r.FormValue("usremail")
-
-	newuser := models.User{
-		Model: gorm.Model{
-			ID: uint(id),
-		},
-		FirstName:   firstname,
-		LastName:    lastname,
-		PhoneNumber: "",
-		Email:       email,
-		Password:    "",
-	}
-	user.UpdateUser(&newuser)
-	// c, err := r.Cookie("jwt-token")
-	// if err != nil {
-	// 	if err == http.ErrNoCookie {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// validateUser(c.Value)
-	// // usrphone, err := auth.ValidateJWT(c.Value)
-	// if err != nil {
-	// 	if err == jwt.ErrSignatureInvalid {
-	// 		fmt.Println(err)
-	// 	}
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// user := user.GetUser(usrphone)
-
-	// if authorized {
-	// 	fmt.Println("valid user")
-	// }
-
-}
-
-func validateUser(tknstr string) {
-	_, err := auth.ValidateJWT(tknstr)
-	if err != nil {
-
-	}
-
-}
-
+//return true if entered password is matching with
+//the hash password stored in the database
 func validPassword(password, hashPassword string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
 		return err

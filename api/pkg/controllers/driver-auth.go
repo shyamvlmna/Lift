@@ -4,25 +4,27 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	"golang.org/x/crypto/bcrypt"
 
 	"gorm.io/gorm"
+
+	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
+	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 )
 
 func DriverAuth(w http.ResponseWriter, r *http.Request) {
 	phonenumber := r.FormValue("drvrphonenumber")
-	if driver.IsDriverExists(phonenumber) {
+	data := map[string]string{
+		"phone": phonenumber,
+	}
+	if driver.IsDriverExists("phone_number", phonenumber) {
 
-		DriverLogin(w, r) //get the enter driver password page
-
-		// http.Redirect(w, r, "/driver/login", 200)
+		driverTemp.ExecuteTemplate(w, "driverLoginForm", data)
+		return
 	} else {
 
-		DriverSignUp(w, r) //get the enter driver password page
+		driverTemp.ExecuteTemplate(w, "driverSignupForm", data)
 
-		// http.Redirect(w, r, "/driver/signup", 200)
 	}
 }
 func DriverSignUp(w http.ResponseWriter, r *http.Request) {
@@ -59,12 +61,15 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("drvrpassword")
 	phonenumber := r.FormValue("drvrphonenumber")
 
-	driver := driver.GetDriver(phonenumber)
+	driver := driver.GetDriver("phone_number", phonenumber)
 
-	if err := bcrypt.CompareHashAndPassword([]byte(driver.Password), []byte(password)); err != nil {
+	if err := validPassword(password, driver.Password); err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Print("driver login success")
+		data := map[any]any{
+			"err": "invalid password",
+		}
+		driverTemp.ExecuteTemplate(w, "driverLoginForm.html", data)
+		return
 	}
 
 }

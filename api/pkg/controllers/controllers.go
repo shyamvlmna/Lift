@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	UserTemp, _   = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/user/*.html")
-	DriverTemp, _ = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/driver/*.html")
-	IndexTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/index/*.html")
-	AdminTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/admin/*.html")
+	userTemp, _   = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/user/*.html")
+	driverTemp, _ = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/driver/*.html")
+	indexTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/index/*.html")
+	adminTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/admin/*.html")
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +21,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	// tokenstring := c.Value
 	// phone,err!=auth.ValidateJWT(tokenstring)
 
-	IndexTemp.ExecuteTemplate(w, "appIndex.html", nil)
+	indexTemp.ExecuteTemplate(w, "appIndex.html", nil)
 }
 
 // func validateCookie(w http.ResponseWriter, r *http.Request) {

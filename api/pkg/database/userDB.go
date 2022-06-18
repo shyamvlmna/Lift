@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"gorm.io/gorm"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
 func OpenUserDb() (*gorm.DB, error) {
@@ -62,17 +63,40 @@ func FindUser(key, value string) (models.User, bool) {
 
 }
 
-func UpdateUser(updatedUser *models.User) {
+//get and return all users from the driver database
+func GetUsers() *[]models.User {
 	db, err := OpenUserDb()
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	users := &[]models.User{}
+	db.Find(&users)
+
+	return users
+}
+
+//update a user by getting updated user fields
+//only update the not null user fields
+func UpdateUser(updatedUser *models.User) error {
+	db, err := OpenUserDb()
+	if err != nil {
+		return err
+	}
 	user := &models.User{}
 	id := strconv.Itoa(int(updatedUser.ID))
 	db.Where("id=?", id).First(&user)
-	db.Model(&user).Updates(models.User{
+	result := db.Model(&user).Updates(models.User{
 		FirstName: updatedUser.FirstName,
 		LastName:  updatedUser.LastName,
 		Email:     updatedUser.Email,
 	})
+	return result.Error
+}
+
+//delete user by id
+//returns err if any
+func DeleteUser(id string) error {
+
+	return nil
 }

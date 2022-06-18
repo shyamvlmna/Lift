@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
+
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 )
 
