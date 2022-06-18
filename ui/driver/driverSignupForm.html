@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>driver signup</title>
+</head>
+<body>
+    <form action="/driver/signup" method="post">
+        <div><input type="text" name="drvrfirstname" placeholder="firstname"></div>
+        <div><input type="text" name="drvrlastname" placeholder="lastname"></div>
+        <div><input type="email" name="drvremail" placeholder="email"></div>
+        <div><input type="tel" name="drvrphonenumber" placeholder="phone number"></div>
+        <div><input type="password" name="drvrpassword" placeholder="password"></div>
+        <div><input type="submit" value="signup"></div>
+        {{.err}}
+    </form>
+</body>
+</html>
