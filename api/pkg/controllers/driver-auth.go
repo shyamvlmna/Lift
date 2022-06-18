@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/shayamvlmna/cab-booking-app/app/models"
-	"github.com/shayamvlmna/cab-booking-app/app/service/driver"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	"golang.org/x/crypto/bcrypt"
 
 	"gorm.io/gorm"

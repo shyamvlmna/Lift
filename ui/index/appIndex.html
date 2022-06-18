@@ -13,9 +13,10 @@
     <div>
         <h1>Get moving</h1>
         <form action="/user/auth" method="post">
-            <input type="text" name="usrphonenumber" placeholder="phone number">
+            <input type="text" required name="usrphonenumber" placeholder="phone number">
             <input type="submit" value="Next">
         </form>
+        {{.err}}
     </div>
 
     <div>

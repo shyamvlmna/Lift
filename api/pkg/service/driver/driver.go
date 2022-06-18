@@ -1,8 +1,8 @@
 package driver
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/app/database"
-	"github.com/shayamvlmna/cab-booking-app/app/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
 func AddDriver(newDriver *models.Driver) error {

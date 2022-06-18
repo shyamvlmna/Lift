@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -15,17 +14,16 @@ var (
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("jwt-token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			w.WriteHeader(http.StatusUnauthorized)
-			IndexTemp.ExecuteTemplate(w, "appIndex.html", nil)
-			fmt.Println("Index Page")
-		}
+	if err == nil {
+		http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
+		return
 	}
 	// tokenstring := c.Value
 	// phone,err!=auth.ValidateJWT(tokenstring)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-	IndexTemp.ExecuteTemplate(w, "userhome.html", nil)
+
+	IndexTemp.ExecuteTemplate(w, "appIndex.html", nil)
 }
+
+// func validateCookie(w http.ResponseWriter, r *http.Request) {
+
+// }

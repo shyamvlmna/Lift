@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/shayamvlmna/cab-booking-app/app/controllers"
+	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 )
 
 func AdminRoutes(r *mux.Router) {

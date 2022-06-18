@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/shayamvlmna/cab-booking-app/app/controllers"
+	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 )
 
 func UserRoutes(r *mux.Router) {
@@ -12,7 +12,7 @@ func UserRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/auth", controllers.UserAuth).Methods("POST")
 	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods("POST")
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
-	userRouter.HandleFunc("/userhome", controllers.UserLogin).Methods("GET")
+	userRouter.HandleFunc("/userhome", controllers.UserHome).Methods("GET")
 	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods("GET")
 	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods("POST")
 	userRouter.HandleFunc("/logout", controllers.UserLogin).Methods("GET")

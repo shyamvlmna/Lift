@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"errors"
+	"net/http"
 	"os"
 	"time"
 
@@ -35,7 +35,7 @@ func GenerateJWT(usrphone string) (string, error) {
 	return tokenstring, nil
 }
 
-func ValidateJWT(tokenstring string) (string, error) {
+func ValidateJWT(tokenstring string) (string, any) {
 	godotenv.Load()
 	key := []byte(os.Getenv("jwtSecretKey"))
 
@@ -49,7 +49,7 @@ func ValidateJWT(tokenstring string) (string, error) {
 	}
 
 	if !tkn.Valid {
-		return "", errors.New("http.StatusUnauthorized")
+		return "", http.StatusUnauthorized
 	}
 	return claims.Usrphone, nil
 }

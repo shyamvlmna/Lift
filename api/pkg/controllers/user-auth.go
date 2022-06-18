@@ -7,9 +7,9 @@ import (
 
 	// "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
-	"github.com/shayamvlmna/cab-booking-app/app/models"
-	"github.com/shayamvlmna/cab-booking-app/app/service/auth"
-	"github.com/shayamvlmna/cab-booking-app/app/service/user"
+	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
+	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -26,14 +26,33 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"phone": phonenumber,
 	}
-	if user.IsUserExists("usrphonenumber", phonenumber) {
+	if user.IsUserExists("phone_number", phonenumber) {
 		UserTemp.ExecuteTemplate(w, "userLoginForm.html", data)
 		return
+	} else {
+		UserTemp.ExecuteTemplate(w, "userSignupForm.html", data)
 	}
-	UserTemp.ExecuteTemplate(w, "userSignupForm.html", data)
 }
 
 func UserHome(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie("jwt-token")
+	if err == http.ErrNoCookie {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+	tokenstring := c.Value
+	phone, errr := auth.ValidateJWT(tokenstring)
+	fmt.Println("phone from jwt", phone)
+	if errr != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+	user := user.GetUser("phone_number", phone)
+	data := map[string]any{
+		"userid":    user.ID,
+		"firstname": user.FirstName,
+		"lastname":  user.LastName,
+		"email":     user.Email,
+	}
+	UserTemp.ExecuteTemplate(w, "userhome.html", data)
 
 }
 
@@ -73,12 +92,12 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserLogin(w http.ResponseWriter, r *http.Request) {
-
-	password := r.FormValue("usrpassword")
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	phonenumber := r.FormValue("usrphonenumber")
+	password := r.FormValue("usrpassword")
 
 	//get the existing user by phone number from the database
-	user := user.GetUser("usrphonenumber", phonenumber)
+	user := user.GetUser("phone_number", phonenumber)
 
 	//validate the entered password with stored hash password
 	if err := validPassword(password, user.Password); err != nil {
@@ -92,14 +111,14 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	//after successful login, generate a JWT token for the user
 	//save the generated token in the cookie
-	jwt, err := auth.GenerateJWT(user.Email)
+	jwt, err := auth.GenerateJWT(user.PhoneNumber)
 	if err != nil {
 		fmt.Println(err)
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:    "jwt-token",
 		Value:   jwt,
-		Path:    "/user",
+		Path:    "/",
 		Expires: time.Now().Add(time.Minute * 30),
 	})
 	data := map[string]any{
@@ -110,6 +129,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	UserTemp.ExecuteTemplate(w, "userhome.html", data)
 }
+
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
@@ -170,10 +190,10 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateUser(tknstr string) {
-	// user, err := auth.ValidateJWT(tknstr)
-	// if err != nil {
+	_, err := auth.ValidateJWT(tknstr)
+	if err != nil {
 
-	// }
+	}
 
 }
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/shayamvlmna/cab-booking-app/app/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"gorm.io/gorm"
 )
 
@@ -57,9 +57,8 @@ func FindUser(key, value string) (models.User, bool) {
 
 	if result.Error == gorm.ErrRecordNotFound {
 		return *user, false
-	} else {
-		return *user, true
 	}
+	return *user, true
 
 }
 
