@@ -10,3 +10,18 @@ type User struct {
 	Email       string `gorm:"not null;unique" json:"usremail"`
 	Password    string `gorm:"not null" json:"usrpassword"`
 }
+
+// func (u *User) CreateUser() {
+
+// }
+
+// func (u *User) UpdateUser() {
+
+// }
+// func (u *User) DeleteUser() {
+
+// }
+// func (u *User) GetUser(id int) User {
+
+	
+// }

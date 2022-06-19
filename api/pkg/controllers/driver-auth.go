@@ -32,7 +32,10 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func DriverSignUpPage(w http.ResponseWriter, r *http.Request) {
-
+	driverTemp.ExecuteTemplate(w, "driverSignupForm.html", nil)
+}
+func DriverLoginPage(w http.ResponseWriter, r *http.Request) {
+	driverTemp.ExecuteTemplate(w, "driverLoginForm.html", nil)
 }
 
 //Create a user model with values from the fronted.
@@ -114,7 +117,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 		"lastname":  driver.LastName,
 		"email":     driver.Email,
 	}
-	userTemp.ExecuteTemplate(w, "driverhome.html", data)
+	driverTemp.ExecuteTemplate(w, "driverhome.html", data)
 
 }
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
