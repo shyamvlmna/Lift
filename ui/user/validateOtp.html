@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otp validation</title>
+</head>
+
+<body style="text-align: center;margin-top: 15%;">
+    <h4>Enter the 4-digit code sent to you at</h4><br><strong>{{.phone}}</strong>
+    <form action="/user/otp" method="post">
+        <div><input type="tel" name="phone" readonly value="{{.phone}}"></div>
+        <div><input type="password" name="otp" placeholder="otp"></div>
+        <div><input type="submit" value="Verify"></div>
+    </form>
+    {{.err}}
+</body>
+
+</html>

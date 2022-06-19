@@ -1,7 +1,7 @@
 package driver
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
@@ -13,8 +13,8 @@ func AddDriver(newDriver *models.Driver) error {
 
 //returns a driver model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the driver to search
-func GetDriver(key,value string) models.Driver {
-	driver, _ := database.FindDriver(key,value)
+func GetDriver(key, value string) models.Driver {
+	driver, _ := database.FindDriver(key, value)
 	return driver
 }
 
@@ -36,7 +36,7 @@ func DeleteDriver(id string) {
 }
 
 //return boolean to check if the driver exist or not
-func IsDriverExists(key,value string) bool {
-	_, err := database.FindDriver(key,value)
+func IsDriverExists(key, value string) bool {
+	_, err := database.FindDriver(key, value)
 	return err
 }

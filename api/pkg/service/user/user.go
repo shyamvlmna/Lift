@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
