@@ -1,13 +1,12 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/gorilla/mux"
@@ -21,56 +20,39 @@ import (
 //Redirect to the user signup page if user is new.
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	phonenumber := r.FormValue("usrphonenumber")
-
+	phonenumber := r.FormValue("phonenumber")
+	auth.StoreUser(phonenumber)
 	//check if the user already exist in the system
 	//if user exists redirect to the user login page
 	//if user is new redirect to the user signup page
-	data := map[string]string{
-		"phone": phonenumber,
-	}
 	if user.IsUserExists("phone_number", phonenumber) {
-		userTemp.ExecuteTemplate(w, "userLoginForm.html", data)
+		http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 		return
 	} else {
-		userTemp.ExecuteTemplate(w, "validateOtp.html", data)
 		go auth.SetOtp(phonenumber)
-		// userTemp.ExecuteTemplate(w, "userSignupForm.html", data)
+		http.Redirect(w, r, "/user/enterotp", http.StatusSeeOther)
 	}
-	// if err := ; err != nil {
-	// 	fmt.Println(err)
-	// }
 }
 
 func ValidateOtp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	otp := r.FormValue("otp")
 
-	phone := r.FormValue("phone")
-	phonedata := map[string]string{
-		"phone": phone,
-	}
+	phone := auth.GetUser()
+
 	if err := auth.ValidateOTP(phone, otp); err != nil {
 		if err == redis.Nil {
-			data := map[string]string{
-				"phone": phone,
-				"err":   "otp expired",
-			}
-			userTemp.ExecuteTemplate(w, "validateOtp.html", data)
+			w.WriteHeader(http.StatusRequestTimeout)
+			w.Write([]byte("otp expired"))
 			return
 		} else {
-			data := map[string]string{
-				"phone": phone,
-				"err":   "invalid otp",
-			}
-			userTemp.ExecuteTemplate(w, "validateOtp.html", data)
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("invalid otp"))
 			return
 		}
 
 	}
-	// http.Redirect(w,r,"/user/signup",)
-	userTemp.ExecuteTemplate(w, "userSignupForm.html", phonedata)
-
+	http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
 }
 
 func UserHome(w http.ResponseWriter, r *http.Request) {
@@ -86,14 +68,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 	user := user.GetUser("phone_number", phone)
-	data := map[string]any{
-		"userid":    user.ID,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	userTemp.ExecuteTemplate(w, "userhome.html", data)
-
+	json.NewEncoder(w).Encode(&user)
 }
 
 //Create a user model with values from the fronted.
@@ -103,39 +78,25 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
-	firstname := r.FormValue("usrfirstname")
-	lastname := r.FormValue("usrlastname")
-	phonenumber := r.FormValue("usrphonenumber")
-	email := r.FormValue("usremail")
-	password := r.FormValue("usrpassword")
-
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
+	newUser := models.User{}
+	json.NewDecoder(r.Body).Decode(&newUser)
+	newUser.PhoneNumber = auth.GetUser()
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	newUser.Password = string(hashPassword)
 	//create a user model with values from the fronted
-	newUser := models.User{
-		Model:       gorm.Model{},
-		FirstName:   firstname,
-		LastName:    lastname,
-		PhoneNumber: phonenumber,
-		Email:       email,
-		Password:    string(hashPassword),
-	}
-
-	// newUser.CreateUser()
 
 	//pass the newly created user model to user services
 	//to insert the new user to the database
 	//after successful signup login the user and open user home
 	if err := user.AddUser(&newUser); err != nil {
 		fmt.Println(err)
-		data := map[any]any{
-			"err": err,
-		}
-		userTemp.ExecuteTemplate(w, "userSignupForm.html", data)
-	} else {
-		fmt.Println("user added")
-		UserLogin(w, r)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	fmt.Println("user added")
+	setCookie(w, newUser.PhoneNumber)
+
+	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
 
 //get the existing user by phone number from the database.
@@ -144,27 +105,35 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 //Store the JWT token in the cookie
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	phonenumber := r.FormValue("usrphonenumber")
-	password := r.FormValue("usrpassword")
 
+	password := r.FormValue("password")
+
+	phoneNumber := auth.GetUser()
+
+	newUser := models.User{}
+	json.NewDecoder(r.Body).Decode(&newUser)
 	//get the existing user by phone number from the database
-	user := user.GetUser("phone_number", phonenumber)
+	User := user.GetUser("phone_number", phoneNumber)
 
 	//validate the entered password with stored hash password
-	if err := validPassword(password, user.Password); err != nil {
+	if err := validPassword(password, User.Password); err != nil {
 		fmt.Println(err)
-		data := map[any]any{
-			"err": "invalid password",
-		}
-		userTemp.ExecuteTemplate(w, "userLoginForm.html", data)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
+	if err := setCookie(w, User.PhoneNumber); err != nil {
+		fmt.Println(err)
+	}
 	//after successful login, generate a JWT token for the user
 	//save the generated token in the cookie
-	jwt, err := auth.GenerateJWT(user.PhoneNumber)
+
+	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
+}
+
+func setCookie(w http.ResponseWriter, key string) error {
+	jwt, err := auth.GenerateJWT(key)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:    "jwt-token",
@@ -172,13 +141,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		Path:    "/",
 		Expires: time.Now().Add(time.Minute * 30),
 	})
-	data := map[string]any{
-		"userid":    user.ID,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	userTemp.ExecuteTemplate(w, "userhome.html", data)
+	return nil
 }
 
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -186,43 +149,25 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 	user := user.GetUser("id", id)
-	data := map[any]any{
-		"userid":    id,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	fmt.Println(user.Email)
-	w.Header().Add("id", id)
-	userTemp.ExecuteTemplate(w, "editUserProfile.html", data)
+
+	json.NewEncoder(w).Encode(&user)
+
 }
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
-	fmt.Println("id from head", id)
-	firstname := r.FormValue("usrfirstname")
-	lastname := r.FormValue("usrlastname")
-	email := r.FormValue("usremail")
 
-	newuser := models.User{
-		Model: gorm.Model{
-			ID: uint(id),
-		},
-		FirstName:   firstname,
-		LastName:    lastname,
-		PhoneNumber: "",
-		Email:       email,
-		Password:    "",
-	}
-	err := user.UpdateUser(&newuser)
+	newUser := models.User{}
+	json.NewDecoder(r.Body).Decode(&newUser)
+
+	err := user.UpdateUser(&newUser)
 	if err != nil {
 		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	fmt.Println("user updated successfully")
-	w.Write([]byte("user updated successfully"))
-
+	// w.Write([]byte("user updated successfully"))
+	w.WriteHeader(http.StatusOK)
 }
 
 func UserLogout(w http.ResponseWriter, r *http.Request) {
@@ -235,7 +180,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Time{},
 		MaxAge:  -1,
 	})
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {

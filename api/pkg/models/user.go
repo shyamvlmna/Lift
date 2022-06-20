@@ -1,14 +1,16 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
-	FirstName   string `gorm:"not null" json:"usrfirstname"`
-	LastName    string `json:"usrlastname"`
-	PhoneNumber string `gorm:"not null;unique" json:"usrphonenumber"`
-	Email       string `gorm:"not null;unique" json:"usremail"`
-	Password    string `gorm:"not null" json:"usrpassword"`
+	FirstName   string `gorm:"not null" json:"firstname"`
+	LastName    string `json:"lastname"`
+	PhoneNumber string `gorm:"not null;unique" json:"phonenumber"`
+	Email       string `gorm:"not null;unique" json:"email"`
+	Password    string `gorm:"not null" json:"password"`
 }
 
 // func (u *User) CreateUser() {
@@ -21,7 +23,6 @@ type User struct {
 // func (u *User) DeleteUser() {
 
 // }
-// func (u *User) GetUser(id int) User {
-
-	
+// func (u *User) GetUser(key, value string) User {
+// 	return user.GetUser(key, value)
 // }

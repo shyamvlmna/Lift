@@ -1,14 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
-	"gorm.io/gorm"
-
+	"github.com/go-redis/redis/v9"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
@@ -18,17 +17,36 @@ import (
 //Redirect to the user login page if user exists.
 //Redirect to the user signup page if user is new.
 func DriverAuth(w http.ResponseWriter, r *http.Request) {
-	phonenumber := r.FormValue("drvrphonenumber")
-
-	data := map[string]string{
-		"phone": phonenumber,
-	}
+	phonenumber := r.FormValue("phonenumber")
+	auth.StoreDriver(phonenumber)
 	if driver.IsDriverExists("phone_number", phonenumber) {
-		driverTemp.ExecuteTemplate(w, "driverLoginForm", data)
+		http.Redirect(w, r, "/driver/loginpage", http.StatusSeeOther)
 		return
 	} else {
-		driverTemp.ExecuteTemplate(w, "driverSignupForm", data)
+		go auth.SetOtp(phonenumber)
+		http.Redirect(w, r, "/driver/enterotp", http.StatusSeeOther)
 	}
+}
+func ValidateDriverOtp(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	otp := r.FormValue("otp")
+
+	phone := auth.GetDriver()
+
+	if err := auth.ValidateOTP(phone, otp); err != nil {
+		if err == redis.Nil {
+			w.WriteHeader(http.StatusRequestTimeout)
+			w.Write([]byte("otp expired"))
+			return
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("invalid otp"))
+			return
+		}
+
+	}
+
+	http.Redirect(w, r, "/driver/signup", http.StatusSeeOther)
 }
 
 func DriverSignUpPage(w http.ResponseWriter, r *http.Request) {
@@ -44,37 +62,25 @@ func DriverLoginPage(w http.ResponseWriter, r *http.Request) {
 //Login the user and open user home after successful signup.
 func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 
-	firstname := r.FormValue("drvrfirstname")
-	lastname := r.FormValue("drvrlastname")
-	phonenumber := r.FormValue("drvrphonenumber")
-	email := r.FormValue("drvremail")
-	password := r.FormValue("drvrpassword")
-
-	hashpass, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
+	newDriver := models.Driver{}
+	json.NewDecoder(r.Body).Decode(&newDriver)
+	newDriver.PhoneNumber = auth.GetDriver()
+	hashpass, _ := bcrypt.GenerateFromPassword([]byte(newDriver.Password), bcrypt.DefaultCost)
+	newDriver.Password = string(hashpass)
 	//create a user model with values from the fronted
-	newDriver := models.Driver{
-		Model:       gorm.Model{},
-		FirstName:   firstname,
-		LastName:    lastname,
-		PhoneNumber: phonenumber,
-		Email:       email,
-		Password:    string(hashpass),
-	}
 
 	//pass the newly created user model to user services
 	//to insert the new user to the database
 	//after successful signup login the user and open user home
 	if err := driver.AddDriver(&newDriver); err != nil {
 		fmt.Println(err)
-		data := map[any]any{
-			"err": err,
-		}
-		userTemp.ExecuteTemplate(w, "driverSignupForm.html", data)
-	} else {
-		fmt.Println("driver added")
-		DriverLogin(w, r)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	fmt.Println("driver added")
+	setCookie(w, newDriver.PhoneNumber)
+	http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
+
 }
 
 //get the existing user by phone number from the database.
@@ -84,41 +90,25 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	password := r.FormValue("drvrpassword")
-	phonenumber := r.FormValue("drvrphonenumber")
+	phonenumber := auth.GetDriver()
 
+	newDriver := models.Driver{}
+	json.NewDecoder(r.Body).Decode(&newDriver)
 	//get the existing user by phone number from the database
 	driver := driver.GetDriver("phone_number", phonenumber)
 
 	//validate the entered password with stored hash password
 	if err := validPassword(password, driver.Password); err != nil {
 		fmt.Println(err)
-		data := map[any]any{
-			"err": "invalid password",
-		}
-		driverTemp.ExecuteTemplate(w, "driverLoginForm.html", data)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	//after successful login, generate a JWT token for the user
-	//save the generated token in the cookie
-	jwt, err := auth.GenerateJWT(driver.PhoneNumber)
-	if err != nil {
+	if err := setCookie(w, driver.PhoneNumber); err != nil {
 		fmt.Println(err)
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:    "jwt-token",
-		Value:   jwt,
-		Path:    "/",
-		Expires: time.Now().Add(time.Minute * 30),
-	})
-	data := map[string]any{
-		"userid":    driver.ID,
-		"firstname": driver.FirstName,
-		"lastname":  driver.LastName,
-		"email":     driver.Email,
-	}
-	driverTemp.ExecuteTemplate(w, "driverhome.html", data)
-
+	//after successful login, generate a JWT token for the user
+	//save the generated token in the cookie
+	http.Redirect(w, r, "/driver/driverhome", http.StatusOK)
 }
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
 

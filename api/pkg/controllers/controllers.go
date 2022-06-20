@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	userTemp, _   = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/user/*.html")
+	// userTemp, _   = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/user/*.html")
 	driverTemp, _ = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/driver/*.html")
 	indexTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/index/*.html")
 	adminTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/admin/*.html")

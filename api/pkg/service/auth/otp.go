@@ -27,6 +27,7 @@ func SetOtp(phone string) error {
 		return err
 	}
 	redis.Set(phone, otp)
+	fmt.Printf("user signup otp for %s :%s", phone, otp)
 	return nil
 }
 
@@ -41,4 +42,21 @@ func ValidateOTP(phone, otp string) error {
 		return errors.New("invalid otp")
 	}
 	return nil
+}
+
+func StoreUser(phone string) {
+	redis.Set("user", phone)
+}
+func GetUser() string {
+	user, _ := redis.Get("user")
+	return user
+}
+
+func StoreDriver(phone string) {
+	redis.Set("driver", phone)
+}
+
+func GetDriver() string {
+	driver, _ := redis.Get("driver")
+	return driver
 }
