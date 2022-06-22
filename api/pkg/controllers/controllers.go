@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
 
 var (
@@ -19,7 +18,6 @@ var (
 func Index(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
-	// fmt.Println(r.Cookie("jwt-token"))
 
 	c, err := r.Cookie("jwt-token")
 

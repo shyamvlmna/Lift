@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -50,21 +49,21 @@ func ValidateDriverOtp(w http.ResponseWriter, r *http.Request) {
 }
 
 func DriverHome(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	// w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
-	_, phone, err := auth.ValidateJWT(r)
-	if err != nil {
-		if err == errors.New("invalidToken") {
-			http.Redirect(w, r, "/", http.StatusUnauthorized)
-			return
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-	driver := driver.GetDriver("phone_number", phone)
+	// _, phone, err := auth.ValidateJWT(r)
+	// if err != nil {
+	// 	if err == errors.New("invalidToken") {
+	// 		http.Redirect(w, r, "/", http.StatusUnauthorized)
+	// 		return
+	// 	}
+	// 	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// 	return
+	// }
+	// driver := driver.GetDriver("phone_number", phone)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&driver)
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(&driver)
 
 }
 
