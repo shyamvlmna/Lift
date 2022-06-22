@@ -121,6 +121,8 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 		Password:    string(hashPassword),
 	}
 
+	// newUser.CreateUser()
+
 	//pass the newly created user model to user services
 	//to insert the new user to the database
 	//after successful signup login the user and open user home
