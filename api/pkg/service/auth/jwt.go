@@ -1,9 +1,7 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
@@ -13,8 +11,9 @@ import (
 )
 
 type Claims struct {
-	Usrphone string `json:"phonenumber"`
-	Role     string
+	Usrphone   string `json:"phonenumber"`
+	Role       string
+	Authorized bool
 	jwt.RegisteredClaims
 }
 
@@ -25,46 +24,55 @@ func GenerateJWT(role, usrphone string) (string, error) {
 	key := []byte(os.Getenv("SECRET_KEY"))
 
 	claims := Claims{
-		Usrphone: usrphone,
-		Role:     role,
+		Usrphone:   usrphone,
+		Role:       role,
+		Authorized: true,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Minute * 25)},
 		},
 	}
-	
-	token := jwt.NewWithClaims(&jwt.SigningMethodHMAC{}, claims)
 
-	tokenstring, err := token.SignedString(key)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(key)
 	if err != nil {
 		return "", err
 	}
-	return tokenstring, nil
+	fmt.Print(string(tokenString))
+	return tokenString, nil
 }
 
-//returns role,phonenumber and error if any
-func ValidateJWT(r *http.Request) (string, string, error) {
-	godotenv.Load()
-	key := []byte(os.Getenv("jwtSecretKey"))
+// //returns role,phonenumber and error if any
+// func ValidateJWT(r *http.Request) (string, error) {
+// 	godotenv.Load()
+// 	key := []byte(os.Getenv("jwtSecretKey"))
 
-	c, err := r.Cookie("jwt-token")
-	if err == http.ErrNoCookie {
-		fmt.Println("no cookie")
-		return "", "", err
-	}
-	tokenstring := c.Value
+// 	// c, err := r.Cookie("jwt-token")
+// 	// if err == http.ErrNoCookie {
+// 	// 	fmt.Println("no cookie")
+// 	// 	return "", "", err
+// 	// }
+// 	// tokenstring := c.Value
+// 	// tokenstring
+// 	claims := &Claims{}
+// 	token, err := jwt.ParseWithClaims(r.Header["Bearer"][0], claims, func(token *jwt.Token) (interface{}, error) {
+// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+// 			return "", fmt.Errorf(("Invalid Signing Method"))
+// 		}
 
-	claims := &Claims{}
-	tkn, err := jwt.ParseWithClaims(tokenstring, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(key), nil
-	})
+// 		if _, ok := token.Claims.(jwt.RegisteredClaims); !ok && !token.Valid {
+// 			return "", fmt.Errorf(("Expired token"))
+// 		}
 
-	if err != nil {
-		return "", "", err
-	}
+// 		return key, nil
+// 	})
 
-	if !tkn.Valid {
-		fmt.Println("invalid token")
-		return "", "", errors.New("invalidToken")
-	}
-	return claims.Role, claims.Usrphone, nil
-}
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	if !token.Valid {
+// 		return "", fmt.Errorf("invalidToken")
+// 	}
+// 	return claims.Role, claims.Usrphone, nil
+// }

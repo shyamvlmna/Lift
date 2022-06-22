@@ -7,12 +7,13 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
+	"github.com/shayamvlmna/cab-booking-app/pkg/handlers"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
 
 func UserRoutes(r *mux.Router) {
-	
+
 	r.HandleFunc("/", controllers.Index)
 
 	userRouter := r.PathPrefix("/user").Subrouter()
@@ -23,6 +24,8 @@ func UserRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
 	userRouter.HandleFunc("/googlelogin", auth.GoogleLogin)
 	userRouter.HandleFunc("/googleCallback", auth.GoogleCallback)
+
+	userRouter.Handle("/jwt", handlers.IsAuthorized(controllers.Jwt))
 
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
 
