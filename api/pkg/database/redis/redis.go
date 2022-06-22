@@ -35,4 +35,5 @@ func Get(key string) (string, error) {
 	}
 	fmt.Println(value)
 	return value, nil
+
 }

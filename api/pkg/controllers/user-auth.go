@@ -2,14 +2,17 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/gorilla/mux"
+
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
@@ -20,11 +23,10 @@ import (
 //Redirect to the user signup page if user is new.
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 	phonenumber := r.FormValue("phonenumber")
 	auth.StoreUser(phonenumber)
-	//check if the user already exist in the system
-	//if user exists redirect to the user login page
-	//if user is new redirect to the user signup page
+
 	if user.IsUserExists("phone_number", phonenumber) {
 		http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 		return
@@ -36,6 +38,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 
 func ValidateOtp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 	otp := r.FormValue("otp")
 
 	phone := auth.GetUser()
@@ -45,30 +48,38 @@ func ValidateOtp(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusRequestTimeout)
 			w.Write([]byte("otp expired"))
 			return
-		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("invalid otp"))
-			return
 		}
-
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("invalid otp"))
+		return
 	}
 	http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
 }
 
 func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	c, err := r.Cookie("jwt-token")
-	if err == http.ErrNoCookie {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, phone, err := auth.ValidateJWT(r)
+
+	if err != nil {
+		if err == errors.New("invalidToken") {
+			http.Redirect(w, r, "/", http.StatusUnauthorized)
+			return
+		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
 	}
-	tokenstring := c.Value
-	phone, errr := auth.ValidateJWT(tokenstring)
-	fmt.Println("phone from jwt", phone)
-	if errr != nil {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
+
 	user := user.GetUser("phone_number", phone)
-	json.NewEncoder(w).Encode(&user)
+
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "user data fetched",
+		ResponseData:    user,
+	}
+
+	json.NewEncoder(w).Encode(&response)
 }
 
 //Create a user model with values from the fronted.
@@ -77,6 +88,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 //Login the user and open user home after successful signup.
 func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
 	newUser := models.User{}
 	json.NewDecoder(r.Body).Decode(&newUser)
@@ -94,7 +106,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println("user added")
-	setCookie(w, newUser.PhoneNumber)
+	setCookie(w, "user", newUser.PhoneNumber)
 
 	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
@@ -105,13 +117,12 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 //Store the JWT token in the cookie
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
 	password := r.FormValue("password")
 
 	phoneNumber := auth.GetUser()
 
-	newUser := models.User{}
-	json.NewDecoder(r.Body).Decode(&newUser)
 	//get the existing user by phone number from the database
 	User := user.GetUser("phone_number", phoneNumber)
 
@@ -121,7 +132,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if err := setCookie(w, User.PhoneNumber); err != nil {
+	if err := setCookie(w, "user", User.PhoneNumber); err != nil {
 		fmt.Println(err)
 	}
 	//after successful login, generate a JWT token for the user
@@ -130,16 +141,16 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
 
-func setCookie(w http.ResponseWriter, key string) error {
-	jwt, err := auth.GenerateJWT(key)
+func setCookie(w http.ResponseWriter, role, key string) error {
+	jwt, err := auth.GenerateJWT(role, key)
 	if err != nil {
 		return err
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:    "jwt-token",
-		Value:   jwt,
-		Path:    "/",
-		Expires: time.Now().Add(time.Minute * 30),
+		Name:   "jwt-token",
+		Value:  jwt,
+		Path:   "/",
+		MaxAge: 0,
 	})
 	return nil
 }
@@ -172,15 +183,17 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 
 func UserLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+
+	c, _ := r.Cookie("jwt-token")
+
 	http.SetCookie(w, &http.Cookie{
 		Name:    "jwt-token",
 		Value:   "",
 		Path:    "/",
-		Domain:  "localhost:8080",
-		Expires: time.Time{},
 		MaxAge:  -1,
+		Expires: time.Now().Add(-100 * time.Hour),
 	})
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -188,6 +201,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	for _, user := range users {
 		fmt.Println(user.FirstName)
 	}
+	strings.Split()
 }
 
 //return true if entered password is matching with

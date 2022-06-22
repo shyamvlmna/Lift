@@ -8,8 +8,6 @@ import (
 
 func AdminRoutes(r *mux.Router) {
 
-	r.HandleFunc("/", controllers.Index)
-
 	r.HandleFunc("/admin", controllers.AdminIndex)
 	adminRouter := r.PathPrefix("/admin").Subrouter()
 	// adminRouter.HandleFunc("/", controllers.AdminIndex)
