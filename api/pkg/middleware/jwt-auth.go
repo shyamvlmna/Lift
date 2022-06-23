@@ -16,6 +16,9 @@ func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handle
 		fmt.Println("token from resp", r.Header.Get("Token"))
 		// r.Header["Token"]
 		c,err:=r.Cookie("jwt-token")
+
+c.Value[jwt-token]
+
 		if err == nil {
 
 			godotenv.Load()

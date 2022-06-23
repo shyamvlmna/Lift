@@ -17,16 +17,36 @@ import (
 //Redirect to the driver login page if driver exists.
 //Redirect to the driver signup page if driver is new.
 func DriverAuth(w http.ResponseWriter, r *http.Request) {
-	phonenumber := r.FormValue("phonenumber")
-	auth.StoreDriver(phonenumber)
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
-	if driver.IsDriverExists("phone_number", phonenumber) {
-		http.Redirect(w, r, "/driver/loginpage", http.StatusSeeOther)
-		return
+	newDriver := &models.Driver{}
+
+	json.NewDecoder(r.Body).Decode(&newDriver)
+
+	phonenumber := newDriver.PhoneNumber
+
+	fmt.Println(phonenumber)
+
+	if phonenumber != "" {
+		auth.StoreDriver(phonenumber)
+		if driver.IsDriverExists("phone_number", phonenumber) {
+			http.Redirect(w, r, "/driver/loginpage", http.StatusSeeOther)
+			return
+		} else {
+			go auth.SetOtp(phonenumber)
+			http.Redirect(w, r, "/driver/enterotp", http.StatusSeeOther)
+		}
 	} else {
-		go auth.SetOtp(phonenumber)
-		http.Redirect(w, r, "/driver/enterotp", http.StatusSeeOther)
+		response := models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "phonenumber required",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
+
 }
 func ValidateDriverOtp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
@@ -37,14 +57,23 @@ func ValidateDriverOtp(w http.ResponseWriter, r *http.Request) {
 	if err := auth.ValidateOTP(phone, otp); err != nil {
 		if err == redis.Nil {
 			w.WriteHeader(http.StatusRequestTimeout)
-			w.Write([]byte("otp expired"))
+			response := models.Response{
+				ResponseStatus:  "fail",
+				ResponseMessage: "expired otp",
+				ResponseData:    nil,
+			}
+			json.NewEncoder(w).Encode(&response)
 			return
 		}
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("invalid otp"))
+		response := models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "invalid otp",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
 	http.Redirect(w, r, "/driver/signup", http.StatusSeeOther)
 }
 
@@ -57,24 +86,16 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 
 	role, phone := auth.ParseJWT(tokenString)
 	fmt.Println(role)
-	// if err != nil {
-	// 	if err == errors.New("invalidToken") {
-	// 		http.Redirect(w, r, "/", http.StatusUnauthorized)
-	// 		return
-	// 	}
-	// 	http.Redirect(w, r, "/", http.StatusSeeOther)
-	// 	return
-	// }
+
 	driver := driver.GetDriver("phone_number", phone)
 
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "Driver data fetched",
 		ResponseData:    driver,
-		Token:           "",
+		Token:           tokenString,
 	}
 	json.NewEncoder(w).Encode(&response)
-
 }
 
 //Create a driver model with values from the fronted.
@@ -87,6 +108,7 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 
 	newDriver := models.Driver{}
 	json.NewDecoder(r.Body).Decode(&newDriver)
+	defer r.Body.Close()
 	newDriver.PhoneNumber = auth.GetDriver()
 	hashpass, _ := bcrypt.GenerateFromPassword([]byte(newDriver.Password), bcrypt.DefaultCost)
 	newDriver.Password = string(hashpass)
@@ -100,10 +122,20 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("driver added")
-	// setCookie(w, "driver", newDriver.PhoneNumber)
 
-	http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
+	token, err := auth.GenerateJWT("driver", newDriver.PhoneNumber)
+	if err != nil {
+		fmt.Println("jwt failed", err)
+	}
+
+	response := models.Response{
+		ResponseStatus:  "succes",
+		ResponseMessage: "signup success",
+		ResponseData:    nil,
+		Token:           token,
+	}
+	json.NewEncoder(w).Encode(&response)
+	// http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
 }
 
 //get the existing driver by phone number from the database.
@@ -112,9 +144,15 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 //Store the JWT token in the cookie
 func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
-	password := r.FormValue("password")
+	newDriver := &models.Driver{}
 
+	json.NewDecoder(r.Body).Decode(&newDriver)
+
+	password := newDriver.Password
+
+	//fetch phonenumber stored temporary from redis
 	phonenumber := auth.GetDriver()
 
 	//get the existing driver by phone number from the database
@@ -124,19 +162,34 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	if err := validPassword(password, Driver.Password); err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
+		response := models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "password authentication failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
 	token, err := auth.GenerateJWT("driver", phonenumber)
 	if err != nil {
 		fmt.Println("jwt failed", err)
 	}
-	w.Header().Set("Token", token)
-	// if err := setCookie(w, "driver", Driver.PhoneNumber); err != nil {
-	// 	fmt.Println(err)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt-token",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   0,
+		HttpOnly: true,
+	})
+
+// response:=models.Response{
+	// 	ResponseStatus:  "success",
+	// 	ResponseMessage: "login success",
+	// 	ResponseData:    Driver,
+	// 	Token:           token,
 	// }
-	//after successful login, generate a JWT token for the driver
-	//save the generated token in the cookie
+	// json.NewEncoder(w).Encode(&response)	
 	http.Redirect(w, r, "/driver/driverhome", http.StatusOK)
 }
 
