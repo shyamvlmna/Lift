@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strconv"
 
 	"gorm.io/gorm"
 
@@ -78,8 +79,33 @@ func GetDrivers() *[]models.Driver {
 //update a driver by getting updated driver fields
 //only update the not null driver fields
 func UpdateDriver(updatedDriver *models.Driver) error {
+	db, err := OpenDriverDb()
+	if err != nil {
+		return err
+	}
+	driver := &models.Driver{}
+	id := strconv.Itoa(int(updatedDriver.ID))
+	db.Where("id=?", id).First(&driver)
+	result := db.Model(&driver).Updates(models.Driver{
+		FirstName: updatedDriver.FirstName,
+		LastName:  updatedDriver.LastName,
+		Email:     updatedDriver.Email,
+	})
+	return result.Error
+}
 
-	return nil
+func ApproveDriver(id int) error {
+	driver := models.Driver{}
+	db, err := OpenDriverDb()
+	if err != nil {
+		return err
+	}
+	db.Where("id=?", id).First(&driver)
+	driver.Approved = true
+
+	result := db.Save(&driver)
+
+	return result.Error
 }
 
 //delete driver by id

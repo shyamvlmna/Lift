@@ -6,6 +6,7 @@ import (
 
 func Router() *mux.Router {
 	r := mux.NewRouter()
+	
 	go func() {
 		UserRoutes(r)
 		DriverRoutes(r)

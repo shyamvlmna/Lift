@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"net/http"
+	"fmt"
 	"os"
 	"time"
 
@@ -11,17 +11,22 @@ import (
 )
 
 type Claims struct {
-	Usrphone string `json:"userphonenumber"`
+	Usrphone   string `json:"phonenumber"`
+	Role       string
+	Authorized bool
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(usrphone string) (string, error) {
+//create jwt token with claims: role,phonenumber
+func GenerateJWT(role, usrphone string) (string, error) {
 
 	godotenv.Load()
-	key := []byte(os.Getenv("jwtSecretKey"))
+	key := []byte(os.Getenv("SECRET_KEY"))
 
 	claims := Claims{
-		Usrphone: usrphone,
+		Usrphone:   usrphone,
+		Role:       role,
+		Authorized: true,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Minute * 25)},
 		},
@@ -29,28 +34,43 @@ func GenerateJWT(usrphone string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenstring, err := token.SignedString(key)
+	tokenString, err := token.SignedString(key)
 	if err != nil {
 		return "", err
 	}
-	return tokenstring, nil
+	fmt.Print(string(tokenString))
+	return tokenString, nil
 }
 
-func ValidateJWT(tokenstring string) (string, any) {
-	godotenv.Load()
-	key := []byte(os.Getenv("jwtSecretKey"))
-
+func ParseJWT(tokenString string) (string, string) {
 	claims := &Claims{}
-	tkn, err := jwt.ParseWithClaims(tokenstring, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(key), nil
+
+	godotenv.Load()
+	key := []byte(os.Getenv("SECRET_KEY"))
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return "", fmt.Errorf(("invalid signing method"))
+		}
+
+		if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+			return "", fmt.Errorf(("expired token"))
+		}
+
+		return key, nil
 	})
 
 	if err != nil {
-		return "", err
+		// fmt.Fprint(w, err.Error())
+		fmt.Println(err)
 	}
 
-	if !tkn.Valid {
-		return "", http.StatusUnauthorized
+	if !token.Valid {
+		fmt.Println("invalid token")
+
 	}
-	return claims.Usrphone, nil
+
+	return claims.Role, claims.Usrphone
+
 }

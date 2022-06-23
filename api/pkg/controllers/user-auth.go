@@ -1,16 +1,15 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/gorilla/mux"
+
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
@@ -21,79 +20,77 @@ import (
 //Redirect to the user signup page if user is new.
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	phonenumber := r.FormValue("usrphonenumber")
+	w.Header().Set("Content-Type", "application/json")
 
-	//check if the user already exist in the system
-	//if user exists redirect to the user login page
-	//if user is new redirect to the user signup page
-	data := map[string]string{
-		"phone": phonenumber,
-	}
-	if user.IsUserExists("phone_number", phonenumber) {
-		userTemp.ExecuteTemplate(w, "userLoginForm.html", data)
-		return
+	newUser := &models.User{}
+
+	json.NewDecoder(r.Body).Decode(&newUser)
+
+	phonenumber := newUser.PhoneNumber
+
+	fmt.Println(phonenumber)
+
+	if phonenumber != "" {
+		auth.StoreUser(phonenumber)
+		if user.IsUserExists("phone_number", string(phonenumber)) {
+			http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
+			return
+		} else {
+			go auth.SetOtp(string(phonenumber))
+			http.Redirect(w, r, "/user/enterotp", http.StatusSeeOther)
+		}
 	} else {
-		userTemp.ExecuteTemplate(w, "validateOtp.html", data)
-		go auth.SetOtp(phonenumber)
-		// userTemp.ExecuteTemplate(w, "userSignupForm.html", data)
+		response := models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "phonenumber required",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(response)
+		return
 	}
-	// if err := ; err != nil {
-	// 	fmt.Println(err)
-	// }
+
 }
 
 func ValidateOtp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 	otp := r.FormValue("otp")
 
-	phone := r.FormValue("phone")
-	phonedata := map[string]string{
-		"phone": phone,
-	}
+	phone := auth.GetUser()
+
 	if err := auth.ValidateOTP(phone, otp); err != nil {
 		if err == redis.Nil {
-			data := map[string]string{
-				"phone": phone,
-				"err":   "otp expired",
-			}
-			userTemp.ExecuteTemplate(w, "validateOtp.html", data)
-			return
-		} else {
-			data := map[string]string{
-				"phone": phone,
-				"err":   "invalid otp",
-			}
-			userTemp.ExecuteTemplate(w, "validateOtp.html", data)
+			w.WriteHeader(http.StatusRequestTimeout)
+			w.Write([]byte("otp expired"))
 			return
 		}
-
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("invalid otp"))
+		return
 	}
-	// http.Redirect(w,r,"/user/signup",)
-	userTemp.ExecuteTemplate(w, "userSignupForm.html", phonedata)
-
+	http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
 }
 
 func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	c, err := r.Cookie("jwt-token")
-	if err == http.ErrNoCookie {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-	tokenstring := c.Value
-	phone, errr := auth.ValidateJWT(tokenstring)
-	fmt.Println("phone from jwt", phone)
-	if errr != nil {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-	user := user.GetUser("phone_number", phone)
-	data := map[string]any{
-		"userid":    user.ID,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	userTemp.ExecuteTemplate(w, "userhome.html", data)
+	w.Header().Set("Content-Type", "application/json")
 
+	// token := r.Header["Token"][0]
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+	role, phone := auth.ParseJWT(tokenString)
+
+	fmt.Println(role, phone)
+
+	user := user.GetUser("phone_number", phone)
+
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "user data fetched",
+		ResponseData:    user,
+		Token:           tokenString,
+	}
+	json.NewEncoder(w).Encode(&response)
 }
 
 //Create a user model with values from the fronted.
@@ -102,40 +99,37 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 //Login the user and open user home after successful signup.
 func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
-	firstname := r.FormValue("usrfirstname")
-	lastname := r.FormValue("usrlastname")
-	phonenumber := r.FormValue("usrphonenumber")
-	email := r.FormValue("usremail")
-	password := r.FormValue("usrpassword")
-
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
+	newUser := models.User{}
+	json.NewDecoder(r.Body).Decode(&newUser)
+	defer r.Body.Close()
+	newUser.PhoneNumber = auth.GetUser()
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	newUser.Password = string(hashPassword)
 	//create a user model with values from the fronted
-	newUser := models.User{
-		Model:       gorm.Model{},
-		FirstName:   firstname,
-		LastName:    lastname,
-		PhoneNumber: phonenumber,
-		Email:       email,
-		Password:    string(hashPassword),
-	}
-
-	// newUser.CreateUser()
 
 	//pass the newly created user model to user services
 	//to insert the new user to the database
 	//after successful signup login the user and open user home
 	if err := user.AddUser(&newUser); err != nil {
 		fmt.Println(err)
-		data := map[any]any{
-			"err": err,
-		}
-		userTemp.ExecuteTemplate(w, "userSignupForm.html", data)
-	} else {
-		fmt.Println("user added")
-		UserLogin(w, r)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	token, err := auth.GenerateJWT("user", newUser.PhoneNumber)
+	if err != nil {
+		fmt.Println("jwt failed", err)
+	}
+
+	response := models.Response{
+		ResponseStatus:  "succes",
+		ResponseMessage: "signup success",
+		ResponseData:    nil,
+		Token:           token,
+	}
+	json.NewEncoder(w).Encode(&response)
 }
 
 //get the existing user by phone number from the database.
@@ -144,41 +138,54 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 //Store the JWT token in the cookie
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	phonenumber := r.FormValue("usrphonenumber")
-	password := r.FormValue("usrpassword")
+	w.Header().Set("Content-Type", "application/json")
+
+	newUser := &models.User{}
+
+	json.NewDecoder(r.Body).Decode(&newUser)
+
+	password := newUser.Password
+
+	// password := r.FormValue("password")
+
+	phoneNumber := auth.GetUser()
 
 	//get the existing user by phone number from the database
-	user := user.GetUser("phone_number", phonenumber)
+	User := user.GetUser("phone_number", phoneNumber)
 
 	//validate the entered password with stored hash password
-	if err := validPassword(password, user.Password); err != nil {
+	if err := validPassword(password, User.Password); err != nil {
 		fmt.Println(err)
-		data := map[any]any{
-			"err": "invalid password",
+		w.WriteHeader(http.StatusUnauthorized)
+		response := models.Response{
+			ResponseStatus:  "succes",
+			ResponseMessage: "password authentication failed",
+			ResponseData:    nil,
+			Token:           "",
 		}
-		userTemp.ExecuteTemplate(w, "userLoginForm.html", data)
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	//after successful login, generate a JWT token for the user
-	//save the generated token in the cookie
-	jwt, err := auth.GenerateJWT(user.PhoneNumber)
+	token, err := auth.GenerateJWT("user", phoneNumber)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("jwt failed", err)
 	}
+
 	http.SetCookie(w, &http.Cookie{
-		Name:    "jwt-token",
-		Value:   jwt,
-		Path:    "/",
-		Expires: time.Now().Add(time.Minute * 30),
+		Name:     "jwt-token",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   0,
+		HttpOnly: true,
 	})
-	data := map[string]any{
-		"userid":    user.ID,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	userTemp.ExecuteTemplate(w, "userhome.html", data)
+	// response := models.Response{
+	// 	ResponseStatus:  "succes",
+	// 	ResponseMessage: "user login success",
+	// 	ResponseData:    nil,
+	// 	Token:           token,
+	// }
+	// json.NewEncoder(w).Encode(&response)
+	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
 
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -186,63 +193,40 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 	user := user.GetUser("id", id)
-	data := map[any]any{
-		"userid":    id,
-		"firstname": user.FirstName,
-		"lastname":  user.LastName,
-		"email":     user.Email,
-	}
-	fmt.Println(user.Email)
-	w.Header().Add("id", id)
-	userTemp.ExecuteTemplate(w, "editUserProfile.html", data)
+
+	json.NewEncoder(w).Encode(&user)
+
 }
+
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
-	fmt.Println("id from head", id)
-	firstname := r.FormValue("usrfirstname")
-	lastname := r.FormValue("usrlastname")
-	email := r.FormValue("usremail")
 
-	newuser := models.User{
-		Model: gorm.Model{
-			ID: uint(id),
-		},
-		FirstName:   firstname,
-		LastName:    lastname,
-		PhoneNumber: "",
-		Email:       email,
-		Password:    "",
-	}
-	err := user.UpdateUser(&newuser)
+	newUser := models.User{}
+	json.NewDecoder(r.Body).Decode(&newUser)
+
+	err := user.UpdateUser(&newUser)
 	if err != nil {
 		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	fmt.Println("user updated successfully")
-	w.Write([]byte("user updated successfully"))
-
+	// w.Write([]byte("user updated successfully"))
+	w.WriteHeader(http.StatusOK)
 }
 
 func UserLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	http.SetCookie(w, &http.Cookie{
-		Name:    "jwt-token",
-		Value:   "",
-		Path:    "/",
-		Domain:  "localhost:8080",
-		Expires: time.Time{},
-		MaxAge:  -1,
-	})
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
+	w.Header().Set("Token", "")
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-	users := user.GetUsers()
-	for _, user := range users {
-		fmt.Println(user.FirstName)
+	response := models.Response{
+		ResponseStatus:  "succes",
+		ResponseMessage: "logout success",
+		ResponseData:    nil,
+		Token:           "",
 	}
+	json.NewEncoder(w).Encode(&response)
+	// http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 //return true if entered password is matching with

@@ -1,29 +1,39 @@
 package controllers
 
 import (
-	"html/template"
+	"encoding/json"
 	"net/http"
-)
 
-var (
-	userTemp, _   = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/user/*.html")
-	driverTemp, _ = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/driver/*.html")
-	indexTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/index/*.html")
-	adminTemp, _  = template.ParseGlob("/home/shyamjith/cab-booking-app/ui/admin/*.html")
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie("jwt-token")
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
+
+	// headers := r.Header
+	// _, ok := headers["Token"]
+
+	c, err := r.Cookie("jwt-token")
+
 	if err == nil {
-		http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
-		return
+		tokenString := c.Value
+		role, _ := auth.ParseJWT(tokenString)
+
+		if role == "driver" {
+			http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
+			return
+		} else if role == "user" {
+			http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
+			return
+		}
+	} else {
+		response := models.Response{
+			ResponseStatus:  "success",
+			ResponseMessage: "app index",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 	}
-	// tokenstring := c.Value
-	// phone,err!=auth.ValidateJWT(tokenstring)
-
-	indexTemp.ExecuteTemplate(w, "appIndex.html", nil)
 }
-
-// func validateCookie(w http.ResponseWriter, r *http.Request) {
-
-// }

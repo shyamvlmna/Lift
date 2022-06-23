@@ -8,15 +8,18 @@ import (
 
 func AdminRoutes(r *mux.Router) {
 
-	r.HandleFunc("/", controllers.Index)
-
 	r.HandleFunc("/admin", controllers.AdminIndex)
 	adminRouter := r.PathPrefix("/admin").Subrouter()
 	// adminRouter.HandleFunc("/", controllers.AdminIndex)
 
+	adminRouter.HandleFunc("/create", controllers.CreateAdmin).Methods("POST")
+
 	adminRouter.HandleFunc("/login", controllers.AdminLogin)
 	adminRouter.HandleFunc("/managedrivers", controllers.Managedrivers)
-	adminRouter.HandleFunc("/manageusers", controllers.ManageUsers)
+	adminRouter.HandleFunc("/login", controllers.AdminLogin)
+	adminRouter.HandleFunc("/approve", controllers.ApproveDriver).Methods("POST")
+
+	adminRouter.HandleFunc("/manageusers", controllers.ManageUsers).Methods("GET")
 	adminRouter.HandleFunc("/driverequst", controllers.DriveRequest)
 	adminRouter.HandleFunc("/blockdriver", controllers.BlockDriver)
 	adminRouter.HandleFunc("/blockuser", controllers.BlockUser)
