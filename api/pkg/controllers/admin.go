@@ -23,7 +23,6 @@ func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdminIndex(w http.ResponseWriter, r *http.Request) {
-	adminTemp.ExecuteTemplate(w, "adminLoginForm.html", nil)
 }
 
 func AdminLogin(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +52,7 @@ func ManageUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&users)
 }
 func DriveRequest(w http.ResponseWriter, r *http.Request) {
-	adminTemp.ExecuteTemplate(w, "driverRequests.html", nil)
+
 }
 func ApproveDriver(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")

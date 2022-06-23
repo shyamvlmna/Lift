@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
+	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
 )
 
 func DriverRoutes(r *mux.Router) {
@@ -17,9 +18,9 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
 	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods("GET")
 
-	driverRouter.HandleFunc("/driverhome", controllers.DriverHome).Methods("GET")
-	driverRouter.HandleFunc("/regtodrive", controllers.RegisterDriver).Methods("POST")
-	driverRouter.HandleFunc("/addcab", controllers.AddCab).Methods("POST")
+	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods("GET")
+	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
+	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
 
 	//render enter otp page
 	driverRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {

@@ -1,4 +1,4 @@
-package handlers
+package middleware
 
 import (
 	"fmt"
@@ -13,14 +13,17 @@ import (
 func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.Header["Token"] != nil {
+		fmt.Println("token from resp", r.Header.Get("Token"))
+		// r.Header["Token"]
+		c,err:=r.Cookie("jwt-token")
+		if err == nil {
 
 			godotenv.Load()
 			key := []byte(os.Getenv("SECRET_KEY"))
 
 			claims := &auth.Claims{}
 
-			token, err := jwt.ParseWithClaims(r.Header["Token"][0], claims, func(token *jwt.Token) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(c.Value, claims, func(token *jwt.Token) (interface{}, error) {
 
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return "", fmt.Errorf(("invalid signing method"))

@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
-	"github.com/shayamvlmna/cab-booking-app/pkg/handlers"
+	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
@@ -24,48 +24,45 @@ func UserRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
 	userRouter.HandleFunc("/googlelogin", auth.GoogleLogin)
 	userRouter.HandleFunc("/googleCallback", auth.GoogleCallback)
+	userRouter.HandleFunc("/logout", controllers.UserLogout)
 
-	userRouter.Handle("/jwt", handlers.IsAuthorized(controllers.Jwt))
+	userRouter.Handle("/jwt", middleware.IsAuthorized(controllers.Jwt))
+	userRouter.Handle("/userhome", middleware.IsAuthorized(controllers.UserHome)).Methods("GET")
 
-	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
-
-	userRouter.HandleFunc("/logout", controllers.UserLogout).Methods("DELETE")
-
-	userRouter.HandleFunc("/userhome", controllers.UserHome).Methods("GET")
 	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods("GET")
 	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods("POST")
-	userRouter.HandleFunc("/getusers", controllers.GetUsers).Methods("GET")
 
 	//render enter otp page
 	userRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "validate otp",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
 		w.Header().Set("Content-Type", "application/json")
-	}).Methods("GET")
-
-	//render signup page
-	userRouter.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
 		response := models.Response{
 			ResponseStatus:  "success",
 			ResponseMessage: "new user",
 			ResponseData:    nil,
 		}
 		json.NewEncoder(w).Encode(&response)
+
+	}).Methods("GET")
+
+	//render signup page
+	userRouter.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		response := models.Response{
+			ResponseStatus:  "success",
+			ResponseMessage: "submit user data",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 	}).Methods("GET")
 
 	//enter login page to enter password
 	userRouter.HandleFunc("/loginpage", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		response := models.Response{
 			ResponseStatus:  "success",
 			ResponseMessage: "existing user",
 			ResponseData:    nil,
 		}
-		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(&response)
 	}).Methods("GET")
 

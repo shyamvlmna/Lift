@@ -42,37 +42,35 @@ func GenerateJWT(role, usrphone string) (string, error) {
 	return tokenString, nil
 }
 
-// //returns role,phonenumber and error if any
-// func ValidateJWT(r *http.Request) (string, error) {
-// 	godotenv.Load()
-// 	key := []byte(os.Getenv("jwtSecretKey"))
+func ParseJWT(tokenString string) (string, string) {
+	claims := &Claims{}
 
-// 	// c, err := r.Cookie("jwt-token")
-// 	// if err == http.ErrNoCookie {
-// 	// 	fmt.Println("no cookie")
-// 	// 	return "", "", err
-// 	// }
-// 	// tokenstring := c.Value
-// 	// tokenstring
-// 	claims := &Claims{}
-// 	token, err := jwt.ParseWithClaims(r.Header["Bearer"][0], claims, func(token *jwt.Token) (interface{}, error) {
-// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 			return "", fmt.Errorf(("Invalid Signing Method"))
-// 		}
+	godotenv.Load()
+	key := []byte(os.Getenv("SECRET_KEY"))
 
-// 		if _, ok := token.Claims.(jwt.RegisteredClaims); !ok && !token.Valid {
-// 			return "", fmt.Errorf(("Expired token"))
-// 		}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 
-// 		return key, nil
-// 	})
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return "", fmt.Errorf(("invalid signing method"))
+		}
 
-// 	if err != nil {
-// 		return "", err
-// 	}
+		if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+			return "", fmt.Errorf(("expired token"))
+		}
 
-// 	if !token.Valid {
-// 		return "", fmt.Errorf("invalidToken")
-// 	}
-// 	return claims.Role, claims.Usrphone, nil
-// }
+		return key, nil
+	})
+
+	if err != nil {
+		// fmt.Fprint(w, err.Error())
+		fmt.Println(err)
+	}
+
+	if !token.Valid {
+		fmt.Println("invalid token")
+
+	}
+
+	return claims.Role, claims.Usrphone
+
+}

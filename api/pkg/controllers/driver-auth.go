@@ -49,9 +49,14 @@ func ValidateDriverOtp(w http.ResponseWriter, r *http.Request) {
 }
 
 func DriverHome(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
-	// _, phone, err := auth.ValidateJWT(r)
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+
+	role, phone := auth.ParseJWT(tokenString)
+	fmt.Println(role)
 	// if err != nil {
 	// 	if err == errors.New("invalidToken") {
 	// 		http.Redirect(w, r, "/", http.StatusUnauthorized)
@@ -60,10 +65,15 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	// 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	// 	return
 	// }
-	// driver := driver.GetDriver("phone_number", phone)
+	driver := driver.GetDriver("phone_number", phone)
 
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(&driver)
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "Driver data fetched",
+		ResponseData:    driver,
+		Token:           "",
+	}
+	json.NewEncoder(w).Encode(&response)
 
 }
 
@@ -73,6 +83,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 //Login the driver and open driver home after successful signup.
 func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
 	newDriver := models.Driver{}
 	json.NewDecoder(r.Body).Decode(&newDriver)
@@ -90,7 +101,7 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println("driver added")
-	setCookie(w, "driver", newDriver.PhoneNumber)
+	// setCookie(w, "driver", newDriver.PhoneNumber)
 
 	http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
 }
@@ -115,20 +126,30 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if err := setCookie(w, "driver", Driver.PhoneNumber); err != nil {
-		fmt.Println(err)
+
+	token, err := auth.GenerateJWT("driver", phonenumber)
+	if err != nil {
+		fmt.Println("jwt failed", err)
 	}
+	w.Header().Set("Token", token)
+	// if err := setCookie(w, "driver", Driver.PhoneNumber); err != nil {
+	// 	fmt.Println(err)
+	// }
 	//after successful login, generate a JWT token for the driver
 	//save the generated token in the cookie
 	http.Redirect(w, r, "/driver/driverhome", http.StatusOK)
 }
 
 func DriverLogout(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("jwt-token")
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusForbidden)
-	}
-	c.MaxAge = -1
+
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Token", "")
+
+	// c, err := r.Cookie("jwt-token")
+	// if err != nil {
+	// 	http.Redirect(w, r, "/", http.StatusForbidden)
+	// }
+	// c.MaxAge = -1
 	// http.SetCookie(w, &http.Cookie{
 	// 	Name:   "jwt-token",
 	// 	Value:  "",
