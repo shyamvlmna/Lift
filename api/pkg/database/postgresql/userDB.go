@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
@@ -23,24 +24,22 @@ func OpenUserDb() (*gorm.DB, error) {
 	return Db, nil
 }
 
-// func closeUserdb(db *gorm.DB) {
+func closeUserdb(db *gorm.DB) {
 
-// 	sqlDb, err := db.DB()
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	sqlDb.Close()
-// 	fmt.Println("user db closed")
-// }
+	sqlDb, err := db.DB()
+	if err != nil {
+		fmt.Println(err)
+	}
+	sqlDb.Close()
+	fmt.Println("user db closed")
+}
 
 //receive a user model and insert it into the user database
 func InsertUser(user *models.User) error {
 
-	db, err := OpenUserDb()
-	if err != nil {
-		return err
-	}
-	// defer closeUserdb(db)
+	db := database.DriverData(database.Db)
+
+	defer closeUserdb(db)
 	result := db.Create(user)
 
 	return result.Error
@@ -48,11 +47,8 @@ func InsertUser(user *models.User) error {
 
 func FindUser(key, value string) (models.User, bool) {
 
-	db, err := OpenUserDb()
-	if err != nil {
-		fmt.Println(err)
-	}
-	// defer closeUserdb(db)
+	db := database.DriverData(database.Db)
+	defer closeUserdb(db)
 	user := &models.User{}
 	result := db.Where(key+"=?", value).First(&user)
 
@@ -65,10 +61,8 @@ func FindUser(key, value string) (models.User, bool) {
 
 //get and return all users from the driver database
 func GetUsers() *[]models.User {
-	db, err := OpenUserDb()
-	if err != nil {
-		fmt.Println(err)
-	}
+	db := database.DriverData(database.Db)
+	defer closeUserdb(db)
 
 	users := &[]models.User{}
 	db.Find(&users)

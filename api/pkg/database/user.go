@@ -1,5 +1,5 @@
-package controllers
+package database
 
-func AddUser()
+// func AddUser()
 
-func GetUser()
+// func GetUser()

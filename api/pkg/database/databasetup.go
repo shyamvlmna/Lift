@@ -45,7 +45,7 @@ func UserData(db *gorm.DB, table string) *gorm.DB {
 	return Db
 
 }
-func DriverData(db *gorm.DB, table string) *gorm.DB {
+func DriverData(db *gorm.DB) *gorm.DB {
 	driver := &models.Driver{}
 	err := Db.AutoMigrate(&driver)
 	if err != nil {
@@ -66,6 +66,6 @@ func TripData(db *gorm.DB, table string) *gorm.DB {
 	return Db
 }
 
-func VehicleData(db *gorm.DB, table string) *gorm.DB {
+// func VehicleData(db *gorm.DB, table string) *gorm.DB {
 
-}
+// }

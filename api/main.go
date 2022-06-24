@@ -5,15 +5,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"github.com/shayamvlmna/cab-booking-app/pkg/routes"
 )
 
 func main() {
-	fmt.Println("server is up and running")
+
+	database.DBSet()
 
 	r := routes.Router()
-	// database.OpenTripDb()
-	// database.OpenWalletDb()
-	// database.OpenLocationDb()
+
+	fmt.Println("server is up and running")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
