@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	database.DBSet()
+	go database.DBSet()
 
 	r := routes.Router()
 

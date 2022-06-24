@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -10,45 +9,30 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
-func OpenUserDb() (*gorm.DB, error) {
-	Db, err := openDB()
-	if err != nil {
-		return nil, err
-	}
-	user := &models.User{}
-	err = Db.AutoMigrate(&user)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("user db opened")
-	return Db, nil
-}
+// func closeUserdb(db *gorm.DB) {
 
-func closeUserdb(db *gorm.DB) {
-
-	sqlDb, err := db.DB()
-	if err != nil {
-		fmt.Println(err)
-	}
-	sqlDb.Close()
-	fmt.Println("user db closed")
-}
+// 	sqlDb, err := db.DB()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	sqlDb.Close()
+// 	fmt.Println("user db closed")
+// }
 
 //receive a user model and insert it into the user database
 func InsertUser(user *models.User) error {
 
-	db := database.DriverData(database.Db)
+	db := database.UserData(database.Db)
 
-	defer closeUserdb(db)
-	result := db.Create(user)
+	result := db.Create(&user)
 
 	return result.Error
 }
 
 func FindUser(key, value string) (models.User, bool) {
 
-	db := database.DriverData(database.Db)
-	defer closeUserdb(db)
+	db := database.UserData(database.Db)
+
 	user := &models.User{}
 	result := db.Where(key+"=?", value).First(&user)
 
@@ -62,7 +46,7 @@ func FindUser(key, value string) (models.User, bool) {
 //get and return all users from the driver database
 func GetUsers() *[]models.User {
 	db := database.DriverData(database.Db)
-	defer closeUserdb(db)
+	// defer closeUserdb(db)
 
 	users := &[]models.User{}
 	db.Find(&users)
@@ -73,13 +57,14 @@ func GetUsers() *[]models.User {
 //update a user by getting updated user fields
 //only update the not null user fields
 func UpdateUser(updatedUser *models.User) error {
-	db, err := OpenUserDb()
-	if err != nil {
-		return err
-	}
+	db := database.DriverData(database.Db)
+
 	user := &models.User{}
+
 	id := strconv.Itoa(int(updatedUser.ID))
+
 	db.Where("id=?", id).First(&user)
+
 	result := db.Model(&user).Updates(models.User{
 		FirstName: updatedUser.FirstName,
 		LastName:  updatedUser.LastName,
@@ -90,7 +75,12 @@ func UpdateUser(updatedUser *models.User) error {
 
 //delete user by id
 //returns err if any
-func DeleteUser(id string) error {
+func DeleteUser(id uint64) error {
+	db := database.UserData(database.Db)
 
-	return nil
+	user := &models.User{}
+
+	result := db.Delete(&user, id)
+
+	return result.Error
 }

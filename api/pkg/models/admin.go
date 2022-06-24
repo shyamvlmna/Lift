@@ -8,11 +8,3 @@ type Admin struct {
 	Password string `gorm:"not null" json:"password"`
 	IsAdmin  bool   `gorm:"default:true" json:"isadmin"`
 }
-
-// func (a Admin) Add() {
-// 	// database.AddAdmin(&a)
-// }
-
-// func (a Admin) Get() {
-
-// }

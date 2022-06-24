@@ -20,7 +20,7 @@ func ValidateOtp(endpoint func(http.ResponseWriter, *http.Request)) http.Handler
 		otp := &Otp{}
 		json.NewDecoder(r.Body).Decode(&otp)
 		OTP := otp.Otp
-		phone := auth.GetUser()
+		phone := auth.GetPhone()
 		if err := auth.ValidateOTP(phone, OTP); err != nil {
 			if err == redis.Nil {
 				fmt.Println("otp expired")

@@ -44,19 +44,10 @@ func ValidateOTP(phone, otp string) error {
 	return nil
 }
 
-func StoreUser(phone string) {
-	redis.Set("user", phone)
+func StorePhone(phone string) {
+	redis.Set("phone", phone)
 }
-func GetUser() string {
-	user, _ := redis.Get("user")
-	return user
-}
-
-func StoreDriver(phone string) {
-	redis.Set("driver", phone)
-}
-
-func GetDriver() string {
-	driver, _ := redis.Get("driver")
-	return driver
+func GetPhone() string {
+	phone, _ := redis.Get("phone")
+	return phone
 }

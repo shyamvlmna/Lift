@@ -7,7 +7,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/gorilla/mux"
 
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
@@ -31,7 +30,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(phonenumber)
 
 	if phonenumber != "" {
-		auth.StoreUser(phonenumber)
+		auth.StorePhone(phonenumber)
 		if user.IsUserExists("phone_number", phonenumber) {
 			http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 			return
@@ -45,34 +44,14 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "phonenumber required",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-}
-
-func ValidateOtp(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	w.Header().Set("Content-Type", "application/json")
-	otp := r.FormValue("otp")
-
-	phone := auth.GetUser()
-
-	if err := auth.ValidateOTP(phone, otp); err != nil {
-		if err == redis.Nil {
-			w.WriteHeader(http.StatusRequestTimeout)
-			w.Write([]byte("otp expired"))
-			return
-		}
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("invalid otp"))
-		return
-	}
-	http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
 }
 
 func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	response := models.Response{
+	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "submit user data",
 		ResponseData:    nil,
@@ -91,7 +70,8 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	newUser := models.User{}
 	json.NewDecoder(r.Body).Decode(&newUser)
 	defer r.Body.Close()
-	newUser.PhoneNumber = auth.GetUser()
+
+	newUser.PhoneNumber = auth.GetPhone()
 	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	newUser.Password = string(hashPassword)
 	//create a user model with values from the fronted
@@ -102,13 +82,14 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	if err := user.AddUser(&newUser); err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "signup failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	// token, err := auth.GenerateJWT("user", newUser.PhoneNumber)
-	// if err != nil {
-	// 	fmt.Println("jwt failed", err)
-	// }
 
 	response := models.Response{
 		ResponseStatus:  "succes",
@@ -129,27 +110,33 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	newUser := &models.User{}
 
 	json.NewDecoder(r.Body).Decode(&newUser)
+	defer r.Body.Close()
 
 	password := newUser.Password
-
-	// password := r.FormValue("password")
-
-	// phoneNumber := auth.GetUser()
 
 	phoneNumber := newUser.PhoneNumber
 
 	//get the existing user by phone number from the database
 	User := user.GetUser("phone_number", phoneNumber)
 
+	if !User.Active {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "user not active",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
 	//validate the entered password with stored hash password
 	if err := validPassword(password, User.Password); err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
-		response := models.Response{
-			ResponseStatus:  "succes",
+		response := &models.Response{
+			ResponseStatus:  "failed",
 			ResponseMessage: "password authentication failed",
 			ResponseData:    nil,
-			Token:           "",
 		}
 		json.NewEncoder(w).Encode(&response)
 		return
@@ -166,13 +153,6 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   0,
 		HttpOnly: true,
 	})
-	// response := models.Response{
-	// 	ResponseStatus:  "succes",
-	// 	ResponseMessage: "user login success",
-	// 	ResponseData:    nil,
-	// 	Token:           token,
-	// }
-	// json.NewEncoder(w).Encode(&response)
 	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
 
@@ -180,15 +160,15 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	// token := r.Header["Token"][0]
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
+
 	role, phone := auth.ParseJWT(tokenString)
 
 	fmt.Println(role, phone)
 
 	user := user.GetUser("phone_number", phone)
-
+	user.Token = tokenString
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "user data fetched",
@@ -198,6 +178,28 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&response)
 }
 
+func UserLogout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusUnauthorized)
+		return
+	}
+	c.Value = ""
+	c.Path = "/"
+	c.MaxAge = -1
+	http.SetCookie(w, c)
+	response := &models.Response{
+		ResponseStatus:  "succes",
+		ResponseMessage: "logout success",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(&response)
+	// http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	params := mux.Vars(r)
@@ -205,7 +207,6 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	user := user.GetUser("id", id)
 
 	json.NewEncoder(w).Encode(&user)
-
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -223,20 +224,6 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("user updated successfully")
 	// w.Write([]byte("user updated successfully"))
 	w.WriteHeader(http.StatusOK)
-}
-
-func UserLogout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	w.Header().Set("Token", "")
-
-	response := models.Response{
-		ResponseStatus:  "succes",
-		ResponseMessage: "logout success",
-		ResponseData:    nil,
-		Token:           "",
-	}
-	json.NewEncoder(w).Encode(&response)
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 //return true if entered password is matching with

@@ -28,13 +28,25 @@ func DBSet() *gorm.DB {
 		fmt.Println("failed to connect to Postgresql")
 		return nil
 	}
+
+	// admin := &models.Admin{}
+	// vehicle := &models.Vehicle{}
+	// payment := &models.Payment{}
+	// location := &models.Location{}
+	// trip := &models.Trip{}
+
+	// user := &models.User{}
+	// userwallet := &models.UserWallet{}
+	// driver := &models.Driver{}
+	// &admin, &user, &userwallet, &vehicle, &trip, &location, &location, &payment, &driver
+	// Db.AutoMigrate(&driver, &vehicle)
 	fmt.Println("successfully connected to Postgresql")
 	return Db
 }
 
 var Db *gorm.DB = DBSet()
 
-func UserData(db *gorm.DB, table string) *gorm.DB {
+func UserData(db *gorm.DB) *gorm.DB {
 	user := &models.User{}
 	err := Db.AutoMigrate(&user)
 	if err != nil {

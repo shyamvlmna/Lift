@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type Driver struct {
 	gorm.Model
+	DriverId    uint64 `gorm:"primaryKey"`
 	FirstName   string `gorm:"not null" json:"firstname"`
 	LastName    string `json:"lastname"`
 	PhoneNumber string `gorm:"not null;unique" json:"phonenumber"`
@@ -13,5 +14,5 @@ type Driver struct {
 	LicenceNum  string `json:"licence"`
 	Approved    bool   `gorm:"default:false" json:"approved"`
 	Active      bool
-	Cab         Vehicle `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Cab         Vehicle `gorm:"ForeignKey:DriverId"`
 }

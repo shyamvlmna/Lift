@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
@@ -39,6 +38,10 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type id struct {
+	id uint64 `json:"id"`
+}
+
 func Managedrivers(w http.ResponseWriter, r *http.Request) {
 	drivers := []models.Driver{}
 	drivers = driver.GetDrivers()
@@ -46,7 +49,6 @@ func Managedrivers(w http.ResponseWriter, r *http.Request) {
 
 }
 func ManageUsers(w http.ResponseWriter, r *http.Request) {
-
 	users := []models.User{}
 	users = user.GetUsers()
 	json.NewEncoder(w).Encode(&users)
@@ -55,12 +57,14 @@ func DriveRequest(w http.ResponseWriter, r *http.Request) {
 
 }
 func ApproveDriver(w http.ResponseWriter, r *http.Request) {
-	id := r.FormValue("id")
-	iid, _ := strconv.Atoi(id)
-	database.ApproveDriver(iid)
+	data := &id{}
+	id := data.id
+	database.ApproveDriver(id)
 }
 func BlockDriver(w http.ResponseWriter, r *http.Request) {
-
+	data := &id{}
+	id := data.id
+	database.ApproveDriver(id)
 }
 func BlockUser(w http.ResponseWriter, r *http.Request) {
 

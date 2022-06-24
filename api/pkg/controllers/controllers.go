@@ -12,9 +12,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	// headers := r.Header
-	// _, ok := headers["Token"]
-
 	c, err := r.Cookie("jwt-token")
 
 	if err == nil {

@@ -1,18 +1,10 @@
 package models
 
-import "gorm.io/gorm"
-
-type Trip struct {
-	gorm.Model
-	Source        Location 
-	Destination   Location 
-	Distance      uint
-	Fare          uint
-	PaymentMethod string
-	Rating        uint8
-}
+// Source        Location
+// Trip          Location `gorm:"ForeignKey:TripId"`
 
 type Location struct {
+	Id  uint `gorm:"primaryKey"`
 	Lon string
 	Lat string
 }
