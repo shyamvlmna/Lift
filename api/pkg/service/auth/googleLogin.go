@@ -24,6 +24,13 @@ var (
 	randomState = "randomstate"
 )
 
+type AuthContent struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:"verified_email"`
+	Picture       string `json:"picture"`
+}
+
 func GoogleLogin(w http.ResponseWriter, r *http.Request) {
 	url := authConfig.AuthCodeURL(randomState)
 	http.Redirect(w, r, url, http.StatusSeeOther)
@@ -56,4 +63,22 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "json parsing failed")
 	}
 	fmt.Fprintln(w, string(content))
+	// {
+	// 	"id": "109429758760150763543",
+	// 	"email": "shyamvlmna@gmail.com",
+	// 	"verified_email": true,
+	// 	"name": "Shyamjith P Vilamana",
+	// 	"given_name": "Shyamjith",
+	// 	"family_name": "P Vilamana",
+	// 	"picture": "https://lh3.googleusercontent.com/a-/AOh14Gj4L240leqI64MfmshtoQsqLv_vm0RTPoZ4Z9yCHg=s96-c",
+	// 	"locale": "en"
+	//   }
+	// 	authContent := &AuthContent{}
+
+	// 	json.Unmarshal(content, &authContent)
+
+	// 	log.Println(authContent)
+	// 	json.NewEncoder(w).Encode(&authContent)
+
+	// fmt.Println(authContent.Email)
 }

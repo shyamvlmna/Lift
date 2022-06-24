@@ -234,3 +234,7 @@ func validPassword(password, hashPassword string) error {
 	}
 	return nil
 }
+
+func BookTrip(w http.ResponseWriter, r *http.Request) {
+
+}

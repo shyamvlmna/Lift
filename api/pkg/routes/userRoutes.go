@@ -54,4 +54,6 @@ func UserRoutes(r *mux.Router) {
 		json.NewEncoder(w).Encode(&response)
 	}).Methods("GET")
 
+	userRouter.Handle("/booktrip", middleware.IsAuthorized(controllers.BookTrip))
+
 }
