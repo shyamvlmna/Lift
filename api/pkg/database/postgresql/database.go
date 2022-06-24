@@ -24,5 +24,7 @@ func openDB() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+
 	return Db, nil
 }

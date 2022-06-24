@@ -13,5 +13,5 @@ type Driver struct {
 	LicenceNum  string `json:"licence"`
 	Approved    bool   `gorm:"default:false" json:"approved"`
 	Active      bool
-	Cab         Vehicle `gorm:"foreignKey:Id" json:"cab"`
+	Cab         Vehicle `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

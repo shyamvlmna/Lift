@@ -19,15 +19,14 @@ func UserRoutes(r *mux.Router) {
 	userRouter := r.PathPrefix("/user").Subrouter()
 
 	userRouter.HandleFunc("/auth", controllers.UserAuth).Methods("POST")
-	userRouter.HandleFunc("/otp", controllers.ValidateOtp).Methods("POST")
 	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods("POST")
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
 	userRouter.HandleFunc("/googlelogin", auth.GoogleLogin)
 	userRouter.HandleFunc("/googleCallback", auth.GoogleCallback)
 	userRouter.HandleFunc("/logout", controllers.UserLogout)
 
-	userRouter.Handle("/jwt", middleware.IsAuthorized(controllers.Jwt))
 	userRouter.Handle("/userhome", middleware.IsAuthorized(controllers.UserHome)).Methods("GET")
+	userRouter.Handle("/otp", middleware.ValidateOtp(controllers.UserSignupPage)).Methods("POST")
 
 	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods("GET")
 	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods("POST")
@@ -45,15 +44,15 @@ func UserRoutes(r *mux.Router) {
 	}).Methods("GET")
 
 	//render signup page
-	userRouter.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "submit user data",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
-	}).Methods("GET")
+	// userRouter.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	response := models.Response{
+	// 		ResponseStatus:  "success",
+	// 		ResponseMessage: "submit user data",
+	// 		ResponseData:    nil,
+	// 	}
+	// 	json.NewEncoder(w).Encode(&response)
+	// }).Methods("GET")
 
 	//enter login page to enter password
 	userRouter.HandleFunc("/loginpage", func(w http.ResponseWriter, r *http.Request) {
