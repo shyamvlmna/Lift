@@ -15,19 +15,12 @@ type User struct {
 	Token       string     `json:"token"`
 	Active      bool       `json:"active" gorm:"default:true"`
 	Wallet      UserWallet `gorm:"ForeignKey:UserId;references:WalletId;embedded" json:"user_wallet"`
-	BookedTrip  Trip       `gorm:"ForeignKey:UserId;references:TripId;embedded" json:"trip"`
-	// TripHistory TripHistory `gorm:"ForeignKey:UserId;references:TripHistoryId;embedded" json:"trip_history" `
+	TripHistory []Trip     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history" `
 }
 
+// BookedTrip  Trip        `gorm:"ForeignKey:UserId;references:TripId;embedded" json:"trip"`
 type UserWallet struct {
 	gorm.Model
 	WalletId uint64 `gorm:"primaryKey;autoIncrement;unique"`
 	Balance  string
 }
-
-type TripHistory struct {
-	gorm.Model
-	TripHistoryId uint64 `gorm:"autoIncrement;unique;primaryKey" json:"triphistory"`
-	Trips         []Trip
-}
-

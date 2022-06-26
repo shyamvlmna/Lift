@@ -48,24 +48,29 @@ func Managedrivers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&drivers)
 
 }
+
 func ManageUsers(w http.ResponseWriter, r *http.Request) {
 	users := []models.User{}
 	users = user.GetUsers()
 	json.NewEncoder(w).Encode(&users)
 }
+
 func DriveRequest(w http.ResponseWriter, r *http.Request) {
 
 }
+
 func ApproveDriver(w http.ResponseWriter, r *http.Request) {
 	data := &id{}
 	id := data.id
 	database.ApproveDriver(id)
 }
+
 func BlockDriver(w http.ResponseWriter, r *http.Request) {
 	data := &id{}
 	id := data.id
 	database.ApproveDriver(id)
 }
+
 func BlockUser(w http.ResponseWriter, r *http.Request) {
 
 }

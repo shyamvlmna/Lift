@@ -155,14 +155,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	role, phone := auth.ParseJWT(tokenString)
 
 	fmt.Println(role, phone)
-
-	p, err := redis.GetData("data")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	driver := models.Driver{}
-	json.Unmarshal([]byte(p), &driver)
+	driver := driver.GetDriver("phone_number", phone)
 
 	response := models.Response{
 		ResponseStatus:  "success",
@@ -223,4 +216,8 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&vehicle)
 
 	database.Insert(&vehicle)
+}
+
+func GetTrip(w http.ResponseWriter, r *http.Request) {
+
 }

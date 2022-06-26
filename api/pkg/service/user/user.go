@@ -1,7 +1,11 @@
 package user
 
 import (
+	"encoding/json"
+	"fmt"
+
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
+	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
@@ -15,9 +19,19 @@ func AddUser(newUser *models.User) error {
 //returns a user model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the user to search
 func GetUser(key, value string) models.User {
-	user, _ := database.FindUser(key, value)
-	return user
 
+	p, err := redis.GetData("data")
+	if err != nil {
+		fmt.Println(err)
+		user, _ := database.FindUser(key, value)
+		return user
+	}
+
+	user := models.User{}
+	
+	json.Unmarshal([]byte(p), &user)
+
+	return user
 }
 
 //return all users in the database

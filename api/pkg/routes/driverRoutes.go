@@ -16,14 +16,6 @@ func DriverRoutes(r *mux.Router) {
 
 	driverRouter.HandleFunc("/auth", controllers.DriverAuth).Methods("POST")
 	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods("POST")
-	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
-	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods("GET")
-
-	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods("POST")
-	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods("GET")
-
-	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
-	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
 
 	//render enter otp page
 	driverRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
@@ -46,5 +38,16 @@ func DriverRoutes(r *mux.Router) {
 		}
 		json.NewEncoder(w).Encode(&response)
 	}).Methods("GET")
+
+	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
+	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods("GET")
+
+	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods("POST")
+	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods("GET")
+
+	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
+	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
+
+	driverRouter.Handle("/gettrip", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
 
 }

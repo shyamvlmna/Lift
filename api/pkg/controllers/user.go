@@ -36,7 +36,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 			return
 		} else {
-			if err:=auth.SetOtp(string(phonenumber));err!=nil{
+			if err := auth.SetOtp(string(phonenumber)); err != nil {
 				fmt.Println(err)
 				return
 			}
@@ -174,15 +174,15 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(role, phone)
 
-	// user := user.GetUser("phone_number", phone)
+	user := user.GetUser("phone_number", phone)
 
-	p, err := redis.GetData("data")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// p, err := redis.GetData("data")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	user := models.User{}
-	json.Unmarshal([]byte(p), &user)
+	// user := models.User{}
+	// json.Unmarshal([]byte(p), &user)
 
 	user.Token = tokenString
 	response := models.Response{
@@ -256,10 +256,13 @@ func validPassword(password, hashPassword string) error {
 
 //get the pickup point and destination from the booktrip call fro
 func BookTrip(w http.ResponseWriter, r *http.Request) {
-	newTrip := &models.Trip{}
 
-	json.NewDecoder(r.Body).Decode(&newTrip)
+	// newTrip := &models.Trip{}
 
-	newTrip.CreateTrip()
+	newRide := &models.Ride{}
+
+	json.NewDecoder(r.Body).Decode(&newRide)
+
+	newRide.CreateTrip()
 
 }
