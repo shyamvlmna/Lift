@@ -235,6 +235,14 @@ func validPassword(password, hashPassword string) error {
 	return nil
 }
 
+//get the pickup point and destination from the booktrip call fro
 func BookTrip(w http.ResponseWriter, r *http.Request) {
+	newTrip := &models.Trip{}
+
+	json.NewDecoder(r.Body).Decode(&newTrip)
+
+	newTrip.CreateTrip()
+
 
 }
+

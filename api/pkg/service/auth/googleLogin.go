@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -26,6 +27,7 @@ var (
 
 type AuthContent struct {
 	ID            string `json:"id"`
+	Name          string `json:"name"`
 	Email         string `json:"email"`
 	VerifiedEmail bool   `json:"verified_email"`
 	Picture       string `json:"picture"`
@@ -37,7 +39,7 @@ func GoogleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func GoogleCallback(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
 	state := r.URL.Query()["state"][0]
 	if state != "randomstate" {
 		fmt.Fprintln(w, "states don't match")
@@ -62,7 +64,13 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "json parsing failed")
 	}
-	fmt.Fprintln(w, string(content))
+	authContent := &AuthContent{}
+	if err = json.Unmarshal(content, &authContent); err != nil {
+		fmt.Println("foo")
+	}
+
+	json.NewEncoder(w).Encode(&authContent)
+	// fmt.Fprintln(w, string(content))
 	// {
 	// 	"id": "109429758760150763543",
 	// 	"email": "shyamvlmna@gmail.com",
