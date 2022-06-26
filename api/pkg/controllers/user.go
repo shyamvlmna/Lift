@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
@@ -35,8 +36,12 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 			return
 		} else {
-			go auth.SetOtp(string(phonenumber))
+			if err:=auth.SetOtp(string(phonenumber));err!=nil{
+				fmt.Println(err)
+				return
+			}
 			http.Redirect(w, r, "/user/enterotp", http.StatusSeeOther)
+			return
 		}
 	} else {
 		response := models.Response{
@@ -146,6 +151,8 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("jwt failed", err)
 	}
 
+	redis.StoreData("data", User)
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt-token",
 		Value:    token,
@@ -167,7 +174,16 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(role, phone)
 
-	user := user.GetUser("phone_number", phone)
+	// user := user.GetUser("phone_number", phone)
+
+	p, err := redis.GetData("data")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	user := models.User{}
+	json.Unmarshal([]byte(p), &user)
+
 	user.Token = tokenString
 	response := models.Response{
 		ResponseStatus:  "success",
@@ -187,6 +203,9 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
+
+	redis.DeleteData("data")
+
 	c.Value = ""
 	c.Path = "/"
 	c.MaxAge = -1
@@ -243,6 +262,4 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 
 	newTrip.CreateTrip()
 
-
 }
-

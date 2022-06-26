@@ -34,7 +34,7 @@ func UserRoutes(r *mux.Router) {
 	//render enter otp page
 	userRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		response := models.Response{
+		response := &models.Response{
 			ResponseStatus:  "success",
 			ResponseMessage: "new user",
 			ResponseData:    nil,

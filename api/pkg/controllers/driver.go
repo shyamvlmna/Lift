@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
+	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
@@ -133,7 +134,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("jwt failed", err)
 	}
-
+	redis.StoreData("data", Driver)
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt-token",
 		Value:    token,
@@ -155,7 +156,13 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(role, phone)
 
-	driver := driver.GetDriver("phone_number", phone)
+	p, err := redis.GetData("data")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	driver := models.Driver{}
+	json.Unmarshal([]byte(p), &driver)
 
 	response := models.Response{
 		ResponseStatus:  "success",
@@ -177,6 +184,8 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
+
+	redis.DeleteData("data")
 
 	c.Value = ""
 	c.Path = "/"

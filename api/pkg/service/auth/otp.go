@@ -26,7 +26,12 @@ func SetOtp(phone string) error {
 	if err != nil {
 		return err
 	}
-	redis.Set(phone, otp)
+	if err:=redis.Set(phone, otp);err!=nil{ 
+		fmt.Println(err)
+		return err
+	}
+//TODO : send otp to the number
+
 	fmt.Printf("user signup otp for %s :%s", phone, otp)
 	return nil
 }
