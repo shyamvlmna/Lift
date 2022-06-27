@@ -38,7 +38,6 @@ func GenerateJWT(role, usrphone string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Print(string(tokenString))
 	return tokenString, nil
 }
 

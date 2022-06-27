@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
@@ -22,13 +21,12 @@ func GetUser(key, value string) models.User {
 
 	p, err := redis.GetData("data")
 	if err != nil {
-		fmt.Println(err)
 		user, _ := database.FindUser(key, value)
 		return user
 	}
 
 	user := models.User{}
-	
+
 	json.Unmarshal([]byte(p), &user)
 
 	return user
@@ -51,8 +49,16 @@ func DeleteUser(id string) {
 
 }
 
+func AppendTrip(user *models.User,trip *models.Trip)error{
+	return database.AppendTrip(user,trip )
+}
+
 //return boolean to check if the user exist or not
 func IsUserExists(key, value string) bool {
 	_, err := database.FindUser(key, value)
 	return err
+}
+
+func AddTrip(t *models.Trip) {
+
 }

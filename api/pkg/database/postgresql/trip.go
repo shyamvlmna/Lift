@@ -20,3 +20,12 @@ func OpenTripDb() (*gorm.DB, error) {
 	fmt.Println("trip db opened")
 	return Db, nil
 }
+
+func GetTrips(id uint64) *[]models.Trip {
+
+	db, _ := OpenTripDb()
+	trips := []models.Trip{}
+	db.Where("user_id=?", id).Find(&trips)
+
+	return &trips
+}

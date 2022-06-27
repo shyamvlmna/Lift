@@ -12,6 +12,7 @@ import (
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 )
 
 //Check if the driver already exist in the system.
@@ -179,7 +180,6 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 		Token:           tokenString,
 	}
 	json.NewEncoder(w).Encode(&response)
-
 }
 
 func DriverLogout(w http.ResponseWriter, r *http.Request) {
@@ -205,27 +205,24 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "logout success",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
+	json.NewEncoder(w).Encode(&response)
 }
 
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func UpdateDriverProfile(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func GetDrivers(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func RegisterDriver(w http.ResponseWriter, r *http.Request) {
 	// city := r.FormValue("city")
 	// dlNumber := r.FormValue("driving_licence")
-
 }
+
 func AddCab(w http.ResponseWriter, r *http.Request) {
 	vehicle := models.Vehicle{}
 	json.NewDecoder(r.Body).Decode(&vehicle)
@@ -235,6 +232,10 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 
 func GetTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	ride := models.GetRide()
+	ride := trip.GetRide()
 	json.NewEncoder(w).Encode(&ride)
+}
+
+func EndTrip(w http.ResponseWriter, r *http.Request) {
+
 }

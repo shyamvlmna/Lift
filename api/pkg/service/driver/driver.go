@@ -2,7 +2,6 @@ package driver
 
 import (
 	"encoding/json"
-	"fmt"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
@@ -21,13 +20,12 @@ func GetDriver(key, value string) models.Driver {
 
 	p, err := redis.GetData("data")
 	if err != nil {
-		fmt.Println(err)
 		driver, _ := database.FindDriver(key, value)
 		return driver
 	}
 
 	driver := models.Driver{}
-	
+
 	json.Unmarshal([]byte(p), &driver)
 
 	return driver

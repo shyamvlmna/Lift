@@ -3,10 +3,10 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -42,7 +42,14 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	state := r.URL.Query()["state"][0]
 	if state != "randomstate" {
-		fmt.Fprintln(w, "states don't match")
+
+		response := &models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "states don't match",
+			ResponseData:    nil,
+			Token:           "",
+		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
 	// if r.FormValue("state") != randomState {
@@ -53,20 +60,44 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query()["code"][0]
 	tok, err := authConfig.Exchange(context.Background(), code)
 	if err != nil {
-		fmt.Fprintln(w, "code token exange failed")
+		response := &models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "code token exange failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
 	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + tok.AccessToken)
 	if err != nil {
-		fmt.Fprintln(w, "data fetch failed")
+		response := &models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "data fetch failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Fprintf(w, "json parsing failed")
+		response := &models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "json parsing failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
 	authContent := &AuthContent{}
 	if err = json.Unmarshal(content, &authContent); err != nil {
-		fmt.Println("foo")
+		response := &models.Response{
+			ResponseStatus:  "fail",
+			ResponseMessage: "unmarshal failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
 
 	json.NewEncoder(w).Encode(&authContent)

@@ -9,9 +9,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
+	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
+	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
@@ -54,6 +56,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//render the signup page to submit the details of the new user
 func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := &models.Response{
@@ -107,7 +110,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 //get the existing user by phone number from the database.
 //Validate the entered password with stored hash password.
 //Generate a JWT token for the user after successful login.
-//Store the JWT token in the cookie
+//Store the JWT token in the http only cookie
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
@@ -165,6 +168,9 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
 
+//get the logged in user data from redis
+//if err get from the primary database
+//render the user home page
 func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
@@ -172,20 +178,10 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
 
-	role, phone := auth.ParseJWT(tokenString)
-
-	fmt.Println(role, phone)
+	_, phone := auth.ParseJWT(tokenString)
 
 	user := user.GetUser("phone_number", phone)
-
-	// p, err := redis.GetData("data")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	// user := models.User{}
-	// json.Unmarshal([]byte(p), &user)
-
+	user.TripHistory = *database.GetTrips(uint64(user.ID))
 	user.Token = tokenString
 	response := models.Response{
 		ResponseStatus:  "success",
@@ -196,6 +192,8 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&response)
 }
 
+//delete the stored user data from redis
+//also expire the cookie stored
 func UserLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
@@ -247,7 +245,7 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-//return true if entered password is matching with
+//match the entered password with
 //the hash password stored in the database
 func validPassword(password, hashPassword string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
@@ -256,15 +254,42 @@ func validPassword(password, hashPassword string) error {
 	return nil
 }
 
-//get the pickup point and destination from the booktrip call fro
+//get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
 
-	// newTrip := &models.Trip{}
+	_, phone := auth.ParseJWT(tokenString)
 
-	newRide := &models.Ride{}
+	curUser := user.GetUser("phone_number", phone)
+
+	newRide := &trip.Ride{}
 
 	json.NewDecoder(r.Body).Decode(&newRide)
 
-	models.ProcessTrip(newRide)
+	trip := trip.CreateTrip(newRide)
 
+	if err := user.AppendTrip(&curUser, trip); err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+func TripHistory(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	user := user.GetUser("phone_number", phone)
+
+	tipHistory := trip.GetTripHistory(user.UserId)
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "fetched trip history",
+		ResponseData:    tipHistory,
+	}
+	json.NewEncoder(w).Encode(&response)
 }

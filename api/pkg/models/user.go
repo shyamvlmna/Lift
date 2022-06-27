@@ -6,7 +6,7 @@ import (
 
 type User struct {
 	gorm.Model
-	UserId      uint64     `gorm:"primaryKey;unique"`
+	UserId      uint64     `gorm:"primaryKey;unique;autoIncrement"`
 	FirstName   string     `gorm:"not null" json:"first_name"`
 	LastName    string     `json:"last_name"`
 	PhoneNumber string     `gorm:"not null;unique" json:"phone_number"`
@@ -15,12 +15,17 @@ type User struct {
 	Token       string     `json:"token"`
 	Active      bool       `json:"active" gorm:"default:true"`
 	Wallet      UserWallet `gorm:"ForeignKey:UserId;references:WalletId;embedded" json:"user_wallet"`
-	TripHistory []Trip     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history" `
+	TripHistory []Trip     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history"`
 }
 
+// gorm:"ForeignKey:TripId;references:UserId"
 // BookedTrip  Trip        `gorm:"ForeignKey:UserId;references:TripId;embedded" json:"trip"`
 type UserWallet struct {
 	gorm.Model
 	WalletId uint64 `gorm:"primaryKey;autoIncrement;unique"`
 	Balance  string
+}
+
+func AddTrip(t *Trip) {
+
 }

@@ -13,9 +13,7 @@ import (
 func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		fmt.Println("token from resp", r.Header.Get("Token"))
-		// r.Header["Token"]
-		c,err:=r.Cookie("jwt-token")
+		c, err := r.Cookie("jwt-token")
 
 		if err == nil {
 
