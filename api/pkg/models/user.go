@@ -7,11 +7,11 @@ import (
 type User struct {
 	gorm.Model
 	UserId      uint64     `gorm:"primaryKey;unique"`
-	FirstName   string     `gorm:"not null" json:"first_name" validate:"required,min=2,max=30"`
+	FirstName   string     `gorm:"not null" json:"first_name"`
 	LastName    string     `json:"last_name"`
-	PhoneNumber string     `gorm:"not null;unique" json:"phone_number" validate:"required,min=10"`
-	Email       string     `gorm:"not null;unique" json:"email" validate:"required,min=20"`
-	Password    string     `gorm:"not null" json:"password" validate:"required,min=4"`
+	PhoneNumber string     `gorm:"not null;unique" json:"phone_number"`
+	Email       string     `gorm:"not null;unique" json:"email"`
+	Password    string     `gorm:"not null" json:"password"`
 	Token       string     `json:"token"`
 	Active      bool       `json:"active" gorm:"default:true"`
 	Wallet      UserWallet `gorm:"ForeignKey:UserId;references:WalletId;embedded" json:"user_wallet"`

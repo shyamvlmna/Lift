@@ -36,7 +36,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 			return
 		} else {
-			if err := auth.SetOtp(string(phonenumber)); err != nil {
+			if err := auth.SetOtp(phonenumber); err != nil {
 				fmt.Println(err)
 				return
 			}
@@ -96,7 +96,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := models.Response{
+	response := &models.Response{
 		ResponseStatus:  "succes",
 		ResponseMessage: "signup success",
 		ResponseData:    nil,
@@ -119,7 +119,9 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	password := newUser.Password
 
-	phoneNumber := newUser.PhoneNumber
+	// phoneNumber := newUser.PhoneNumber
+
+	phoneNumber := auth.GetPhone()
 
 	//get the existing user by phone number from the database
 	User := user.GetUser("phone_number", phoneNumber)
@@ -263,6 +265,6 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&newRide)
 
-	newRide.CreateTrip()
+	models.ProcessTrip(newRide)
 
 }

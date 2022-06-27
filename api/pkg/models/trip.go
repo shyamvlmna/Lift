@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/kr/pretty"
@@ -30,8 +29,8 @@ type Trip struct {
 }
 
 type Ride struct {
-	Source      Location `json:"source"`
-	Destination Location `json:"destination"`
+	Source      maps.LatLng `json:"source"`
+	Destination maps.LatLng `json:"destination"`
 }
 
 type Location struct {
@@ -46,12 +45,11 @@ type Payment struct {
 	Cash   bool
 }
 
-func (t *Ride) CreateTrip() {
-	t.ProcessTrip()
+// func (t *Ride) CreateTrip() {
+// 	t.ProcessTrip()
+// }
 
-}
-
-func (t *Ride) ProcessTrip() {
+func ProcessTrip(t *Ride) {
 
 	source := &maps.LatLng{
 		Lat: t.Source.Lat,
@@ -63,22 +61,23 @@ func (t *Ride) ProcessTrip() {
 		Lng: t.Destination.Lng,
 	}
 
-	distance, eta := Dist(source, destination)
+	// distance, eta := Dist(source.String(), destination.String())
 
-	fare := Fare(distance)
+	// fare := Fare(distance)
+	// AssignTrip(source, destination, distance, eta, fare)
 
-	AssignTrip(source, destination, distance, eta, fare).TripPool()
+	AssignTrip(source, destination)
 }
 
-func Dist(origin, destination *maps.LatLng) (int, int) {
+func Dist(origin, destination string) (int, int) {
 	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyCouPhivkPPHguv4I0j_3BYMUrV6EIcBBo"))
 	if err != nil {
 		log.Fatalf("fatal error: %s", err)
 	}
 
 	r := &maps.DistanceMatrixRequest{
-		Origins:      []string{strconv.Itoa(int(origin.Lat)), strconv.Itoa(int(origin.Lng))},
-		Destinations: []string{strconv.Itoa(int(destination.Lng)), strconv.Itoa(int(destination.Lng))},
+		Origins:      []string{origin},
+		Destinations: []string{destination},
 	}
 
 	distancematrix, err := c.DistanceMatrix(context.Background(), r)
@@ -101,18 +100,36 @@ func Fare(d int) float32 {
 	return fare
 }
 
-func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) *Trip {
-	newTrip := &Trip{
-		Source:        source,
-		Destination:   Location{},
-		Distance:      0,
-		Fare:          0,
-		ETA:           0,
-		PaymentMethod: Payment{},
-		Rating:        0,
-		UserId:        0,
+var Ridechanel = make(chan Ride)
+
+// func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) {
+
+func AssignTrip(source, destination *maps.LatLng) {
+
+	ride := &Ride{
+		Source:      *source,
+		Destination: *destination,
 	}
-	return newTrip
+
+	// newTrip := &Trip{
+	// 	Source:        source,
+	// 	Destination:   Location{},
+	// 	Distance:      0,
+	// 	Fare:          0,
+	// 	ETA:           0,
+	// 	PaymentMethod: Payment{},
+	// 	Rating:        0,
+	// 	UserId:        0,
+	// }
+
+	Ridechanel <- *ride
+}
+
+func GetRide() Ride {
+	for {
+		ride := <-Ridechanel
+		return ride
+	}
 }
 
 func (t *Trip) TripPool() {

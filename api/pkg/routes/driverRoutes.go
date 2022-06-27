@@ -48,6 +48,6 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
 	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
 
-	driverRouter.Handle("/gettrip", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
+	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
 
 }

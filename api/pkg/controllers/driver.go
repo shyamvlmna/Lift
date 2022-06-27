@@ -33,8 +33,12 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/driver/loginpage", http.StatusSeeOther)
 			return
 		} else {
-			go auth.SetOtp(phonenumber)
+			if err := auth.SetOtp(phonenumber); err != nil {
+				fmt.Println(err)
+				return
+			}
 			http.Redirect(w, r, "/driver/enterotp", http.StatusSeeOther)
+			return
 		}
 	} else {
 		response := models.Response{
@@ -112,10 +116,21 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 
 	password := newDriver.Password
 
-	phonenumber := newDriver.PhoneNumber
+	// phonenumber := newDriver.PhoneNumber
+	phonenumber := auth.GetPhone()
 
 	//get the existing driver by phone number from the database
 	Driver := driver.GetDriver("phone_number", phonenumber)
+
+	if !Driver.Active {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "driver not active",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
 
 	//validate the entered password with stored hash password
 	if err := validPassword(password, Driver.Password); err != nil {
@@ -142,7 +157,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   0,
 		HttpOnly: true,
 	})
-	http.Redirect(w, r, "/driver/driverhome", http.StatusOK)
+	http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
 }
 
 func DriverHome(w http.ResponseWriter, r *http.Request) {
@@ -219,5 +234,7 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTrip(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	ride := models.GetRide()
+	json.NewEncoder(w).Encode(&ride)
 }

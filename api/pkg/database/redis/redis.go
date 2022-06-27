@@ -19,9 +19,9 @@ func OpenRDb() *redis.Client {
 	return rdb
 }
 
-func Set(key, value string) error{
+func Set(key, value string) error {
 	rdb := OpenRDb()
-	err := rdb.Set(context.Background(), key, value, time.Minute*5).Err()
+	err := rdb.Set(context.Background(), key, value, time.Minute*10).Err()
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -47,7 +47,7 @@ func StoreData(key string, value any) error {
 	if err != nil {
 		return err
 	}
-	err = rdb.Set(context.Background(), key, p, time.Minute*5).Err()
+	err = rdb.Set(context.Background(), key, p, time.Minute*20).Err()
 	if err != nil {
 		fmt.Println(err)
 	}

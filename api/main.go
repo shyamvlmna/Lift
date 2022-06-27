@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	go database.DBSet()
 
 	r := routes.Router()
