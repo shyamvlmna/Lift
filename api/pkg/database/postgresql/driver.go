@@ -119,9 +119,9 @@ func ActiveStatus(id uint64) error {
 func ApproveDriver(id uint64) error {
 	db := database.DriverData(database.Db)
 
-	driver := models.Driver{}
+	driver := &models.Driver{}
 
-	db.Where("DriverId=?", id).First(&driver)
+	db.Where("id=?", id).First(&driver)
 
 	if !driver.Approved {
 		driver.Approved = true

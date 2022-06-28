@@ -18,8 +18,6 @@ type User struct {
 	TripHistory []Trip     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history"`
 }
 
-// gorm:"ForeignKey:TripId;references:UserId"
-// BookedTrip  Trip        `gorm:"ForeignKey:UserId;references:TripId;embedded" json:"trip"`
 type UserWallet struct {
 	gorm.Model
 	WalletId uint64 `gorm:"primaryKey;autoIncrement;unique"`

@@ -1,9 +1,11 @@
 package trip
 
 import (
+	"time"
+
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"googlemaps.github.io/maps"
+	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
+	maps "googlemaps.github.io/maps"
 )
 
 func Fare(d int) float32 {
@@ -41,16 +43,23 @@ func CreateTrip(t *Ride) *models.Trip {
 
 }
 
-var Ridechanel = make(chan Ride, 2)
+var Ridechanel = make(chan models.Trip, 2)
 
 // func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) {
+type Trip struct {
+	Source      string        `json:"source"`
+	Destination string        `json:"destination"`
+	Distance    int           `json:"distance"`
+	Fare        int           `json:"fare"`
+	ETA         time.Duration `json:"eta"`
+}
 
 func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 
-	ride := &Ride{
-		Source:      *source,
-		Destination: *destination,
-	}
+	// ride := &Ride{
+	// 	Source:      *source,
+	// 	Destination: *destination,
+	// }
 
 	// origin := mapservice.GeoCode(&ride.Source)
 	// dest := mapservice.GeoCode(&ride.Destination)
@@ -63,15 +72,15 @@ func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 		ETA:         15,
 	}
 
-	Ridechanel <- *ride
+	Ridechanel <- *newTrip
 
 	return newTrip
 }
 
-func GetRide() Ride {
+func GetRide() models.Trip {
 	for {
-		ride := <-Ridechanel
-		return ride
+		trip := <-Ridechanel
+		return trip
 	}
 }
 

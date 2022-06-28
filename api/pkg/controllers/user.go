@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gorilla/mux"
 
-	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
@@ -181,7 +181,6 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	_, phone := auth.ParseJWT(tokenString)
 
 	user := user.GetUser("phone_number", phone)
-	user.TripHistory = *database.GetTrips(uint64(user.ID))
 	user.Token = tokenString
 	response := models.Response{
 		ResponseStatus:  "success",
@@ -254,8 +253,17 @@ func validPassword(password, hashPassword string) error {
 	return nil
 }
 
+type Ride struct {
+	Source      string        `json:"source"`
+	Destination string        `json:"destination"`
+	Fare        int           `json:"fare"`
+	ETA         time.Duration `json:"eta"`
+}
+
 //get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type","application/json")
+	
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
 
@@ -273,6 +281,13 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	ride := &Ride{
+		Source:      trip.Source,
+		Destination: trip.Destination,
+		Fare:        int(trip.Fare),
+		ETA:         trip.ETA,
+	}
+	json.NewEncoder(w).Encode(&ride)
 }
 
 func TripHistory(w http.ResponseWriter, r *http.Request) {
@@ -284,12 +299,12 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 
 	user := user.GetUser("phone_number", phone)
 
-	tipHistory := trip.GetTripHistory(user.UserId)
+	tripHistory := trip.GetTripHistory(user.UserId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched trip history",
-		ResponseData:    tipHistory,
+		ResponseData:    tripHistory,
 	}
 	json.NewEncoder(w).Encode(&response)
 }

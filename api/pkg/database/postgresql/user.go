@@ -91,7 +91,7 @@ func AppendTrip(updatedUser *models.User, trip *models.Trip) error {
 	result := db.Model(&user).Updates(&models.User{
 		TripHistory: user.TripHistory,
 	})
-	db.Save(&user)
+	// db.Save(&user)
 	return result.Error
 }
 

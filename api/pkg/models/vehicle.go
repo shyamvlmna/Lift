@@ -4,7 +4,8 @@ import "gorm.io/gorm"
 
 type Vehicle struct {
 	gorm.Model
-	Registration string `gorm:"not null;unique;primaryKey" json:"registration"`
+	// VehicleId    uint64 `gorm:"primaryKey;autoIncrement" json:"vehicleid"`
+	Registration string `gorm:"not null;unique;" json:"registration"`
 	Brand        string `gorm:"not null" json:"cabrand"`
 	Category     string `gorm:"not null" json:"cabtype"`
 	VehicleModel string `gorm:"not null" json:"cabmodel"`

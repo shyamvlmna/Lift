@@ -232,6 +232,21 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 
 func GetTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+	_, phone := auth.ParseJWT(tokenString)
+
+	driver := driver.GetDriver("phone_number", phone)
+
+	if !driver.Approved {
+		json.NewEncoder(w).Encode(&models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "not an approved driver",
+			ResponseData:    nil,
+		})
+		return
+	}
 	ride := trip.GetRide()
 	json.NewEncoder(w).Encode(&ride)
 }
