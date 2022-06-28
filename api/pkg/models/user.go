@@ -15,7 +15,7 @@ type User struct {
 	Token       string     `json:"token"`
 	Active      bool       `json:"active" gorm:"default:true"`
 	Wallet      UserWallet `gorm:"ForeignKey:UserId;references:WalletId;embedded" json:"user_wallet"`
-	TripHistory []Trip     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history"`
+	TripHistory []Ride     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history"`
 }
 
 type UserWallet struct {

@@ -49,7 +49,7 @@ func DeleteUser(id string) {
 
 }
 
-func AppendTrip(user *models.User,trip *models.Trip)error{
+func AppendTrip(user *models.User,trip *models.Ride)error{
 	return database.AppendTrip(user,trip )
 }
 

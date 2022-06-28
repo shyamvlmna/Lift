@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -11,14 +9,14 @@ import (
 
 type Trip struct {
 	gorm.Model
-	TripId        uint64        `gorm:"autoIncrement;unique;primaryKey" json:"tripid"`
-	Source        string        `json:"source" gorm:"ForeignKey:TripId;references:Id;embedded"`
-	Destination   string        `json:"destination" gorm:"ForeignKey:TripId;references:Id;embedded"`
-	Distance      uint          `gorm:"not null"`
-	Fare          uint          `gorm:"not null"`
-	ETA           time.Duration `json:"timeduration"`
-	PaymentMethod Payment       `json:"paymentmethod" gorm:"ForeignKey:TripId;references:Pid;embedded"`
-	Rating        uint          `json:"triprating"`
+	TripId        uint64  `gorm:"autoIncrement;unique;primaryKey" json:"tripid"`
+	Source        string  `json:"source" gorm:"ForeignKey:TripId;references:Id;embedded"`
+	Destination   string  `json:"destination" gorm:"ForeignKey:TripId;references:Id;embedded"`
+	Distance      uint32  `gorm:"not null"`
+	Fare          uint32  `gorm:"not null"`
+	ETA           string  `json:"timeduration"`
+	PaymentMethod Payment `json:"paymentmethod" gorm:"ForeignKey:TripId;references:Pid;embedded"`
+	Rating        uint8   `json:"triprating"`
 	UserId        uint64
 }
 
@@ -32,6 +30,17 @@ type Payment struct {
 	Pid    uint `gorm:"primaryKey"`
 	Wallet bool
 	Cash   bool
+}
+
+type Ride struct {
+	gorm.Model
+	RideId        uint64 `gorm:"autoIncrement;unique;primaryKey" json:"rideid"`
+	Source        string `json:"source"`
+	Destination   string `json:"destination"`
+	ETA           string `json:"eta"`
+	Fare          string `json:"fare"`
+	PaymentMethod string `json:"paymentmethod"`
+	UserId        uint64
 }
 
 // func (t *Trip) TripPool() {

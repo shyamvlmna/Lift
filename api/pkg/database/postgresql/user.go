@@ -79,7 +79,7 @@ func UpdateUser(updatedUser *models.User) error {
 	return result.Error
 }
 
-func AppendTrip(updatedUser *models.User, trip *models.Trip) error {
+func AppendTrip(updatedUser *models.User, trip *models.Ride) error {
 	db := database.UserData(database.Db)
 	user := &models.User{}
 	db.AutoMigrate(&user)

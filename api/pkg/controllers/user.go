@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -13,8 +13,7 @@ import (
 	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/mapservice"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
+	trip "github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
@@ -254,23 +253,9 @@ func validPassword(password, hashPassword string) error {
 	return nil
 }
 
-type Ride struct {
-	Source      string        `json:"source"`
-	Destination string        `json:"destination"`
-	Fare        int           `json:"fare"`
-	ETA         time.Duration `json:"eta"`
-}
-
 //get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	c, _ := r.Cookie("jwt-token")
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	curUser := user.GetUser("phone_number", phone)
 
 	newRide := &trip.Ride{}
 
@@ -278,17 +263,18 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 
 	trip := trip.CreateTrip(newRide)
 
-	if err := user.AppendTrip(&curUser, trip); err != nil {
-		fmt.Println(err)
-		return
-	}
-	ride := &Ride{
+	ride := &models.Ride{
 		Source:      trip.Source,
 		Destination: trip.Destination,
-		Fare:        int(trip.Fare),
+		Fare:        strconv.FormatUint(uint64(trip.Fare), 32),
 		ETA:         trip.ETA,
 	}
-	json.NewEncoder(w).Encode(&ride)
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "trip created successfully",
+		ResponseData:    ride,
+	}
+	json.NewEncoder(w).Encode(&response)
 }
 
 func TripHistory(w http.ResponseWriter, r *http.Request) {
@@ -310,9 +296,33 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&response)
 }
 
-func Test(w http.ResponseWriter, r *http.Request) {
+// func Test(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-Type", "application/json")
+// 	result := mapservice.DistanceAPI()
+// 	distance := result.Rows[0].Element[0].Distance.Text
+// 	fmt.Println(distance)
+// 	json.NewEncoder(w).Encode(&result)
+// }
+
+func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	result := mapservice.DistanceAPI()
-	fmt.Println(result.Rows[0].Element[0].Distance)
-	json.NewEncoder(w).Encode(&result)
+
+	cnftrip := &models.Ride{}
+
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	curUser := user.GetUser("phone_number", phone)
+
+	if err := user.AppendTrip(&curUser, cnftrip); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	trip.FindCab(&cnftrip)
+
+	json.NewDecoder(r.Body).Decode(&cnftrip)
+
 }
