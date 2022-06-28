@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
+	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
+	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
 )

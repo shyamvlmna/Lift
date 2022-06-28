@@ -8,11 +8,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
+	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
+	trip "github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 )
 
 //Check if the driver already exist in the system.

@@ -39,3 +39,30 @@ type Payment struct {
 // 	// Fare:     uint(fare),
 // 	// ETA:      time.Duration(eta),
 // }
+
+// {
+//     "destination_addresses": [
+//         "St John's Church, North End Rd, Fulham, London SW6 1PB, United Kingdom"
+//     ],
+//     "origin_addresses": [
+//         "Westminster Abbey, 20 Deans Yd, Westminster, London SW1P 3PA, United Kingdom"
+//     ],
+//     "rows": [
+//         {
+//             "elements": [
+//                 {
+//                     "distance": {
+//                         "text": "6.5 km",
+//                         "value": 6477
+//                     },
+//                     "duration": {
+//                         "text": "21 min",
+//                         "value": 1287
+//                     },
+//                     "status": "OK"
+//                 }
+//             ]
+//         }
+//     ],
+//     "status": "OK"
+// }

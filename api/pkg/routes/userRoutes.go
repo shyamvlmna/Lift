@@ -64,4 +64,6 @@ func UserRoutes(r *mux.Router) {
 	userRouter.Handle("/booktrip", middleware.IsAuthorized(controllers.BookTrip)).Methods("POST")
 
 	userRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.TripHistory)).Methods("GET")
+
+	userRouter.HandleFunc("/test", controllers.Test)
 }

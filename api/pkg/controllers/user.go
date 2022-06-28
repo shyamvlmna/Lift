@@ -13,6 +13,7 @@ import (
 	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/mapservice"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
@@ -262,8 +263,8 @@ type Ride struct {
 
 //get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type","application/json")
-	
+	w.Header().Set("Content-Type", "application/json")
+
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
 
@@ -307,4 +308,11 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    tripHistory,
 	}
 	json.NewEncoder(w).Encode(&response)
+}
+
+func Test(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	result := mapservice.DistanceAPI()
+	fmt.Println(result.Rows[0].Element[0].Distance)
+	json.NewEncoder(w).Encode(&result)
 }
