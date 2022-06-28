@@ -12,8 +12,8 @@ type Trip struct {
 	TripId        uint64  `gorm:"autoIncrement;unique;primaryKey" json:"tripid"`
 	Source        string  `json:"source" gorm:"ForeignKey:TripId;references:Id;embedded"`
 	Destination   string  `json:"destination" gorm:"ForeignKey:TripId;references:Id;embedded"`
-	Distance      uint32  `gorm:"not null"`
-	Fare          uint32  `gorm:"not null"`
+	Distance      uint    `gorm:"not null"`
+	Fare          uint    `gorm:"not null"`
 	ETA           string  `json:"timeduration"`
 	PaymentMethod Payment `json:"paymentmethod" gorm:"ForeignKey:TripId;references:Pid;embedded"`
 	Rating        uint8   `json:"triprating"`
@@ -38,9 +38,8 @@ type Ride struct {
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
 	ETA           string `json:"eta"`
-	Fare          string `json:"fare"`
+	Fare          uint   `json:"fare"`
 	PaymentMethod string `json:"paymentmethod"`
-	UserId        uint64
 }
 
 // func (t *Trip) TripPool() {

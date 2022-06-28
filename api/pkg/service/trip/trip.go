@@ -49,8 +49,8 @@ func CreateTrip(t *Ride) *models.Trip {
 	newTrip := &models.Trip{
 		Source:      "geocoded source",
 		Destination: "geocoded destination",
-		Distance:    uint32(distance),
-		Fare:        uint32(fare),
+		Distance:    uint(distance),
+		Fare:       uint(fare),
 		ETA:         eta,
 	}
 
@@ -178,7 +178,7 @@ func GetRide() models.Ride {
 	}
 }
 
-func GetTripHistory(id uint64) *[]models.Trip {
+func GetTripHistory(id uint64) *[]models.Ride {
 	return database.GetTrips(id)
 }
 

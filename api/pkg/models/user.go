@@ -14,16 +14,12 @@ type User struct {
 	Password    string     `gorm:"not null" json:"password"`
 	Token       string     `json:"token"`
 	Active      bool       `json:"active" gorm:"default:true"`
-	Wallet      UserWallet `gorm:"ForeignKey:UserId;references:WalletId;embedded" json:"user_wallet"`
-	TripHistory []Ride     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history"`
+	Wallet      UserWallet `gorm:"ForeignKey:WalletId;" json:"user_wallet"`
+	TripHistory []Ride     `gorm:"ForeignKey:UserId;" json:"trip_history"`
 }
 
 type UserWallet struct {
 	gorm.Model
-	WalletId uint64 `gorm:"primaryKey;autoIncrement;unique"`
+	WalletId uint64 `gorm:"primaryKey;"`
 	Balance  string
-}
-
-func AddTrip(t *Trip) {
-
 }

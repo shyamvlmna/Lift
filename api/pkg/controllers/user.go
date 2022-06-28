@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -266,7 +265,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 	ride := &models.Ride{
 		Source:      trip.Source,
 		Destination: trip.Destination,
-		Fare:        strconv.FormatUint(uint64(trip.Fare), 32),
+		Fare:        trip.Fare,
 		ETA:         trip.ETA,
 	}
 	response := &models.Response{
