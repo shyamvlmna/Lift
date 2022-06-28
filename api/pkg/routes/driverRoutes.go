@@ -1,40 +1,63 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
 func DriverRoutes(r *mux.Router) {
 	driverRouter := r.PathPrefix("/driver").Subrouter()
 
+	//check wheather phonenumber already registerd or is a new entry
 	driverRouter.HandleFunc("/auth", controllers.DriverAuth).Methods("POST")
-	driverRouter.HandleFunc("/otp", controllers.ValidateDriverOtp).Methods("POST")
-	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods("POST")
-	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
-	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods("GET")
 
-	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods("GET")
-	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
-	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
+	//insert data to the database
+	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods("POST")
 
 	//render enter otp page
 	driverRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("submit the otp"))
+		w.Header().Set("Content-Type", "application/json")
+		response := models.Response{
+			ResponseStatus:  "success",
+			ResponseMessage: "new driver",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 	}).Methods("GET")
 
-	//render signup page
-	driverRouter.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("driver signup page\n\nfirstname\nlastname\nemail\ncity\nlicence number\npassword"))
-	}).Methods("GET")
+	//validate submited otp
+	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods("POST")
 
-	//enter login page to enter password
+	//render login page to enter password since phonenumber alredy exist
 	driverRouter.HandleFunc("/loginpage", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("login page\nOnly submit the password"))
+		w.Header().Set("Content-Type", "application/json")
+		response := models.Response{
+			ResponseStatus:  "success",
+			ResponseMessage: "existing driver",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
 	}).Methods("GET")
+
+	//validate entered password with phonenumber and render home page
+	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
+
+	//remove stored cookie and remove data from redis
+	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods("GET")
+
+	//render homepage only if authorized with JWT
+	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods("GET")
+
+	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
+	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
+
+	//get ride from the channel
+	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
 
 }

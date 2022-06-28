@@ -3,6 +3,8 @@
 First project in Brocamp<br>
 Online cab booking app using Go<br>
 
+USL : Unified Signup and Login
+
 <h1>Project timeline</h1>
 
 <h2>Week 1</h2>

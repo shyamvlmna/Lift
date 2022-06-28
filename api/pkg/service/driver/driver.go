@@ -1,7 +1,10 @@
 package driver
 
 import (
+	"encoding/json"
+
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
+	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
@@ -14,7 +17,17 @@ func AddDriver(newDriver *models.Driver) error {
 //returns a driver model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the driver to search
 func GetDriver(key, value string) models.Driver {
-	driver, _ := database.FindDriver(key, value)
+
+	p, err := redis.GetData("data")
+	if err != nil {
+		driver, _ := database.FindDriver(key, value)
+		return driver
+	}
+
+	driver := models.Driver{}
+
+	json.Unmarshal([]byte(p), &driver)
+
 	return driver
 }
 
@@ -40,5 +53,3 @@ func IsDriverExists(key, value string) bool {
 	_, err := database.FindDriver(key, value)
 	return err
 }
-
-

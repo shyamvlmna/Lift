@@ -38,10 +38,10 @@ func GenerateJWT(role, usrphone string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Print(string(tokenString))
 	return tokenString, nil
 }
 
+//parse the given JWT token string and returns the role and phonenumber
 func ParseJWT(tokenString string) (string, string) {
 	claims := &Claims{}
 
@@ -62,13 +62,12 @@ func ParseJWT(tokenString string) (string, string) {
 	})
 
 	if err != nil {
-		// fmt.Fprint(w, err.Error())
 		fmt.Println(err)
 	}
 
 	if !token.Valid {
 		fmt.Println("invalid token")
-
+		return "", ""
 	}
 
 	return claims.Role, claims.Usrphone

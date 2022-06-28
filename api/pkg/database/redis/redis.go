@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -18,12 +19,14 @@ func OpenRDb() *redis.Client {
 	return rdb
 }
 
-func Set(key, value string) {
+func Set(key, value string) error {
 	rdb := OpenRDb()
-	err := rdb.Set(context.Background(), key, value, time.Minute*5).Err()
+	err := rdb.Set(context.Background(), key, value, time.Minute*10).Err()
 	if err != nil {
 		fmt.Println(err)
+		return err
 	}
+	return nil
 }
 
 func Get(key string) (string, error) {
@@ -37,3 +40,49 @@ func Get(key string) (string, error) {
 	return value, nil
 
 }
+
+func StoreData(key string, value any) error {
+	rdb := OpenRDb()
+	p, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	err = rdb.Set(context.Background(), key, p, time.Minute*20).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+	return nil
+}
+
+func GetData(key string) (string, error) {
+	rdb := OpenRDb()
+	p, err := rdb.Get(context.Background(), key).Result()
+	if err != nil {
+		fmt.Println(err)
+		return "", redis.Nil
+	}
+	return p, nil
+}
+
+func DeleteData(key string) error {
+	rdb := OpenRDb()
+	r := rdb.Del(context.Background(), key)
+
+	return r.Err()
+}
+
+// func set(c *RedisClient, key string, value interface{}) error {
+//     p, err := json.Marshal(value)
+//     if err != nil {
+//        return err
+//     }
+//     return c.Set(key, p)
+// }
+
+// func get(c *RedisClient, key string, dest interface{}) error {
+// 	p, err := c.Get(key)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return json.Unmarshal(p, dest)
+// }

@@ -5,13 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"github.com/shayamvlmna/cab-booking-app/pkg/routes"
 )
 
 func main() {
-	fmt.Println("server is up and running")
+	go database.DBSet()
 
 	r := routes.Router()
 
+	fmt.Println("server is up and running")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
