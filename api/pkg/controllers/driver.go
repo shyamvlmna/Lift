@@ -123,7 +123,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	//get the existing driver by phone number from the database
 	Driver := driver.GetDriver("phone_number", phonenumber)
 
-	if !Driver.Active {
+	if !Driver.Approved {
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "driver not active",
@@ -177,7 +177,6 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 		ResponseStatus:  "success",
 		ResponseMessage: "Driver data fetched",
 		ResponseData:    driver,
-		Token:           tokenString,
 	}
 	json.NewEncoder(w).Encode(&response)
 }
@@ -227,6 +226,8 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	vehicle := models.Vehicle{}
 	json.NewDecoder(r.Body).Decode(&vehicle)
 
+
+	
 	database.Insert(&vehicle)
 }
 

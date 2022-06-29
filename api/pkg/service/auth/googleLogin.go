@@ -47,7 +47,6 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseStatus:  "fail",
 			ResponseMessage: "states don't match",
 			ResponseData:    nil,
-			Token:           "",
 		}
 		json.NewEncoder(w).Encode(&response)
 		return

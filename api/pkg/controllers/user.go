@@ -27,13 +27,13 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&newUser)
 
-	phonenumber := newUser.PhoneNumber
+	phonenumber := newUser.Phonenumber
 
 	fmt.Println(phonenumber)
 
 	if phonenumber != "" {
 		auth.StorePhone(phonenumber)
-		if user.IsUserExists("phone_number", phonenumber) {
+		if user.IsUserExists("phonenumber", phonenumber) {
 			http.Redirect(w, r, "/user/loginpage", http.StatusSeeOther)
 			return
 		} else {
@@ -78,7 +78,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&newUser)
 	defer r.Body.Close()
 
-	newUser.PhoneNumber = auth.GetPhone()
+	newUser.Phonenumber = auth.GetPhone()
 	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	newUser.Password = string(hashPassword)
 	//create a user model with values from the fronted
@@ -126,7 +126,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	phoneNumber := auth.GetPhone()
 
 	//get the existing user by phone number from the database
-	User := user.GetUser("phone_number", phoneNumber)
+	User := user.GetUser("phonenumber", phoneNumber)
 
 	if !User.Active {
 		response := &models.Response{
@@ -179,13 +179,11 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 
 	_, phone := auth.ParseJWT(tokenString)
 
-	user := user.GetUser("phone_number", phone)
-	user.Token = tokenString
+	user := user.GetUser("phonenumber", phone)
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "user data fetched",
 		ResponseData:    user,
-		Token:           tokenString,
 	}
 	json.NewEncoder(w).Encode(&response)
 }
@@ -262,7 +260,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 
 	trip := trip.CreateTrip(newRide)
 
-	ride := &models.Ride{
+	ride := &models.Trip{
 		Source:      trip.Source,
 		Destination: trip.Destination,
 		Fare:        trip.Fare,
@@ -283,9 +281,9 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 
 	_, phone := auth.ParseJWT(tokenString)
 
-	user := user.GetUser("phone_number", phone)
+	user := user.GetUser("phonenumber", phone)
 
-	tripHistory := trip.GetTripHistory(user.UserId)
+	tripHistory := trip.GetTripHistory(user.Id)
 
 	response := &models.Response{
 		ResponseStatus:  "success",
@@ -306,22 +304,22 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	cnftrip := &models.Ride{}
+	// cnftrip := &models.Trip{}
 
-	c, _ := r.Cookie("jwt-token")
-	tokenString := c.Value
+	// c, _ := r.Cookie("jwt-token")
+	// tokenString := c.Value
 
-	_, phone := auth.ParseJWT(tokenString)
+	// _, phone := auth.ParseJWT(tokenString)
 
-	curUser := user.GetUser("phone_number", phone)
+	// curUser := user.GetUser("phone_number", phone)
 
-	if err := user.AppendTrip(&curUser, cnftrip); err != nil {
-		fmt.Println(err)
-		return
-	}
+	// // if err := user.AppendTrip(&curUser, cnftrip); err != nil {
+	// // 	fmt.Println(err)
+	// // 	return
+	// // }
 
-	trip.FindCab(&cnftrip)
+	// trip.FindCab(&cnftrip)
 
-	json.NewDecoder(r.Body).Decode(&cnftrip)
+	// json.NewDecoder(r.Body).Decode(&cnftrip)
 
 }

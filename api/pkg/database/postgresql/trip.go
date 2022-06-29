@@ -21,10 +21,10 @@ func OpenTripDb() (*gorm.DB, error) {
 	return Db, nil
 }
 
-func GetTrips(id uint64) *[]models.Ride {
+func GetTrips(id uint64) *[]models.Trip {
 
 	db, _ := OpenTripDb()
-	rides := []models.Ride{}
+	rides := []models.Trip{}
 	db.Where("user_id=?", id).Find(&rides)
 
 	return &rides

@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -28,56 +27,8 @@ func DBSet() *gorm.DB {
 		fmt.Println("failed to connect to Postgresql")
 		return nil
 	}
-
-	// admin := &models.Admin{}
-	// vehicle := &models.Vehicle{}
-	// payment := &models.Payment{}
-	// location := &models.Location{}
-	// trip := &models.Trip{}
-
-	// user := &models.User{}
-	// userwallet := &models.UserWallet{}
-	// driver := &models.Driver{}
-	// &admin, &user, &userwallet, &vehicle, &trip, &location, &location, &payment, &driver
-	// Db.AutoMigrate(&driver, &vehicle)
 	fmt.Println("successfully connected to Postgresql")
 	return Db
 }
 
 var Db *gorm.DB = DBSet()
-
-func UserData(db *gorm.DB) *gorm.DB {
-	user := &models.User{}
-	err := Db.AutoMigrate(&user)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	fmt.Println("user db opened")
-	return Db
-
-}
-func DriverData(db *gorm.DB) *gorm.DB {
-	driver := &models.Driver{}
-	err := Db.AutoMigrate(&driver)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	fmt.Println("driver db opened")
-	return Db
-}
-func TripData(db *gorm.DB, table string) *gorm.DB {
-	driver := &models.Trip{}
-	err := Db.AutoMigrate(&driver)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	fmt.Println("driver db opened")
-	return Db
-}
-
-// func VehicleData(db *gorm.DB, table string) *gorm.DB {
-
-// }

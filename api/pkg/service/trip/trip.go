@@ -50,7 +50,7 @@ func CreateTrip(t *Ride) *models.Trip {
 		Source:      "geocoded source",
 		Destination: "geocoded destination",
 		Distance:    uint(distance),
-		Fare:       uint(fare),
+		Fare:        uint(fare),
 		ETA:         eta,
 	}
 
@@ -76,7 +76,7 @@ func CreateTrip(t *Ride) *models.Trip {
 	return newTrip
 }
 
-func FindCab(ride **models.Ride) {
+func FindCab(ride **models.Trip) {
 	Ridechanel <- **ride
 }
 
@@ -137,7 +137,7 @@ func DistanceAPI(r *Ride) *Result {
 	return result
 }
 
-var Ridechanel = make(chan models.Ride)
+var Ridechanel = make(chan models.Trip)
 
 // func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) {
 type Trip struct {
@@ -171,14 +171,14 @@ func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 	return newTrip
 }
 
-func GetRide() models.Ride {
+func GetRide() models.Trip {
 	for {
 		ride := <-Ridechanel
 		return ride
 	}
 }
 
-func GetTripHistory(id uint64) *[]models.Ride {
+func GetTripHistory(id uint64) *[]models.Trip {
 	return database.GetTrips(id)
 }
 

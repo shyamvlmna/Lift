@@ -25,10 +25,16 @@ func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "created admin",
 		ResponseData:    nil,
 	})
-
 }
 
 func AdminIndex(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "admin index",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(&response)
 }
 
 func AdminLogin(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +69,7 @@ type Data struct {
 func Managedrivers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	drivers := []models.Driver{}
-	drivers = driver.GetDrivers()
+	drivers = driver.GetAllDrivers()
 	json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched drivers data",
@@ -92,14 +98,26 @@ func ApproveDriver(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&data)
 
 	id := data.Id
+	fmt.Println(id)
 
-	database.ApproveDriver(id)
+	driver.ApproveDriver(id)
 }
 
 func BlockDriver(w http.ResponseWriter, r *http.Request) {
 	data := &Data{}
 	id := data.Id
-	database.ApproveDriver(id)
+	driver.BlockDriver(id)
+
+	//RESP
+}
+
+func UnBlockDriver(w http.ResponseWriter, r *http.Request) {
+	data := &Data{}
+	id := data.Id
+	driver.UnBlockDriver(id)
+
+	//RESP
+
 }
 
 func BlockUser(w http.ResponseWriter, r *http.Request) {

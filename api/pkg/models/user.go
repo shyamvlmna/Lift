@@ -1,25 +1,96 @@
 package models
 
 import (
+	"strconv"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	UserId      uint64     `gorm:"primaryKey;unique;autoIncrement"`
-	FirstName   string     `gorm:"not null" json:"first_name"`
-	LastName    string     `json:"last_name"`
-	PhoneNumber string     `gorm:"not null;unique" json:"phone_number"`
-	Email       string     `gorm:"not null;unique" json:"email"`
-	Password    string     `gorm:"not null" json:"password"`
-	Token       string     `json:"token"`
-	Active      bool       `json:"active" gorm:"default:true"`
-	Wallet      UserWallet `gorm:"ForeignKey:WalletId;" json:"user_wallet"`
-	TripHistory []Ride     `gorm:"ForeignKey:UserId;" json:"trip_history"`
+	Id          uint64 `gorm:"primaryKey;"`
+	Phonenumber string `gorm:"not null;unique;" json:"phonenumber"`
+	Firstname   string `gorm:"not null;" json:"firstname"`
+	Lastname    string `json:"lastname"`
+	Email       string `gorm:"not null;unique;" json:"email"`
+	Password    string `gorm:"not null;" json:"password"`
+	Active      bool   `gorm:"default:true;" json:"active"`
+	Wallet      UserWallet
+	TripHistory []Trip
 }
 
-type UserWallet struct {
-	gorm.Model
-	WalletId uint64 `gorm:"primaryKey;"`
-	Balance  string
+//add new user to database
+func (u *User) Add() error {
+	db := database.Db
+	db.AutoMigrate(&User{})
+
+	result := db.Create(&u)
+	return result.Error
+}
+
+//get a user by key
+func (u *User) Get(key, value string) (User, bool) {
+	db := database.Db
+	db.AutoMigrate(&User{})
+
+	user := &User{}
+	result := db.Where(key+"=?", value).First(&user)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return *user, false
+	}
+	return *user, true
+}
+
+// get all users in the database
+func (u *User) GetAll() *[]User {
+	db := database.Db
+
+	users := &[]User{}
+	db.Find(&users)
+
+	return users
+}
+
+//update existing user by id
+func (u *User) Update() error {
+	db := database.Db
+
+	user := &User{}
+
+	id := strconv.Itoa(int(u.Id))
+
+	db.Where("user_id=?", id).First(&user)
+	user.TripHistory = append(user.TripHistory, u.TripHistory...)
+	result := db.Model(&user).Updates(&User{})
+
+	return result.Error
+}
+
+//delete user by id
+func (u *User) Delete(id uint64) error {
+	db := database.Db
+
+	result := db.Delete(&User{}, id)
+
+	return result.Error
+}
+
+//bock/unblock user by changing user active field
+func (u *User) BlockUnblock(id uint64) error {
+	db := database.Db
+	db.AutoMigrate(&User{})
+
+	user := &User{}
+
+	db.Where("id=?", id).First(&user)
+
+	if !user.Active {
+		user.Active = true
+		result := db.Save(&user)
+		return result.Error
+	}
+	user.Active = false
+	result := db.Save(&user)
+	return result.Error
 }
