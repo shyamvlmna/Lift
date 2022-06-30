@@ -60,4 +60,6 @@ func DriverRoutes(r *mux.Router) {
 	//get ride from the channel
 	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
 
+	//accept the trip and register it
+	driverRouter.Handle("/acceptrip", middleware.IsAuthorized(controllers.AcceptTrip)).Methods("POST")
 }

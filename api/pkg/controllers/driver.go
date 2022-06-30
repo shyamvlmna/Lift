@@ -157,7 +157,15 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   0,
 		HttpOnly: true,
 	})
-	http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "login success",
+		ResponseData:    token,
+	}
+
+	json.NewEncoder(w).Encode(&response)
+	// http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
 }
 
 func DriverHome(w http.ResponseWriter, r *http.Request) {
@@ -247,6 +255,40 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 	}
 	ride := trip.GetRide()
 	json.NewEncoder(w).Encode(&ride)
+}
+
+//register the trip by user id and driver id
+func AcceptTrip(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	ride := &models.Ride{}
+	json.NewDecoder(r.Body).Decode(&ride)
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	curDriver := driver.GetDriver("phone_number", phone)
+
+	ride.DriverId = curDriver.Id
+
+	if err := trip.RegisterTrip(ride); err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error registering trip",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "trip successfully registered",
+		ResponseData:    ride,
+	}
+
+	json.NewEncoder(w).Encode(&response)
 }
 
 func EndTrip(w http.ResponseWriter, r *http.Request) {

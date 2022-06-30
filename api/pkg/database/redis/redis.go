@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
 func OpenRDb() *redis.Client {
@@ -70,6 +71,29 @@ func DeleteData(key string) error {
 
 	return r.Err()
 }
+
+func  StoreTrip(key string,trip *models.Ride)error{
+	rdb := OpenRDb()
+	p, err := json.Marshal(trip)
+	if err != nil {
+		return err
+	}
+	err = rdb.Set(context.Background(), key, p, time.Minute*5).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+	return nil
+}
+func GetTrip(key string) (string, error) {
+	rdb := OpenRDb()
+	p, err := rdb.Get(context.Background(), key).Result()
+	if err != nil {
+		fmt.Println(err)
+		return "", redis.Nil
+	}
+	return p, nil
+}
+
 
 // func set(c *RedisClient, key string, value interface{}) error {
 //     p, err := json.Marshal(value)

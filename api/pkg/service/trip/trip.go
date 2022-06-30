@@ -29,7 +29,7 @@ type LatLng struct {
 	Lng float64
 }
 
-func CreateTrip(t *Ride) *models.Trip {
+func CreateTrip(t *Ride) *models.Ride {
 
 	source := t.Source
 	destination := t.Destination
@@ -44,13 +44,15 @@ func CreateTrip(t *Ride) *models.Trip {
 	result := DistanceAPI(newride)
 
 	distance := result.Rows[0].Element[0].Distance.Val
+	Kmdistance := result.Rows[0].Element[0].Distance.Text
+
 	eta := result.Rows[0].Element[0].Duration.Text
 	fare := Fare(distance)
-	newTrip := &models.Trip{
+	newTrip := &models.Ride{
 		Source:      "geocoded source",
 		Destination: "geocoded destination",
-		Distance:    distance,
-		Fare:        int(fare),
+		Distance:    Kmdistance,
+		Fare:        uint(fare),
 		ETA:         eta,
 	}
 
@@ -77,7 +79,7 @@ func CreateTrip(t *Ride) *models.Trip {
 	return newTrip
 }
 
-func FindCab(ride **models.Trip) {
+func FindCab(ride **models.Ride) {
 	Ridechanel <- **ride
 }
 
@@ -170,7 +172,7 @@ func GeoCodeApi(l LatLng) *Result {
 	return result
 }
 
-var Ridechanel = make(chan models.Trip)
+var Ridechanel = make(chan models.Ride)
 
 // func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) {
 type Trip struct {
@@ -195,8 +197,8 @@ func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 		Source:      "origin",
 		Destination: "dest",
 		// Distance:    1,
-		Fare:        100,
-		ETA:         "",
+		Fare: 100,
+		ETA:  "",
 	}
 
 	// Ridechanel <- *newTrip
@@ -204,7 +206,7 @@ func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 	return newTrip
 }
 
-func GetRide() models.Trip {
+func GetRide() models.Ride {
 	for {
 		ride := <-Ridechanel
 		return ride
@@ -213,6 +215,21 @@ func GetRide() models.Trip {
 
 func GetTripHistory(id uint64) *[]models.Trip {
 	return database.GetTrips(id)
+}
+
+func RegisterTrip(ride *models.Ride) error{
+	trip := &models.Trip{}
+
+	trip.Source = ride.Source
+	trip.Destination = ride.Destination
+	trip.Distance = ride.Distance
+	trip.Fare = ride.Fare
+	trip.ETA = ride.ETA
+	trip.PaymentMethod = ride.PaymentMethod
+	trip.DriverId = ride.DriverId
+	trip.UserId = ride.UserId
+
+	return trip.Add(trip)
 }
 
 // type Pool struct {

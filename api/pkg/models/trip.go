@@ -10,8 +10,8 @@ type Trip struct {
 	Id            uint64 `gorm:"primaryKey;" json:"tripid"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
-	Distance      int   `gorm:"not null;" json:"distance"`
-	Fare          int
+	Distance      string `gorm:"not null;" json:"distance"`
+	Fare          uint
 	ETA           string `json:"timeduration"`
 	PaymentMethod string `json:"paymentmethod"`
 	Rating        uint8  `json:"triprating"`
@@ -19,11 +19,11 @@ type Trip struct {
 	DriverId      uint64 `json:"driverid"`
 }
 
-func (t *Trip) Add() error {
+func (t *Trip) Add(trip *Trip) error {
 	db := database.Db
 	db.AutoMigrate(&Trip{})
 
-	result := db.Create(&t)
+	result := db.Create(&trip)
 	return result.Error
 }
 
@@ -35,19 +35,7 @@ func (t *Trip) Update() error {
 
 	db.Where("id=?", t.Id).First(&trip)
 
-	result := db.Model(&trip).Updates(&Trip{
-		Model:         gorm.Model{},
-		Id:            0,
-		Source:        "",
-		Destination:   "",
-		Distance:      0,
-		Fare:          0,
-		ETA:           "",
-		PaymentMethod: "",
-		Rating:        0,
-		UserId:        0,
-		DriverId:      0,
-	})
+	result := db.Model(&trip).Updates(&Trip{})
 
 	return result.Error
 }
@@ -58,11 +46,13 @@ func (t *Trip) Update() error {
 // 	Lng float64 `json:"longitude"`
 // }
 
-// type Ride struct {
-// 	RideId        uint64 `gorm:"autoIncrement;unique;primaryKey" json:"rideid"`
-// 	Source        string `json:"source"`
-// 	Destination   string `json:"destination"`
-// 	ETA           string `json:"eta"`
-// 	Fare          uint   `json:"fare"`
-// 	PaymentMethod string `json:"paymentmethod"`
-// }
+type Ride struct {
+	Source        string `json:"source"`
+	Destination   string `json:"destination"`
+	Distance      string `json:"distance"`
+	ETA           string `json:"eta"`
+	Fare          uint   `json:"fare"`
+	PaymentMethod string `json:"paymentmethod"`
+	UserId        uint64 `json:"userid"`
+	DriverId      uint64 `json:"driverid"`
+}
