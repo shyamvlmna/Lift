@@ -19,7 +19,7 @@ type Driver struct {
 	LicenceNum  string       `json:"licence"`
 	Approved    bool         `gorm:"default:false" json:"approved"`
 	Active      bool         `gorm:"default:true" json:"activestatus"`
-	Cab         Vehicle      `json:"cab"`
+	Cab         *Vehicle      `json:"cab" gorm:"embedded"`
 	Wallet      DriverWallet `json:"driverwallet"`
 	TripHistory []Trip       `json:"triphistory"`
 }
@@ -60,16 +60,21 @@ func (d *Driver) GetAll() *[]Driver {
 
 //update a driver by getting updated driver fields
 //only update the not null driver fields
-func (d *Driver) Update() error {
+func (*Driver) Update(d Driver) error {
 	db := database.Db
 
 	driver := &Driver{}
 
-	id := strconv.Itoa(int(d.ID))
+	id := strconv.Itoa(int(d.Id))
 
 	db.Where("id=?", id).First(&driver)
 
-	result := db.Model(&driver).Updates(Driver{})
+	result := db.Model(&driver).Updates(Driver{
+		Cab: d.Cab,
+	})
+
+	db.Save(&driver)
+
 	return result.Error
 }
 

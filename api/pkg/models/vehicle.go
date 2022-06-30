@@ -8,11 +8,11 @@ import (
 type Vehicle struct {
 	gorm.Model
 	VehicleId    uint64 `gorm:"primaryKey;autoIncrement;" json:"vehicleid"`
-	Registration string `gorm:"not null;unique;" json:"registration"`
-	Brand        string `gorm:"not null" json:"brand"`
-	Category     string `gorm:"not null" json:"type"`
-	VehicleModel string `gorm:"not null" json:"model"`
-	Colour       string `gorm:"not null" json:"colour"`
+	Registration string `gorm:"unique;" json:"registration"`
+	Brand        string `json:"brand"`
+	Category     string `json:"type"`
+	VehicleModel string `json:"model"`
+	Colour       string `json:"colour"`
 	DriverId     uint64
 }
 

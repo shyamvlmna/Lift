@@ -10,6 +10,7 @@ import (
 type User struct {
 	gorm.Model
 	Id          uint64 `gorm:"primaryKey;"`
+	Picture     string `json:"picture"`
 	Phonenumber string `gorm:"not null;unique;" json:"phonenumber"`
 	Firstname   string `gorm:"not null;" json:"firstname"`
 	Lastname    string `json:"lastname"`
@@ -64,11 +65,11 @@ func (u *User) Update() error {
 	db.Where("user_id=?", id).First(&user)
 	user.TripHistory = append(user.TripHistory, u.TripHistory...)
 	result := db.Model(&user).Updates(&User{Phonenumber: "",
-		Firstname:   "",
-		Lastname:    "",
-		Email:       "",
-		Password:    "",
-		Active:      false,
+		Firstname: "",
+		Lastname:  "",
+		Email:     "",
+		Password:  "",
+		Active:    false,
 	})
 
 	return result.Error

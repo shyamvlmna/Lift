@@ -3,11 +3,45 @@ package user
 import (
 	"encoding/json"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
 
 var u = &models.User{}
+
+func RegisterUser(newUser *models.User) error {
+
+	newUser.Phonenumber = auth.GetPhone()
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	newUser.Password = string(hashPassword)
+
+	if err := AddUser(newUser); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GoogleAuthUser(user *models.User) {
+
+	// usr,ok:=u.Get("email", user.Email)
+
+	// if!ok{
+	// 	http.newr
+	// }
+
+}
+
+func GoogleSignupUser() {
+
+}
+
+func GoogleLoginUser() {
+
+}
 
 //return boolean to check if the user exist or not
 func IsUserExists(key, value string) bool {
@@ -24,14 +58,14 @@ func AddUser(newUser *models.User) error {
 
 //returns a user model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the user to search
-func GetUser(key, value string) models.User {
+func GetUser(key, value string) *models.User {
 	p, err := redis.GetData("data")
 	if err != nil {
 		user, _ := u.Get(key, value)
-		return user
+		return &user
 	}
 
-	user := models.User{}
+	user := &models.User{}
 
 	json.Unmarshal([]byte(p), &user)
 
@@ -53,8 +87,6 @@ func UpdateUser(user *models.User) error {
 func DeleteUser(id uint64) {
 	u.Delete(id)
 }
-
-
 
 // func AppendTrip(user *models.User, trip *models.Trip) error {
 // 	return database.AppendTrip(user, trip)

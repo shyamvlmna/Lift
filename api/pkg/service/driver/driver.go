@@ -23,15 +23,15 @@ func AddDriver(newDriver *models.Driver) error {
 
 //returns a driver model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the driver to search
-func GetDriver(key, value string) models.Driver {
+func GetDriver(key, value string) *models.Driver {
 
 	p, err := redis.GetData("data")
 	if err != nil {
 		driver, _ := d.Get(key, value)
-		return driver
+		return &driver
 	}
 
-	driver := models.Driver{}
+	driver := &models.Driver{}
 
 	json.Unmarshal([]byte(p), &driver)
 
@@ -46,8 +46,8 @@ func GetAllDrivers() []models.Driver {
 
 //update the driver by accepting the updated driver fields
 //only update fields with null values
-func UpdateDriver(driver *models.Driver) {
-	driver.Update()
+func UpdateDriver(driver models.Driver) {
+	d.Update(driver)
 }
 
 //delete driver from the database by the id

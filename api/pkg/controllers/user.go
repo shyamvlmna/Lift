@@ -78,15 +78,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&newUser)
 	defer r.Body.Close()
 
-	newUser.Phonenumber = auth.GetPhone()
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
-	newUser.Password = string(hashPassword)
-	//create a user model with values from the fronted
-
-	//pass the newly created user model to user services
-	//to insert the new user to the database
-	//after successful signup login the user and open user home
-	if err := user.AddUser(&newUser); err != nil {
+	if err := user.RegisterUser(&newUser); err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		response := &models.Response{

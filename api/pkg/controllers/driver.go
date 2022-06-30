@@ -29,7 +29,7 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 
 	if phonenumber != "" {
 		auth.StorePhone(phonenumber)
-		if driver.IsDriverExists("phone_number", phonenumber) {
+		if driver.IsDriverExists("phonenumber", phonenumber) {
 			http.Redirect(w, r, "/driver/loginpage", http.StatusSeeOther)
 			return
 		} else {
@@ -179,11 +179,29 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(role, phone)
 	driver := driver.GetDriver("phone_number", phone)
+	cab := &models.CabData{
+		VehicleId:    driver.Cab.VehicleId,
+		Registration: driver.Cab.Registration,
+		Brand:        driver.Cab.Brand,
+		Category:     driver.Cab.Category,
+		VehicleModel: driver.Cab.VehicleModel,
+		Colour:       driver.Cab.Colour,
+	}
+	driverData := &models.DriverData{
+		Id:          driver.Id,
+		Phonenumber: driver.PhoneNumber,
+		Firstname:   driver.FirstName,
+		Lastname:    driver.LastName,
+		Email:       driver.Email,
+		City:        driver.City,
+		LicenceNum:  driver.LicenceNum,
+		Cab:         cab,
+	}
 
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "Driver data fetched",
-		ResponseData:    driver,
+		ResponseData:    &driverData,
 	}
 	json.NewEncoder(w).Encode(&response)
 }
@@ -230,10 +248,17 @@ func RegisterDriver(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddCab(w http.ResponseWriter, r *http.Request) {
-	vehicle := models.Vehicle{}
+	vehicle := &models.Vehicle{}
 	json.NewDecoder(r.Body).Decode(&vehicle)
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+	_, phone := auth.ParseJWT(tokenString)
 
-	vehicle.Add()
+	driver := driver.GetDriver("phone_number", phone)
+	vehicle.DriverId = driver.Id
+	driver.Cab = vehicle
+
+	driver.Update(*driver)
 }
 
 func GetTrip(w http.ResponseWriter, r *http.Request) {

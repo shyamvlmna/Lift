@@ -9,7 +9,7 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	googleauth "github.com/shayamvlmna/cab-booking-app/pkg/service/googleAuth"
 )
 
 func UserRoutes(r *mux.Router) {
@@ -21,11 +21,10 @@ func UserRoutes(r *mux.Router) {
 	//check wheather phonenumber already registerd or is a new entry
 	userRouter.HandleFunc("/auth", controllers.UserAuth).Methods("POST")
 
-	//insert data to the database
 	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods("POST")
 	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
-	userRouter.HandleFunc("/googlelogin", auth.GoogleLogin)
-	userRouter.HandleFunc("/googleCallback", auth.GoogleCallback)
+	userRouter.HandleFunc("/googlelogin", googleauth.GoogleLogin)
+	userRouter.HandleFunc("/googleCallback", googleauth.GoogleCallback)
 	userRouter.HandleFunc("/logout", controllers.UserLogout)
 
 	//render enter otp page
