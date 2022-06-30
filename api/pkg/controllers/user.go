@@ -180,10 +180,17 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	_, phone := auth.ParseJWT(tokenString)
 
 	user := user.GetUser("phonenumber", phone)
+	userData := &models.UserData{
+		Id:          user.Id,
+		Phonenumber: user.Phonenumber,
+		Firstname:   user.Firstname,
+		Lastname:    user.Lastname,
+		Email:       user.Email,
+	}
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "user data fetched",
-		ResponseData:    user,
+		ResponseData:    userData,
 	}
 	json.NewEncoder(w).Encode(&response)
 }
@@ -263,13 +270,14 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 	ride := &models.Trip{
 		Source:      trip.Source,
 		Destination: trip.Destination,
+		Distance:    trip.Distance,
 		Fare:        trip.Fare,
 		ETA:         trip.ETA,
 	}
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "trip created successfully",
-		ResponseData:    ride,
+		ResponseData:    &ride,
 	}
 	json.NewEncoder(w).Encode(&response)
 }
@@ -304,7 +312,8 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// cnftrip := &models.Trip{}
+	cnftrip := &models.Trip{}
+	json.NewDecoder(r.Body).Decode(&cnftrip)
 
 	// c, _ := r.Cookie("jwt-token")
 	// tokenString := c.Value
@@ -313,13 +322,17 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 
 	// curUser := user.GetUser("phone_number", phone)
 
-	// // if err := user.AppendTrip(&curUser, cnftrip); err != nil {
-	// // 	fmt.Println(err)
-	// // 	return
-	// // }
+	// if err := user.AppendTrip(&curUser, cnftrip); err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
-	// trip.FindCab(&cnftrip)
+	go trip.FindCab(&cnftrip)
 
-	// json.NewDecoder(r.Body).Decode(&cnftrip)
+	json.NewEncoder(w).Encode(&models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "waiting to accept ride",
+		ResponseData:    cnftrip,
+	})
 
 }

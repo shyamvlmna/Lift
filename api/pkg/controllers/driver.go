@@ -7,7 +7,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
 	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
@@ -226,9 +225,7 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	vehicle := models.Vehicle{}
 	json.NewDecoder(r.Body).Decode(&vehicle)
 
-
-	
-	database.Insert(&vehicle)
+	vehicle.Add()
 }
 
 func GetTrip(w http.ResponseWriter, r *http.Request) {

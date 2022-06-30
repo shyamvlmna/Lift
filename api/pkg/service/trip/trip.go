@@ -49,11 +49,12 @@ func CreateTrip(t *Ride) *models.Trip {
 	newTrip := &models.Trip{
 		Source:      "geocoded source",
 		Destination: "geocoded destination",
-		Distance:    uint(distance),
-		Fare:        uint(fare),
+		Distance:    distance,
+		Fare:        int(fare),
 		ETA:         eta,
 	}
 
+	fmt.Println(newTrip.Distance)
 	// source := &maps.LatLng{
 	// 	Lat: t.Source.Lat,
 	// 	Lng: t.Source.Lng,
@@ -137,6 +138,38 @@ func DistanceAPI(r *Ride) *Result {
 	return result
 }
 
+func GeoCodeApi(l LatLng) *Result {
+
+	lat := strconv.FormatFloat(l.Lat, 'f', -1, 64)
+	lng := strconv.FormatFloat(l.Lng, 'f', -1, 64)
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/geocode/json?latlng=%s,%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj"+lat, lng)
+	method := "GET"
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+
+	fmt.Println(string(body))
+	result := &Result{}
+	json.Unmarshal([]byte(body), &result)
+	return result
+}
+
 var Ridechanel = make(chan models.Trip)
 
 // func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) {
@@ -161,7 +194,7 @@ func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 	newTrip := &models.Trip{
 		Source:      "origin",
 		Destination: "dest",
-		Distance:    1,
+		// Distance:    1,
 		Fare:        100,
 		ETA:         "",
 	}

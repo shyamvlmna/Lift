@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
@@ -12,17 +13,19 @@ import (
 
 func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqToken := r.Header.Get("Authorization")
 
-		c, err := r.Cookie("jwt-token")
+		// c, err := r.Cookie("jwt-token")
 
-		if err == nil {
-
+		if reqToken != "" {
+			splitToken := strings.Split(reqToken, "Bearer ")
+			tokenString := splitToken[1]
 			godotenv.Load()
 			key := []byte(os.Getenv("SECRET_KEY"))
 
 			claims := &auth.Claims{}
 
-			token, err := jwt.ParseWithClaims(c.Value, claims, func(token *jwt.Token) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return "", fmt.Errorf(("invalid signing method"))

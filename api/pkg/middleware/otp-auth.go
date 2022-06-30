@@ -17,6 +17,7 @@ type Otp struct {
 
 func ValidateOtp(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		otp := &Otp{}
 		json.NewDecoder(r.Body).Decode(&otp)
 		OTP := otp.Otp

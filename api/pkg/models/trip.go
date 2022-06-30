@@ -10,13 +10,13 @@ type Trip struct {
 	Id            uint64 `gorm:"primaryKey;" json:"tripid"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
-	Distance      uint   `gorm:"not null;"`
-	Fare          uint   `gorm:"not null;"`
+	Distance      int   `gorm:"not null;" json:"distance"`
+	Fare          int
 	ETA           string `json:"timeduration"`
 	PaymentMethod string `json:"paymentmethod"`
 	Rating        uint8  `json:"triprating"`
-	UserId        uint64
-	DriverId      uint64
+	UserId        uint64 `json:"userid"`
+	DriverId      uint64 `json:"driverid"`
 }
 
 func (t *Trip) Add() error {
@@ -24,6 +24,31 @@ func (t *Trip) Add() error {
 	db.AutoMigrate(&Trip{})
 
 	result := db.Create(&t)
+	return result.Error
+}
+
+func (t *Trip) Update() error {
+	db := database.Db
+	db.AutoMigrate(&Trip{})
+
+	trip := &Trip{}
+
+	db.Where("id=?", t.Id).First(&trip)
+
+	result := db.Model(&trip).Updates(&Trip{
+		Model:         gorm.Model{},
+		Id:            0,
+		Source:        "",
+		Destination:   "",
+		Distance:      0,
+		Fare:          0,
+		ETA:           "",
+		PaymentMethod: "",
+		Rating:        0,
+		UserId:        0,
+		DriverId:      0,
+	})
+
 	return result.Error
 }
 
