@@ -78,20 +78,26 @@ func StoreTrip(key string, trip *models.Ride) error {
 	if err != nil {
 		return err
 	}
-	err = rdb.Set(context.Background(), key, p, time.Minute*5).Err()
+	err = rdb.Set(context.Background(), key, p, 0).Err()
 	if err != nil {
 		fmt.Println(err)
 	}
 	return nil
 }
-func GetTrip(key string) (string, error) {
+func GetTrip(key string) (*models.Ride, error) {
 	rdb := OpenRDb()
 	p, err := rdb.Get(context.Background(), key).Result()
 	if err != nil {
 		fmt.Println(err)
-		return "", redis.Nil
+		return nil, redis.Nil
 	}
-	return p, nil
+	ride := &models.Ride{}
+	err = json.Unmarshal([]byte(p), &ride)
+	if err != nil {
+		return nil, err
+	}
+
+	return ride, nil
 }
 
 // func set(c *RedisClient, key string, value interface{}) error {

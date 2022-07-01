@@ -9,14 +9,14 @@ import (
 
 type User struct {
 	gorm.Model
-	Id          uint64     `gorm:"primaryKey;"`
+	Id          uint64     `gorm:"primaryKey;" json:"id"`
 	Picture     string     `json:"picture"`
 	Phonenumber string     `gorm:"not null;unique;" json:"phonenumber"`
 	Firstname   string     `gorm:"not null;" json:"firstname"`
 	Lastname    string     `json:"lastname"`
 	Email       string     `gorm:"not null;unique;" json:"email"`
 	Password    string     `gorm:"not null;" json:"password"`
-	Active      bool       `gorm:"default:true;" json:"active"`
+	Active      bool       `gorm:"default:true;" json:"status"`
 	Wallet      UserWallet `json:"userwallet"`
 	TripHistory []Trip     `json:"trip_history"`
 	Rating      int        `gorm:"default:0" json:"user_rating"`

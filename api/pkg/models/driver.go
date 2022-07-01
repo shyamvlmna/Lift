@@ -9,7 +9,7 @@ import (
 
 type Driver struct {
 	gorm.Model
-	Id          uint64       `gorm:"primaryKey;"`
+	Id          uint64       `gorm:"primaryKey;" json:"id"`
 	PhoneNumber string       `gorm:"not null;unique" json:"phonenumber"`
 	FirstName   string       `gorm:"not null" json:"firstname"`
 	LastName    string       `json:"lastname"`
@@ -18,17 +18,20 @@ type Driver struct {
 	City        string       `json:"city"`
 	LicenceNum  string       `json:"licence"`
 	Approved    bool         `gorm:"default:false" json:"approved"`
-	Active      bool         `gorm:"default:true" json:"activestatus"`
+	Active      bool         `gorm:"default:true" json:"status"`
 	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
 	Wallet      DriverWallet `json:"driverwallet"`
 	TripHistory []Trip       `json:"triphistory"`
 	Rating      int          `gorm:"default:0" json:"driver_rating"`
 }
 
-//add new driver to database
+// Add new driver to database
 func (d *Driver) Add() error {
 	db := database.Db
-	db.AutoMigrate(&Driver{})
+	err := db.AutoMigrate(&Driver{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Create(&d)
 	return result.Error
@@ -36,8 +39,12 @@ func (d *Driver) Add() error {
 
 //get driver by key
 func (d *Driver) Get(key, value string) (Driver, bool) {
-
 	db := database.Db
+
+	err := db.AutoMigrate(&Driver{})
+	if err != nil {
+		return Driver{}, false
+	}
 
 	driver := &Driver{}
 	result := db.Where(key+"=?", value).First(&driver)

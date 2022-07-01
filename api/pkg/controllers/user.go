@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gorilla/mux"
-
-	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
-	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
-	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	trip "github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
-	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
+	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
 // UserAuth Check if the user already exist in the system.
@@ -31,8 +31,6 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	phonenumber := newUser.Phonenumber
-
-	fmt.Println(phonenumber)
 
 	if phonenumber != "" {
 		auth.StorePhone(phonenumber)
@@ -78,11 +76,16 @@ func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 func UserLoginPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	phonenumber := auth.GetPhone()
+
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "existing user",
-		ResponseData:    user.GetUser("phonenumber", auth.GetPhone()).Firstname,
+		ResponseData:    user.GetUser("phonenumber", phonenumber).Firstname,
 	}
+
+	auth.StorePhone(phonenumber)
+
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
@@ -120,7 +123,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := &models.Response{
-		ResponseStatus:  "succes",
+		ResponseStatus:  "success",
 		ResponseMessage: "signup success",
 		ResponseData:    nil,
 	}
@@ -183,6 +186,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	token, err := auth.GenerateJWT("user", phoneNumber)
 	if err != nil {
 		fmt.Println("jwt failed", err)
@@ -228,6 +232,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	_, phone := auth.ParseJWT(tokenString)
 
 	user := user.GetUser("phonenumber", phone)
+
 	userData := &models.UserData{
 		Id:          user.Id,
 		Phonenumber: user.Phonenumber,
@@ -235,11 +240,13 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 		Lastname:    user.Lastname,
 		Email:       user.Email,
 	}
+
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "user data fetched",
 		ResponseData:    userData,
 	}
+
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
@@ -267,11 +274,13 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 	c.Path = "/"
 	c.MaxAge = -1
 	http.SetCookie(w, c)
+
 	response := &models.Response{
 		ResponseStatus:  "succes",
 		ResponseMessage: "logout success",
 		ResponseData:    nil,
 	}
+
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
@@ -347,16 +356,13 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    &ride,
 	}
 
-	err = redis.StoreTrip("trip", newTrip)
-	if err != nil {
-		return
-	}
-
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
 }
+
+var OTPchan = make(chan int)
 
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -374,22 +380,23 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 
 	curUser := user.GetUser("phone_number", phone)
 
-	// if err := user.AppendTrip(&curUser, cnftrip); err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
 	cnftrip.UserId = curUser.Id
 	go trip.FindCab(&cnftrip)
 
+	otp, err := auth.TripCode()
+	Tripcode, err := strconv.Atoi(otp)
+
+	go func() {
+		OTPchan <- Tripcode
+	}()
 	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "waiting to accept ride",
-		ResponseData:    cnftrip,
+		ResponseData:    otp,
 	})
 	if err != nil {
 		return
 	}
-
 }
 
 func TripHistory(w http.ResponseWriter, r *http.Request) {

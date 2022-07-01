@@ -10,7 +10,7 @@ type Trip struct {
 	Id            uint64 `gorm:"primaryKey;" json:"tripid"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
-	Distance      string `gorm:"not null;" json:"distance"`
+	Distance      string `json:"distance"`
 	Fare          uint   `json:"fare"`
 	ETA           string `json:"timeduration"`
 	PaymentMethod string `json:"paymentmethod"`

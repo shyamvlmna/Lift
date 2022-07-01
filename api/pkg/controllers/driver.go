@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"golang.org/x/crypto/bcrypt"
+	"strconv"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
@@ -55,7 +54,6 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
 }
 
 func DriverSignUpPage(w http.ResponseWriter, _ *http.Request) {
@@ -74,11 +72,16 @@ func DriverSignUpPage(w http.ResponseWriter, _ *http.Request) {
 func DriverLoginPage(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	phonenumber := auth.GetPhone()
+
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "existing driver",
-		ResponseData:    driver.GetDriver("phone_number", auth.GetPhone()).FirstName,
+		ResponseData:    driver.GetDriver("phone_number", phonenumber).FirstName,
 	}
+
+	auth.StorePhone(phonenumber)
+
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
@@ -100,15 +103,7 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	newDriver.PhoneNumber = auth.GetPhone()
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newDriver.Password), bcrypt.DefaultCost)
-	newDriver.Password = string(hashPassword)
-	//create a driver model with values from the fronted
-
-	//pass the newly created driver model to driver services
-	//to insert the new driver to the database
-	//after successful signup login the driver and open driver home
-	if err := driver.AddDriver(&newDriver); err != nil {
+	if err := driver.RegisterDriver(&newDriver); err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		response := &models.Response{
@@ -152,10 +147,24 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	password := newDriver.Password
 
 	// phonenumber := newDriver.PhoneNumber
+
 	phonenumber := auth.GetPhone()
 
 	//get the existing driver by phone number from the database
 	Driver := driver.GetDriver("phone_number", phonenumber)
+
+	if !Driver.Active {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "driver not active",
+			ResponseData:    nil,
+		}
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
+		return
+	}
 
 	//validate the entered password with stored hash password
 	if err := validPassword(password, Driver.Password); err != nil {
@@ -177,10 +186,12 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("jwt failed", err)
 	}
+
 	err = redis.StoreData("data", Driver)
 	if err != nil {
 		return
 	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt-token",
 		Value:    token,
@@ -199,9 +210,13 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+
 	// http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
 }
 
+// DriverHome get the logged-in driver data from redis
+//if err get from the primary database
+//render the driver home page
 func DriverHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
@@ -209,10 +224,10 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
 
-	role, phone := auth.ParseJWT(tokenString)
+	_, phone := auth.ParseJWT(tokenString)
 
-	fmt.Println(role, phone)
 	driver := driver.GetDriver("phone_number", phone)
+
 	cab := &models.CabData{
 		VehicleId:    driver.Cab.VehicleId,
 		Registration: driver.Cab.Registration,
@@ -221,6 +236,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 		VehicleModel: driver.Cab.VehicleModel,
 		Colour:       driver.Cab.Colour,
 	}
+
 	driverData := &models.DriverData{
 		Id:          driver.Id,
 		Phonenumber: driver.PhoneNumber,
@@ -237,14 +253,16 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "Driver data fetched",
 		ResponseData:    &driverData,
 	}
+
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
 }
 
+// DriverLogout delete the stored driver data from redis
+//also expire the cookie stored
 func DriverLogout(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
@@ -269,11 +287,12 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "logout success",
 		ResponseData:    nil,
 	}
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
+
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
+	// http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
@@ -374,12 +393,60 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    ride,
 	}
 
+	driverId := strconv.Itoa(int(curDriver.Id))
+	if err := redis.StoreTrip("trip-"+driverId, ride); err != nil {
+		return
+	}
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
 }
 
+type otp struct {
+	TripCode int `json:"tripcode"`
+}
+
+//MatchTripCode match the trip code from user
+func MatchTripCode(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	code := &otp{}
+
+	json.NewDecoder(r.Body).Decode(&code)
+
+	tripCode := <-OTPchan
+
+	if code.TripCode == tripCode {
+		http.Redirect(w, r, "/startTrip", http.StatusSeeOther)
+		return
+	}
+	response := &models.Response{
+		ResponseStatus:  "failed",
+		ResponseMessage: "trip code doesn't match",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(&response)
+}
+
+func StartTrip(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c, _ := r.Cookie("jwt-token")
+	_, phone := auth.ParseJWT(c.Value)
+	curDriver := driver.GetDriver("phone_number", phone)
+
+	driverID := strconv.Itoa(int(curDriver.Id))
+
+	ride, err := redis.GetTrip("trip" + driverID)
+	if err != nil {
+		//	TODO
+	}
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "start trip",
+		ResponseData:    ride,
+	}
+	json.NewEncoder(w).Encode(&response)
+}
 func EndTrip(w http.ResponseWriter, r *http.Request) {
 
 }

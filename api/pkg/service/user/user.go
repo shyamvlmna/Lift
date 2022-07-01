@@ -21,7 +21,7 @@ func RegisterUser(newUser *models.User) error {
 	if err := AddUser(newUser); err != nil {
 		return err
 	}
-
+	auth.StorePhone(newUser.Phonenumber)
 	return nil
 }
 

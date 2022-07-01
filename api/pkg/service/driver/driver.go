@@ -2,6 +2,8 @@ package driver
 
 import (
 	"encoding/json"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
@@ -9,19 +11,31 @@ import (
 
 var d = &models.Driver{}
 
-//return boolean to check if the driver exist or not
+func RegisterDriver(newDriver *models.Driver) error {
+	newDriver.PhoneNumber = auth.GetPhone()
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(newDriver.Password), bcrypt.DefaultCost)
+	newDriver.Password = string(hashPassword)
+
+	if err := AddDriver(newDriver); err != nil {
+		return err
+	}
+	auth.StorePhone(newDriver.PhoneNumber)
+	return nil
+}
+
+// IsDriverExists return boolean to check if the driver exist or not
 func IsDriverExists(key, value string) bool {
 	_, err := d.Get(key, value)
 	return err
 }
 
-//accepts druver models and pass to the user database to insert
+// AddDriver accepts druver models and pass to the user database to insert
 //retun error if any
 func AddDriver(newDriver *models.Driver) error {
 	return newDriver.Add()
 }
 
-//returns a driver model by accepting a key and a value
+// GetDriver returns a driver model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the driver to search
 func GetDriver(key, value string) *models.Driver {
 
@@ -38,13 +52,13 @@ func GetDriver(key, value string) *models.Driver {
 	return driver
 }
 
-//return all drivers in the database
+// GetAllDrivers return all drivers in the database
 func GetAllDrivers() []models.Driver {
 
 	return *d.GetAll()
 }
 
-//update the driver by accepting the updated driver fields
+// UpdateDriver update the driver by accepting the updated driver fields
 //only update fields with null values
 func UpdateDriver(driver models.Driver) {
 	d.Update(driver)

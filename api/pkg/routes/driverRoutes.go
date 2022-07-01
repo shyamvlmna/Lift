@@ -54,4 +54,9 @@ func DriverRoutes(r *mux.Router) {
 
 	//accept the trip and register it
 	driverRouter.Handle("/acceptrip", middleware.IsAuthorized(controllers.AcceptTrip)).Methods("POST")
+
+	driverRouter.Handle("/matchtripcode", middleware.IsAuthorized(controllers.MatchTripCode)).Methods("POST")
+
+	driverRouter.Handle("/startrip", middleware.IsAuthorized(controllers.StartTrip)).Methods("GET")
+
 }

@@ -36,6 +36,18 @@ func SetOtp(phone string) error {
 	return nil
 }
 
+func TripCode() (string, error) {
+	otp, err := GenerateOTP()
+	if err != nil {
+		return "", err
+	}
+	if err := redis.Set("tripcode", otp); err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return otp, nil
+}
+
 //ValidateOTP returns an error if the otp doesn't belong to the given number
 func ValidateOTP(phone, otp string) error {
 	value, err := redis.Get(phone)
@@ -46,6 +58,7 @@ func ValidateOTP(phone, otp string) error {
 	if value != otp {
 		return errors.New("invalid otp")
 	}
+	redis.DeleteData(phone)
 	return nil
 }
 
