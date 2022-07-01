@@ -18,7 +18,7 @@ type User struct {
 	Password    string     `gorm:"not null;" json:"password"`
 	Active      bool       `gorm:"default:true;" json:"status"`
 	Wallet      UserWallet `json:"userwallet"`
-	TripHistory []Trip     `json:"trip_history"`
+	TripHistory []Trip     `json:"trip_history" gorm:"foreignKey:UserId"`
 	Rating      int        `gorm:"default:0" json:"user_rating"`
 }
 

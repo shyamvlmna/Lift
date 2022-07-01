@@ -7,7 +7,7 @@ import (
 
 type Trip struct {
 	gorm.Model
-	Id            uint64 `gorm:"primaryKey;" json:"tripid"`
+	TripId        uint64 `gorm:"primaryKey;autoIncrement" json:"tripid"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
 	Distance      string `json:"distance"`
@@ -39,7 +39,7 @@ func (t *Trip) Update() error {
 
 	trip := &Trip{}
 
-	db.Where("id=?", t.Id).First(&trip)
+	db.Where("id=?", t.TripId).First(&trip)
 
 	result := db.Model(&trip).Updates(&Trip{})
 

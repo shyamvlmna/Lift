@@ -21,7 +21,7 @@ type Driver struct {
 	Active      bool         `gorm:"default:true" json:"status"`
 	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
 	Wallet      DriverWallet `json:"driverwallet"`
-	TripHistory []Trip       `json:"triphistory"`
+	TripHistory []Trip       `json:"trip_history" gorm:"foreignKey:DriverId;"`
 	Rating      int          `gorm:"default:0" json:"driver_rating"`
 }
 
