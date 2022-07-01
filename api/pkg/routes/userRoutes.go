@@ -43,15 +43,7 @@ func UserRoutes(r *mux.Router) {
 	userRouter.Handle("/otp", middleware.ValidateOtp(controllers.UserSignupPage)).Methods("POST")
 
 	//render login page to enter password
-	userRouter.HandleFunc("/loginpage", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "existing user",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
-	}).Methods("GET")
+	userRouter.HandleFunc("/loginpage", controllers.UserLoginPage).Methods("GET")
 
 	//render the homepage only if authorized with JWT
 	userRouter.Handle("/userhome", middleware.IsAuthorized(controllers.UserHome)).Methods("GET")

@@ -10,7 +10,7 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 )
 
-//generate and return a 4 digit random otp using crypto/rand
+// GenerateOTP generate and return a 4 digit random otp using crypto/rand
 //return error if any
 func GenerateOTP() (string, error) {
 	nBig, e := rand.Int(rand.Reader, big.NewInt(8999))
@@ -20,17 +20,17 @@ func GenerateOTP() (string, error) {
 	return strconv.FormatInt(nBig.Int64()+1000, 10), nil
 }
 
-//create and assign a secret otp for the given number
+// SetOtp create and assign a secret otp for the given number
 func SetOtp(phone string) error {
 	otp, err := GenerateOTP()
 	if err != nil {
 		return err
 	}
-	if err:=redis.Set(phone, otp);err!=nil{ 
+	if err := redis.Set(phone, otp); err != nil {
 		fmt.Println(err)
 		return err
 	}
-//TODO : send otp to the number
+	//TODO : send otp to the number
 
 	fmt.Printf("user signup otp for %s :%s", phone, otp)
 	return nil
@@ -52,7 +52,13 @@ func ValidateOTP(phone, otp string) error {
 func StorePhone(phone string) {
 	redis.Set("phone", phone)
 }
+
 func GetPhone() string {
 	phone, _ := redis.Get("phone")
+
+	err := redis.DeleteData("phone")
+	if err != nil {
+		return ""
+	}
 	return phone
 }

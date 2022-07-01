@@ -7,14 +7,14 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	redis "github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
-	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
-	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
-	trip "github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
+	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 )
 
-//Check if the driver already exist in the system.
+// DriverAuth Check if the driver already exist in the system.
 //Redirect to the driver login page if driver exists.
 //Redirect to the driver signup page if driver is new.
 func DriverAuth(w http.ResponseWriter, r *http.Request) {
@@ -23,13 +23,16 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 
 	newDriver := &models.Driver{}
 
-	json.NewDecoder(r.Body).Decode(&newDriver)
+	err := json.NewDecoder(r.Body).Decode(&newDriver)
+	if err != nil {
+		return
+	}
 
 	phonenumber := newDriver.PhoneNumber
 
 	if phonenumber != "" {
 		auth.StorePhone(phonenumber)
-		if driver.IsDriverExists("phonenumber", phonenumber) {
+		if driver.IsDriverExists("phone_number", phonenumber) {
 			http.Redirect(w, r, "/driver/loginpage", http.StatusSeeOther)
 			return
 		} else {
@@ -46,23 +49,43 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "phonenumber required",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 
 }
 
-func DriverSignUpPage(w http.ResponseWriter, r *http.Request) {
+func DriverSignUpPage(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "submit driver data",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
-//Create a driver model with values from the fronted.
+func DriverLoginPage(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "existing driver",
+		ResponseData:    driver.GetDriver("phone_number", auth.GetPhone()).FirstName,
+	}
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+}
+
+// DriverSignUp Create a driver model with values from the fronted.
 //Pass the newly created driver model to driver services
 //to insert the new driver to the database.
 //Login the driver and open driver home after successful signup.
@@ -71,7 +94,10 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newDriver := models.Driver{}
-	json.NewDecoder(r.Body).Decode(&newDriver)
+	err := json.NewDecoder(r.Body).Decode(&newDriver)
+	if err != nil {
+		return
+	}
 	defer r.Body.Close()
 
 	newDriver.PhoneNumber = auth.GetPhone()
@@ -90,7 +116,10 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "signup failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 	response := &models.Response{
@@ -98,10 +127,13 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "signup sucess",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
-//get the existing driver by phone number from the database.
+// DriverLogin get the existing driver by phone number from the database.
 //Validate the entered password with stored hash password.
 //Generate a JWT token for the driver after successful login.
 //Store the JWT token in the cookie
@@ -111,7 +143,10 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 
 	newDriver := &models.Driver{}
 
-	json.NewDecoder(r.Body).Decode(&newDriver)
+	err := json.NewDecoder(r.Body).Decode(&newDriver)
+	if err != nil {
+		return
+	}
 	defer r.Body.Close()
 
 	password := newDriver.Password
@@ -122,16 +157,6 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	//get the existing driver by phone number from the database
 	Driver := driver.GetDriver("phone_number", phonenumber)
 
-	if !Driver.Approved {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "driver not active",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
-		return
-	}
-
 	//validate the entered password with stored hash password
 	if err := validPassword(password, Driver.Password); err != nil {
 		fmt.Println(err)
@@ -141,7 +166,10 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "password authentication failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -149,7 +177,10 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("jwt failed", err)
 	}
-	redis.StoreData("data", Driver)
+	err = redis.StoreData("data", Driver)
+	if err != nil {
+		return
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt-token",
 		Value:    token,
@@ -164,7 +195,10 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    token,
 	}
 
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 	// http.Redirect(w, r, "/driver/driverhome", http.StatusSeeOther)
 }
 
@@ -203,7 +237,10 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "Driver data fetched",
 		ResponseData:    &driverData,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func DriverLogout(w http.ResponseWriter, r *http.Request) {
@@ -217,7 +254,10 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redis.DeleteData("data")
+	err = redis.DeleteData("data")
+	if err != nil {
+		return
+	}
 
 	c.Value = ""
 	c.Path = "/"
@@ -230,7 +270,10 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    nil,
 	}
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
@@ -247,9 +290,12 @@ func RegisterDriver(w http.ResponseWriter, r *http.Request) {
 	// dlNumber := r.FormValue("driving_licence")
 }
 
-func AddCab(w http.ResponseWriter, r *http.Request) {
+func AddCab(_ http.ResponseWriter, r *http.Request) {
 	vehicle := &models.Vehicle{}
-	json.NewDecoder(r.Body).Decode(&vehicle)
+	err := json.NewDecoder(r.Body).Decode(&vehicle)
+	if err != nil {
+		return
+	}
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
 	_, phone := auth.ParseJWT(tokenString)
@@ -258,7 +304,10 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	vehicle.DriverId = driver.Id
 	driver.Cab = vehicle
 
-	driver.Update(*driver)
+	err = driver.Update(*driver)
+	if err != nil {
+		return
+	}
 }
 
 func GetTrip(w http.ResponseWriter, r *http.Request) {
@@ -271,23 +320,32 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 	driver := driver.GetDriver("phone_number", phone)
 
 	if !driver.Approved {
-		json.NewEncoder(w).Encode(&models.Response{
+		err := json.NewEncoder(w).Encode(&models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "not an approved driver",
 			ResponseData:    nil,
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 	ride := trip.GetRide()
-	json.NewEncoder(w).Encode(&ride)
+	err := json.NewEncoder(w).Encode(&ride)
+	if err != nil {
+		return
+	}
 }
 
-//register the trip by user id and driver id
+// AcceptTrip register the trip by user id and driver id
 func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	ride := &models.Ride{}
-	json.NewDecoder(r.Body).Decode(&ride)
+	err := json.NewDecoder(r.Body).Decode(&ride)
+	if err != nil {
+		return
+	}
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
 
@@ -303,7 +361,10 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "error registering trip",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -313,7 +374,10 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    ride,
 	}
 
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func EndTrip(w http.ResponseWriter, r *http.Request) {

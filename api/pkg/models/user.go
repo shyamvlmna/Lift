@@ -9,22 +9,26 @@ import (
 
 type User struct {
 	gorm.Model
-	Id          uint64 `gorm:"primaryKey;"`
-	Picture     string `json:"picture"`
-	Phonenumber string `gorm:"not null;unique;" json:"phonenumber"`
-	Firstname   string `gorm:"not null;" json:"firstname"`
-	Lastname    string `json:"lastname"`
-	Email       string `gorm:"not null;unique;" json:"email"`
-	Password    string `gorm:"not null;" json:"password"`
-	Active      bool   `gorm:"default:true;" json:"active"`
-	Wallet      UserWallet
-	TripHistory []Trip
+	Id          uint64     `gorm:"primaryKey;"`
+	Picture     string     `json:"picture"`
+	Phonenumber string     `gorm:"not null;unique;" json:"phonenumber"`
+	Firstname   string     `gorm:"not null;" json:"firstname"`
+	Lastname    string     `json:"lastname"`
+	Email       string     `gorm:"not null;unique;" json:"email"`
+	Password    string     `gorm:"not null;" json:"password"`
+	Active      bool       `gorm:"default:true;" json:"active"`
+	Wallet      UserWallet `json:"userwallet"`
+	TripHistory []Trip     `json:"trip_history"`
+	Rating      int        `gorm:"default:0" json:"user_rating"`
 }
 
 //add new user to database
 func (u *User) Add() error {
 	db := database.Db
-	db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Create(&u)
 	return result.Error
@@ -33,7 +37,10 @@ func (u *User) Add() error {
 //get a user by key
 func (u *User) Get(key, value string) (User, bool) {
 	db := database.Db
-	db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		return User{}, false
+	}
 
 	user := &User{}
 	result := db.Where(key+"=?", value).First(&user)
@@ -44,7 +51,7 @@ func (u *User) Get(key, value string) (User, bool) {
 	return *user, true
 }
 
-// get all users in the database
+// GetAll users in the database
 func (u *User) GetAll() *[]User {
 	db := database.Db
 
@@ -54,7 +61,7 @@ func (u *User) GetAll() *[]User {
 	return users
 }
 
-//update existing user by id
+// Update existing user by id
 func (u *User) Update() error {
 	db := database.Db
 
@@ -75,7 +82,7 @@ func (u *User) Update() error {
 	return result.Error
 }
 
-//delete user by id
+// Delete user by id
 func (u *User) Delete(id uint64) error {
 	db := database.Db
 
@@ -84,10 +91,13 @@ func (u *User) Delete(id uint64) error {
 	return result.Error
 }
 
-//bock/unblock user by changing user active field
+// BlockUnblock user by changing user active field
 func (u *User) BlockUnblock(id uint64) error {
 	db := database.Db
-	db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		return err
+	}
 
 	user := &User{}
 

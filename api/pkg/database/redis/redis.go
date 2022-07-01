@@ -72,7 +72,7 @@ func DeleteData(key string) error {
 	return r.Err()
 }
 
-func  StoreTrip(key string,trip *models.Ride)error{
+func StoreTrip(key string, trip *models.Ride) error {
 	rdb := OpenRDb()
 	p, err := json.Marshal(trip)
 	if err != nil {
@@ -93,7 +93,6 @@ func GetTrip(key string) (string, error) {
 	}
 	return p, nil
 }
-
 
 // func set(c *RedisClient, key string, value interface{}) error {
 //     p, err := json.Marshal(value)

@@ -17,10 +17,13 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-//create jwt token with claims: role,phonenumber
+// GenerateJWT create jwt token with claims: role,phonenumber
 func GenerateJWT(role, usrphone string) (string, error) {
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		return "", err
+	}
 	key := []byte(os.Getenv("SECRET_KEY"))
 
 	claims := Claims{
@@ -41,21 +44,24 @@ func GenerateJWT(role, usrphone string) (string, error) {
 	return tokenString, nil
 }
 
-//parse the given JWT token string and returns the role and phonenumber
+// ParseJWT parse the given JWT token string and returns the role and phonenumber
 func ParseJWT(tokenString string) (string, string) {
 	claims := &Claims{}
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		return "", ""
+	}
 	key := []byte(os.Getenv("SECRET_KEY"))
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return "", fmt.Errorf(("invalid signing method"))
+			return "", fmt.Errorf("invalid signing method")
 		}
 
 		if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-			return "", fmt.Errorf(("expired token"))
+			return "", fmt.Errorf("expired token")
 		}
 
 		return key, nil

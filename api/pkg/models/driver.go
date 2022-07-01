@@ -19,9 +19,10 @@ type Driver struct {
 	LicenceNum  string       `json:"licence"`
 	Approved    bool         `gorm:"default:false" json:"approved"`
 	Active      bool         `gorm:"default:true" json:"activestatus"`
-	Cab         *Vehicle      `json:"cab" gorm:"embedded"`
+	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
 	Wallet      DriverWallet `json:"driverwallet"`
 	TripHistory []Trip       `json:"triphistory"`
+	Rating      int          `gorm:"default:0" json:"driver_rating"`
 }
 
 //add new driver to database

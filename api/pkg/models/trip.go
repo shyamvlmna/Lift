@@ -11,17 +11,20 @@ type Trip struct {
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
 	Distance      string `gorm:"not null;" json:"distance"`
-	Fare          uint
+	Fare          uint   `json:"fare"`
 	ETA           string `json:"timeduration"`
 	PaymentMethod string `json:"paymentmethod"`
-	Rating        uint8  `json:"triprating"`
 	UserId        uint64 `json:"userid"`
 	DriverId      uint64 `json:"driverid"`
+	Rating        uint8  `json:"triprating"`
 }
 
 func (t *Trip) Add(trip *Trip) error {
 	db := database.Db
-	db.AutoMigrate(&Trip{})
+	err := db.AutoMigrate(&Trip{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Create(&trip)
 	return result.Error
@@ -29,7 +32,10 @@ func (t *Trip) Add(trip *Trip) error {
 
 func (t *Trip) Update() error {
 	db := database.Db
-	db.AutoMigrate(&Trip{})
+	err := db.AutoMigrate(&Trip{})
+	if err != nil {
+		return err
+	}
 
 	trip := &Trip{}
 
@@ -55,4 +61,5 @@ type Ride struct {
 	PaymentMethod string `json:"paymentmethod"`
 	UserId        uint64 `json:"userid"`
 	DriverId      uint64 `json:"driverid"`
+	Rating        int    `json:"rating"`
 }

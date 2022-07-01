@@ -16,7 +16,7 @@ import (
 	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
-//Check if the user already exist in the system.
+// UserAuth Check if the user already exist in the system.
 //Redirect to the user login page if user exists.
 //Redirect to the user signup page if user is new.
 func UserAuth(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,10 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 
 	newUser := &models.User{}
 
-	json.NewDecoder(r.Body).Decode(&newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		return
+	}
 
 	phonenumber := newUser.Phonenumber
 
@@ -50,12 +53,15 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "phonenumber required",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 }
 
-//render the signup page to submit the details of the new user
+// UserSignupPage render the signup page to submit the details of the new user
 func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := &models.Response{
@@ -63,10 +69,27 @@ func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "submit user data",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
-//Create a user model with values from the fronted.
+func UserLoginPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "existing user",
+		ResponseData:    user.GetUser("phonenumber", auth.GetPhone()).Firstname,
+	}
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+}
+
+// UserSignUp Create a user model with values from the fronted.
 //Pass the newly created user model to user services
 //to insert the new user to the database.
 //Login the user and open user home after successful signup.
@@ -75,7 +98,10 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newUser := models.User{}
-	json.NewDecoder(r.Body).Decode(&newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		return
+	}
 	defer r.Body.Close()
 
 	if err := user.RegisterUser(&newUser); err != nil {
@@ -86,7 +112,10 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "signup failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -95,10 +124,13 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "signup success",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
-//get the existing user by phone number from the database.
+// UserLogin get the existing user by phone number from the database.
 //Validate the entered password with stored hash password.
 //Generate a JWT token for the user after successful login.
 //Store the JWT token in the http only cookie
@@ -108,7 +140,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	newUser := &models.User{}
 
-	json.NewDecoder(r.Body).Decode(&newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		return
+	}
 	defer r.Body.Close()
 
 	password := newUser.Password
@@ -126,7 +161,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "user not active",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -139,7 +177,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "password authentication failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 	token, err := auth.GenerateJWT("user", phoneNumber)
@@ -147,7 +188,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("jwt failed", err)
 	}
 
-	redis.StoreData("data", User)
+	err = redis.StoreData("data", User)
+	if err != nil {
+		return
+	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt-token",
@@ -163,12 +207,15 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    token,
 	}
 
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 
 	// http.Redirect(w, r, "/user/userhome", http.StatusSeeOther)
 }
 
-//get the logged in user data from redis
+// UserHome get the logged-in user data from redis
 //if err get from the primary database
 //render the user home page
 func UserHome(w http.ResponseWriter, r *http.Request) {
@@ -193,10 +240,13 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "user data fetched",
 		ResponseData:    userData,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
-//delete the stored user data from redis
+// UserLogout delete the stored user data from redis
 //also expire the cookie stored
 func UserLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
@@ -208,7 +258,10 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redis.DeleteData("data")
+	err = redis.DeleteData("data")
+	if err != nil {
+		return
+	}
 
 	c.Value = ""
 	c.Path = "/"
@@ -219,7 +272,10 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "logout success",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -229,16 +285,22 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	id := params["id"]
 	user := user.GetUser("id", id)
 
-	json.NewEncoder(w).Encode(&user)
+	err := json.NewEncoder(w).Encode(&user)
+	if err != nil {
+		return
+	}
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
 	newUser := models.User{}
-	json.NewDecoder(r.Body).Decode(&newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		return
+	}
 
-	err := user.UpdateUser(&newUser)
+	err = user.UpdateUser(&newUser)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -258,22 +320,25 @@ func validPassword(password, hashPassword string) error {
 	return nil
 }
 
-//get the pickup point and destination from the booktrip call from the user
+// BookTrip get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newRide := &trip.Ride{}
 
-	json.NewDecoder(r.Body).Decode(&newRide)
+	err := json.NewDecoder(r.Body).Decode(&newRide)
+	if err != nil {
+		return
+	}
 
-	trip := trip.CreateTrip(newRide)
+	newTrip := trip.CreateTrip(newRide)
 
 	ride := &models.Ride{
-		Source:        trip.Source,
-		Destination:   trip.Destination,
-		Distance:      trip.Distance,
-		ETA:           trip.ETA,
-		Fare:          trip.Fare,
+		Source:        newTrip.Source,
+		Destination:   newTrip.Destination,
+		Distance:      newTrip.Distance,
+		ETA:           newTrip.ETA,
+		Fare:          newTrip.Fare,
 		PaymentMethod: "",
 	}
 	response := &models.Response{
@@ -282,16 +347,25 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    &ride,
 	}
 
-	redis.StoreTrip("trip", trip)
+	err = redis.StoreTrip("trip", newTrip)
+	if err != nil {
+		return
+	}
 
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	cnftrip := &models.Ride{}
-	json.NewDecoder(r.Body).Decode(&cnftrip)
+	err := json.NewDecoder(r.Body).Decode(&cnftrip)
+	if err != nil {
+		return
+	}
 
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
@@ -307,11 +381,14 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	cnftrip.UserId = curUser.Id
 	go trip.FindCab(&cnftrip)
 
-	json.NewEncoder(w).Encode(&models.Response{
+	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "waiting to accept ride",
 		ResponseData:    cnftrip,
 	})
+	if err != nil {
+		return
+	}
 
 }
 
@@ -331,5 +408,8 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "fetched trip history",
 		ResponseData:    tripHistory,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
