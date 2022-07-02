@@ -213,11 +213,11 @@ func GetRide() models.Ride {
 	}
 }
 
-func GetTripHistory(id uint64) *[]models.Trip {
-	return database.GetTrips(id)
+func GetTripHistory(role string, id uint64) *[]models.Trip {
+	return database.GetTrips(role, id)
 }
 
-func RegisterTrip(ride *models.Ride) error{
+func RegisterTrip(ride *models.Ride) error {
 	trip := &models.Trip{}
 
 	trip.Source = ride.Source
@@ -226,8 +226,8 @@ func RegisterTrip(ride *models.Ride) error{
 	trip.Fare = ride.Fare
 	trip.ETA = ride.ETA
 	trip.PaymentMethod = ride.PaymentMethod
-	trip.DriverId = ride.DriverId
-	trip.UserId = ride.UserId
+	trip.DrvrId = ride.DriverId
+	trip.UsrId = ride.UserId
 
 	return trip.Add(trip)
 }

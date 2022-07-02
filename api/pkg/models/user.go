@@ -9,7 +9,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Id          uint64     `gorm:"primaryKey;" json:"id"`
+	UserId      uint64     `gorm:"primaryKey;autoIncrement;unique" json:"userid"`
 	Picture     string     `json:"picture"`
 	Phonenumber string     `gorm:"not null;unique;" json:"phonenumber"`
 	Firstname   string     `gorm:"not null;" json:"firstname"`
@@ -17,8 +17,7 @@ type User struct {
 	Email       string     `gorm:"not null;unique;" json:"email"`
 	Password    string     `gorm:"not null;" json:"password"`
 	Active      bool       `gorm:"default:true;" json:"status"`
-	Wallet      UserWallet `json:"userwallet"`
-	TripHistory []Trip     `json:"trip_history" gorm:"foreignKey:UserId"`
+	Wallet      UserWallet `json:"userwallet" gorm:"foreignKey:UserId;"`
 	Rating      int        `gorm:"default:0" json:"user_rating"`
 }
 
@@ -67,10 +66,10 @@ func (u *User) Update() error {
 
 	user := &User{}
 
-	id := strconv.Itoa(int(u.Id))
+	id := strconv.Itoa(int(u.UserId))
 
 	db.Where("user_id=?", id).First(&user)
-	user.TripHistory = append(user.TripHistory, u.TripHistory...)
+
 	result := db.Model(&user).Updates(&User{Phonenumber: "",
 		Firstname: "",
 		Lastname:  "",

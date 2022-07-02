@@ -238,7 +238,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	driverData := &models.DriverData{
-		Id:          driver.Id,
+		Id:          driver.DriverId,
 		Phonenumber: driver.PhoneNumber,
 		Firstname:   driver.FirstName,
 		Lastname:    driver.LastName,
@@ -320,7 +320,7 @@ func AddCab(_ http.ResponseWriter, r *http.Request) {
 	_, phone := auth.ParseJWT(tokenString)
 
 	driver := driver.GetDriver("phone_number", phone)
-	vehicle.DriverId = driver.Id
+	vehicle.DriverId = driver.DriverId
 	driver.Cab = vehicle
 
 	err = driver.Update(*driver)
@@ -329,6 +329,7 @@ func AddCab(_ http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//GetTrip returns the available trips booked by the users
 func GetTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -372,7 +373,7 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 
 	curDriver := driver.GetDriver("phone_number", phone)
 
-	ride.DriverId = curDriver.Id
+	ride.DriverId = curDriver.DriverId
 
 	if err := trip.RegisterTrip(ride); err != nil {
 		response := &models.Response{
@@ -380,8 +381,7 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "error registering trip",
 			ResponseData:    nil,
 		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
 			return
 		}
 		return
@@ -393,12 +393,17 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    ride,
 	}
 
-	driverId := strconv.Itoa(int(curDriver.Id))
-	if err := redis.StoreTrip("trip-"+driverId, ride); err != nil {
+	otp, _ := auth.TripCode()
+
+	if err = redis.Set("tripcode-"+strconv.Itoa(int(ride.DriverId))+strconv.Itoa(int(ride.UserId)), otp); err != nil {
 		return
 	}
-	err = json.NewEncoder(w).Encode(&response)
-	if err != nil {
+
+	if err := redis.StoreTrip("trip-"+strconv.Itoa(int(curDriver.DriverId)), ride); err != nil {
+		return
+	}
+
+	if err = json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
 }
@@ -412,12 +417,25 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	code := &otp{}
 
-	json.NewDecoder(r.Body).Decode(&code)
+	err := json.NewDecoder(r.Body).Decode(&code)
+	if err != nil {
+		return
+	}
+	c, _ := r.Cookie("jwt-token")
+	_, phone := auth.ParseJWT(c.Value)
+	driver := driver.GetDriver("phone_number", phone)
 
-	tripCode := <-OTPchan
+	ride, err := redis.GetTrip("trip-" + strconv.Itoa(int(driver.DriverId)))
+	if err != nil {
+		//	TODO
+	}
 
-	if code.TripCode == tripCode {
-		http.Redirect(w, r, "/startTrip", http.StatusSeeOther)
+	tripCode, _ := redis.Get("tripcode-" + strconv.Itoa(int(ride.DriverId)) + strconv.Itoa(int(ride.UserId)))
+
+	matchCode, _ := strconv.Atoi(tripCode)
+	fmt.Println(tripCode)
+	if code.TripCode == matchCode {
+		http.Redirect(w, r, "/driver/startrip", http.StatusSeeOther)
 		return
 	}
 	response := &models.Response{
@@ -425,7 +443,10 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "trip code doesn't match",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func StartTrip(w http.ResponseWriter, r *http.Request) {
@@ -434,9 +455,9 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 	_, phone := auth.ParseJWT(c.Value)
 	curDriver := driver.GetDriver("phone_number", phone)
 
-	driverID := strconv.Itoa(int(curDriver.Id))
+	driverID := strconv.Itoa(int(curDriver.DriverId))
 
-	ride, err := redis.GetTrip("trip" + driverID)
+	ride, err := redis.GetTrip("trip-" + driverID)
 	if err != nil {
 		//	TODO
 	}
@@ -445,8 +466,33 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "start trip",
 		ResponseData:    ride,
 	}
-	json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 func EndTrip(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c, _ := r.Cookie("jwt-token")
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	driver := driver.GetDriver("phone_number", phone)
+
+	tripHistory := trip.GetTripHistory("driver_id", driver.DriverId)
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "fetched trip history",
+		ResponseData:    tripHistory,
+	}
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }

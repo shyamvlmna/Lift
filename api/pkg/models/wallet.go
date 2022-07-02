@@ -1,13 +1,13 @@
 package models
 
 type UserWallet struct {
-	Id      uint64 `gorm:"primaryKey;"`
-	Balance uint
-	UserId  uint64
+	WalletId uint64 `gorm:"primaryKey;"`
+	Balance  uint
+	UserId   uint64
 }
 
 type DriverWallet struct {
-	Id       uint64 `gorm:"primaryKey;"`
+	WalletId uint64 `gorm:"primaryKey;"`
 	Balance  uint
 	DriverId uint64
 }

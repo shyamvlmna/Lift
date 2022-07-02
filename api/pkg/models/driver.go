@@ -9,7 +9,7 @@ import (
 
 type Driver struct {
 	gorm.Model
-	Id          uint64       `gorm:"primaryKey;" json:"id"`
+	DriverId    uint64       `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
 	PhoneNumber string       `gorm:"not null;unique" json:"phonenumber"`
 	FirstName   string       `gorm:"not null" json:"firstname"`
 	LastName    string       `json:"lastname"`
@@ -20,8 +20,7 @@ type Driver struct {
 	Approved    bool         `gorm:"default:false" json:"approved"`
 	Active      bool         `gorm:"default:true" json:"status"`
 	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
-	Wallet      DriverWallet `json:"driverwallet"`
-	TripHistory []Trip       `json:"trip_history" gorm:"foreignKey:DriverId;"`
+	Wallet      DriverWallet `json:"driverwallet" gorm:"foreignKey:DriverId"`
 	Rating      int          `gorm:"default:0" json:"driver_rating"`
 }
 
@@ -73,7 +72,7 @@ func (*Driver) Update(d Driver) error {
 
 	driver := &Driver{}
 
-	id := strconv.Itoa(int(d.Id))
+	id := strconv.Itoa(int(d.DriverId))
 
 	db.Where("id=?", id).First(&driver)
 

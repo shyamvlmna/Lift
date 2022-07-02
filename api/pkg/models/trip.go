@@ -7,15 +7,15 @@ import (
 
 type Trip struct {
 	gorm.Model
-	TripId        uint64 `gorm:"primaryKey;autoIncrement" json:"tripid"`
+	Id            uint64 `gorm:"primaryKey;autoIncrement" json:"tripid"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
 	Distance      string `json:"distance"`
 	Fare          uint   `json:"fare"`
 	ETA           string `json:"timeduration"`
 	PaymentMethod string `json:"paymentmethod"`
-	UserId        uint64 `json:"userid"`
-	DriverId      uint64 `json:"driverid"`
+	UsrId         uint64 `json:"userid"`
+	DrvrId        uint64 `json:"driverid"`
 	Rating        uint8  `json:"triprating"`
 }
 
@@ -39,7 +39,7 @@ func (t *Trip) Update() error {
 
 	trip := &Trip{}
 
-	db.Where("id=?", t.TripId).First(&trip)
+	db.Where("id=?", t.Id).First(&trip)
 
 	result := db.Model(&trip).Updates(&Trip{})
 

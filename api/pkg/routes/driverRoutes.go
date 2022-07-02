@@ -59,4 +59,5 @@ func DriverRoutes(r *mux.Router) {
 
 	driverRouter.Handle("/startrip", middleware.IsAuthorized(controllers.StartTrip)).Methods("GET")
 
+	driverRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.DriverTripHistory)).Methods("GET")
 }

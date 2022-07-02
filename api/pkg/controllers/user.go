@@ -3,10 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strconv"
-
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
@@ -234,7 +232,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	user := user.GetUser("phonenumber", phone)
 
 	userData := &models.UserData{
-		Id:          user.Id,
+		Id:          user.UserId,
 		Phonenumber: user.Phonenumber,
 		Firstname:   user.Firstname,
 		Lastname:    user.Lastname,
@@ -364,6 +362,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 
 var OTPchan = make(chan int)
 
+//ConfirmTrip returns the trip code to match with the driver to start the ride
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -380,26 +379,26 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 
 	curUser := user.GetUser("phone_number", phone)
 
-	cnftrip.UserId = curUser.Id
+	cnftrip.UserId = curUser.UserId
 	go trip.FindCab(&cnftrip)
 
-	otp, err := auth.TripCode()
-	Tripcode, err := strconv.Atoi(otp)
+	//otp, err := auth.TripCode()
+	//Tripcode, err := strconv.Atoi(otp)
 
-	go func() {
-		OTPchan <- Tripcode
-	}()
+	//redis.Set("tripcode"+strconv.Itoa(int(curUser.Id)), otp)
+
 	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "waiting to accept ride",
-		ResponseData:    otp,
+		ResponseData:    nil,
 	})
 	if err != nil {
 		return
 	}
 }
 
-func TripHistory(w http.ResponseWriter, r *http.Request) {
+//TripHistory returns saved trips for the user
+func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c, _ := r.Cookie("jwt-token")
 	tokenString := c.Value
@@ -408,7 +407,7 @@ func TripHistory(w http.ResponseWriter, r *http.Request) {
 
 	user := user.GetUser("phonenumber", phone)
 
-	tripHistory := trip.GetTripHistory(user.Id)
+	tripHistory := trip.GetTripHistory("user_id", user.UserId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",
