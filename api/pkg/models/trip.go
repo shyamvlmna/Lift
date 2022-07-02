@@ -7,7 +7,7 @@ import (
 
 type Trip struct {
 	gorm.Model
-	Id            uint64 `gorm:"primaryKey;autoIncrement" json:"tripid"`
+	Id            uint64 `gorm:"primaryKey;autoIncrement;unique" json:"tripid"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
 	Distance      string `json:"distance"`

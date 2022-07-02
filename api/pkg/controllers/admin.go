@@ -63,7 +63,7 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 type Data struct {
-	Id uint64 `json:"id"`
+	Id uint64 `json:"driver_id"`
 }
 
 func Managedrivers(w http.ResponseWriter, r *http.Request) {

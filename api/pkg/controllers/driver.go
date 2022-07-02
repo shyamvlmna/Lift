@@ -431,8 +431,10 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tripCode, _ := redis.Get("tripcode-" + strconv.Itoa(int(ride.DriverId)) + strconv.Itoa(int(ride.UserId)))
+	fmt.Println(tripCode)
 
 	matchCode, _ := strconv.Atoi(tripCode)
+	fmt.Println(matchCode)
 	fmt.Println(tripCode)
 	if code.TripCode == matchCode {
 		http.Redirect(w, r, "/driver/startrip", http.StatusSeeOther)
@@ -484,7 +486,7 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 
 	driver := driver.GetDriver("phone_number", phone)
 
-	tripHistory := trip.GetTripHistory("driver_id", driver.DriverId)
+	tripHistory := trip.GetTripHistory("drvr_id", driver.DriverId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",

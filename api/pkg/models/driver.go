@@ -17,11 +17,11 @@ type Driver struct {
 	Password    string       `gorm:"not null" json:"password"`
 	City        string       `json:"city"`
 	LicenceNum  string       `json:"licence"`
+	Rating      int          `gorm:"default:0" json:"driver_rating"`
 	Approved    bool         `gorm:"default:false" json:"approved"`
 	Active      bool         `gorm:"default:true" json:"status"`
 	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
 	Wallet      DriverWallet `json:"driverwallet" gorm:"foreignKey:DriverId"`
-	Rating      int          `gorm:"default:0" json:"driver_rating"`
 }
 
 // Add new driver to database
@@ -100,7 +100,7 @@ func (d *Driver) BlockUnblock(id uint64) error {
 
 	driver := &Driver{}
 
-	db.Where("id=?", id).First(&driver)
+	db.Where("driver_id=?", id).First(&driver)
 
 	// if !driver.Approved {
 	// 	return errors.New("accesDenied")

@@ -16,9 +16,9 @@ type User struct {
 	Lastname    string     `json:"lastname"`
 	Email       string     `gorm:"not null;unique;" json:"email"`
 	Password    string     `gorm:"not null;" json:"password"`
+	Rating      int        `gorm:"default:0" json:"user_rating"`
 	Active      bool       `gorm:"default:true;" json:"status"`
 	Wallet      UserWallet `json:"userwallet" gorm:"foreignKey:UserId;"`
-	Rating      int        `gorm:"default:0" json:"user_rating"`
 }
 
 //add new user to database
