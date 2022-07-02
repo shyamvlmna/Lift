@@ -226,8 +226,8 @@ func RegisterTrip(ride *models.Ride) error {
 	trip.Fare = ride.Fare
 	trip.ETA = ride.ETA
 	trip.PaymentMethod = ride.PaymentMethod
-	trip.DrvrId = ride.DriverId
-	trip.UsrId = ride.UserId
+	trip.DriverId = ride.DriverId
+	trip.UserId = ride.UserId
 
 	return trip.Add(trip)
 }

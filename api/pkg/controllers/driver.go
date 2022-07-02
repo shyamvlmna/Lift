@@ -486,7 +486,7 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 
 	driver := driver.GetDriver("phone_number", phone)
 
-	tripHistory := trip.GetTripHistory("drvr_id", driver.DriverId)
+	tripHistory := trip.GetTripHistory("driver_id", driver.DriverId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",

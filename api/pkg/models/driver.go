@@ -21,7 +21,7 @@ type Driver struct {
 	Approved    bool         `gorm:"default:false" json:"approved"`
 	Active      bool         `gorm:"default:true" json:"status"`
 	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
-	Wallet      DriverWallet `json:"driverwallet" gorm:"foreignKey:DriverId"`
+	Wallet      DriverWallet `json:"driverwallet"  gorm:"foreignKey:DriverId"`
 }
 
 // Add new driver to database

@@ -407,7 +407,7 @@ func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 
 	user := user.GetUser("phonenumber", phone)
 
-	tripHistory := trip.GetTripHistory("usr_id", user.UserId)
+	tripHistory := trip.GetTripHistory("user_id", user.UserId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",

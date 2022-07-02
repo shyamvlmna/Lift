@@ -2,14 +2,14 @@ package models
 
 type UserWallet struct {
 	WalletId uint64 `gorm:"primaryKey;"`
+	UserId   uint64 `gorm:"foreignKey"`
 	Balance  uint
-	UserId   uint64
 }
 
 type DriverWallet struct {
 	WalletId uint64 `gorm:"primaryKey;"`
-	Balance  uint
-	DriverId uint64
+	DriverId uint64 `json:"driverid"`
+	Balance  uint   `json:"balance"`
 }
 
 //incase of array field
