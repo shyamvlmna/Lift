@@ -35,15 +35,7 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods("POST")
 
 	//render login page to enter password since phonenumber alredy exist
-	driverRouter.HandleFunc("/loginpage", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "existing driver",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
-	}).Methods("GET")
+	driverRouter.HandleFunc("/loginpage", controllers.DriverLoginPage).Methods("GET")
 
 	//validate entered password with phonenumber and render home page
 	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
@@ -60,4 +52,12 @@ func DriverRoutes(r *mux.Router) {
 	//get ride from the channel
 	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
 
+	//accept the trip and register it
+	driverRouter.Handle("/acceptrip", middleware.IsAuthorized(controllers.AcceptTrip)).Methods("POST")
+
+	driverRouter.Handle("/matchtripcode", middleware.IsAuthorized(controllers.MatchTripCode)).Methods("POST")
+
+	driverRouter.Handle("/startrip", middleware.IsAuthorized(controllers.StartTrip)).Methods("GET")
+
+	driverRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.DriverTripHistory)).Methods("GET")
 }

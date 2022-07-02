@@ -1,6 +1,11 @@
 package trip
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 	"time"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
@@ -15,21 +20,52 @@ func Fare(d int) float32 {
 }
 
 type Ride struct {
-	Source      maps.LatLng `json:"source"`
-	Destination maps.LatLng `json:"destination"`
+	Source      LatLng `json:"source"`
+	Destination LatLng `json:"destination"`
 }
 
-func CreateTrip(t *Ride) *models.Trip {
+type LatLng struct {
+	Lat float64
+	Lng float64
+}
 
-	source := &maps.LatLng{
-		Lat: t.Source.Lat,
-		Lng: t.Source.Lng,
+func CreateTrip(t *Ride) *models.Ride {
+
+	source := t.Source
+	destination := t.Destination
+
+	newride := &Ride{
+		Source:      source,
+		Destination: destination,
 	}
 
-	destination := &maps.LatLng{
-		Lat: t.Destination.Lat,
-		Lng: t.Destination.Lng,
+	// TODO: geocode the source and destination
+
+	result := DistanceAPI(newride)
+
+	distance := result.Rows[0].Element[0].Distance.Val
+	Kmdistance := result.Rows[0].Element[0].Distance.Text
+
+	eta := result.Rows[0].Element[0].Duration.Text
+	fare := Fare(distance)
+	newTrip := &models.Ride{
+		Source:      "geocoded source",
+		Destination: "geocoded destination",
+		Distance:    Kmdistance,
+		Fare:        uint(fare),
+		ETA:         eta,
 	}
+
+	fmt.Println(newTrip.Distance)
+	// source := &maps.LatLng{
+	// 	Lat: t.Source.Lat,
+	// 	Lng: t.Source.Lng,
+	// }
+
+	// destination := &maps.LatLng{
+	// 	Lat: t.Destination.Lat,
+	// 	Lng: t.Destination.Lng,
+	// }
 
 	//TODO :
 	//complete the distance matrix api part
@@ -39,11 +75,104 @@ func CreateTrip(t *Ride) *models.Trip {
 	// fare := Fare(distance)
 	// AssignTrip(source, destination, distance, eta, fare)
 
-	return AssignTrip(source, destination)
-
+	// return AssignTrip(source, destination)
+	return newTrip
 }
 
-var Ridechanel = make(chan models.Trip, 2)
+func FindCab(ride **models.Ride) {
+	Ridechanel <- **ride
+}
+
+type Result struct {
+	Destination []string `json:"destination_addresses"`
+	Origin      []string `json:"origin_addresses"`
+	Rows        []Elem   `json:"rows"`
+	Status      string   `json:"status"`
+}
+
+type Elem struct {
+	Element []Elements `json:"elements"`
+}
+
+type Elements struct {
+	Distance Dist   `json:"distance"`
+	Duration Dist   `json:"duration"`
+	Status   string `json:"status"`
+}
+
+type Dist struct {
+	Text string `json:"text"`
+	Val  int    `json:"value"`
+}
+
+func DistanceAPI(r *Ride) *Result {
+	// https://api.distancematrix.ai/maps/api/distancematrix/json?origins=51.4822656,-0.1933769&destinations=51.4994794,-0.1269979
+	// &key=<your_access_token>
+
+	origins := fmt.Sprintf("%s,%s", strconv.FormatFloat(r.Source.Lat, 'f', -1, 64), strconv.FormatFloat(r.Source.Lng, 'f', -1, 64))
+	destinations := fmt.Sprintf("%s,%s", strconv.FormatFloat(r.Destination.Lat, 'f', -1, 64), strconv.FormatFloat(r.Destination.Lng, 'f', -1, 64))
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/distancematrix/json?origins=%s&destinations=%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj", origins, destinations)
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+
+	fmt.Println(string(body))
+	result := &Result{}
+	json.Unmarshal([]byte(body), &result)
+	return result
+}
+
+func GeoCodeApi(l LatLng) *Result {
+
+	lat := strconv.FormatFloat(l.Lat, 'f', -1, 64)
+	lng := strconv.FormatFloat(l.Lng, 'f', -1, 64)
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/geocode/json?latlng=%s,%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj"+lat, lng)
+	method := "GET"
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+
+	fmt.Println(string(body))
+	result := &Result{}
+	json.Unmarshal([]byte(body), &result)
+	return result
+}
+
+var Ridechanel = make(chan models.Ride)
 
 // func AssignTrip(source, destination *maps.LatLng, distance, eta int, fare float32) {
 type Trip struct {
@@ -67,25 +196,40 @@ func AssignTrip(source, destination *maps.LatLng) *models.Trip {
 	newTrip := &models.Trip{
 		Source:      "origin",
 		Destination: "dest",
-		Distance:    1,
-		Fare:        100,
-		ETA:         15,
+		// Distance:    1,
+		Fare: 100,
+		ETA:  "",
 	}
 
-	Ridechanel <- *newTrip
+	// Ridechanel <- *newTrip
 
 	return newTrip
 }
 
-func GetRide() models.Trip {
+func GetRide() models.Ride {
 	for {
-		trip := <-Ridechanel
-		return trip
+		ride := <-Ridechanel
+		return ride
 	}
 }
 
-func GetTripHistory(id uint64) *[]models.Trip {
-	return database.GetTrips(id)
+func GetTripHistory(role string, id uint64) *[]models.Trip {
+	return database.GetTrips(role, id)
+}
+
+func RegisterTrip(ride *models.Ride) error {
+	trip := &models.Trip{}
+
+	trip.Source = ride.Source
+	trip.Destination = ride.Destination
+	trip.Distance = ride.Distance
+	trip.Fare = ride.Fare
+	trip.ETA = ride.ETA
+	trip.PaymentMethod = ride.PaymentMethod
+	trip.DrvrId = ride.DriverId
+	trip.UsrId = ride.UserId
+
+	return trip.Add(trip)
 }
 
 // type Pool struct {

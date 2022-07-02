@@ -1,29 +1,113 @@
 package models
 
 import (
+	"strconv"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	UserId      uint64     `gorm:"primaryKey;unique;autoIncrement"`
-	FirstName   string     `gorm:"not null" json:"first_name"`
-	LastName    string     `json:"last_name"`
-	PhoneNumber string     `gorm:"not null;unique" json:"phone_number"`
-	Email       string     `gorm:"not null;unique" json:"email"`
-	Password    string     `gorm:"not null" json:"password"`
-	Token       string     `json:"token"`
-	Active      bool       `json:"active" gorm:"default:true"`
-	Wallet      UserWallet `gorm:"ForeignKey:UserId;references:WalletId;embedded" json:"user_wallet"`
-	TripHistory []Trip     `gorm:"ForeignKey:UserId;references:UserId" json:"trip_history"`
+	UserId      uint64     `gorm:"primaryKey;autoIncrement;unique" json:"userid"`
+	Picture     string     `json:"picture"`
+	Phonenumber string     `gorm:"not null;unique;" json:"phonenumber"`
+	Firstname   string     `gorm:"not null;" json:"firstname"`
+	Lastname    string     `json:"lastname"`
+	Email       string     `gorm:"not null;unique;" json:"email"`
+	Password    string     `gorm:"not null;" json:"password"`
+	Rating      int        `gorm:"default:0" json:"user_rating"`
+	Active      bool       `gorm:"default:true;" json:"status"`
+	Wallet      UserWallet `json:"userwallet" gorm:"foreignKey:UserId;"`
 }
 
-type UserWallet struct {
-	gorm.Model
-	WalletId uint64 `gorm:"primaryKey;autoIncrement;unique"`
-	Balance  string
+//add new user to database
+func (u *User) Add() error {
+	db := database.Db
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		return err
+	}
+
+	result := db.Create(&u)
+	return result.Error
 }
 
-func AddTrip(t *Trip) {
+//get a user by key
+func (u *User) Get(key, value string) (User, bool) {
+	db := database.Db
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		return User{}, false
+	}
 
+	user := &User{}
+	result := db.Where(key+"=?", value).First(&user)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return *user, false
+	}
+	return *user, true
+}
+
+// GetAll users in the database
+func (u *User) GetAll() *[]User {
+	db := database.Db
+
+	users := &[]User{}
+	db.Find(&users)
+
+	return users
+}
+
+// Update existing user by id
+func (u *User) Update() error {
+	db := database.Db
+
+	user := &User{}
+
+	id := strconv.Itoa(int(u.UserId))
+
+	db.Where("user_id=?", id).First(&user)
+
+	result := db.Model(&user).Updates(&User{Phonenumber: "",
+		Firstname: "",
+		Lastname:  "",
+		Email:     "",
+		Password:  "",
+		Active:    false,
+	})
+
+	return result.Error
+}
+
+// Delete user by id
+func (u *User) Delete(id uint64) error {
+	db := database.Db
+
+	result := db.Delete(&User{}, id)
+
+	return result.Error
+}
+
+// BlockUnblock user by changing user active field
+func (u *User) BlockUnblock(id uint64) error {
+	db := database.Db
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		return err
+	}
+
+	user := &User{}
+
+	db.Where("id=?", id).First(&user)
+
+	if !user.Active {
+		user.Active = true
+		result := db.Save(&user)
+		return result.Error
+	}
+	user.Active = false
+	result := db.Save(&user)
+	return result.Error
 }

@@ -1,13 +1,26 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	"gorm.io/gorm"
+)
 
 type Vehicle struct {
 	gorm.Model
-	// VehicleId    uint64 `gorm:"primaryKey;autoIncrement" json:"vehicleid"`
-	Registration string `gorm:"not null;unique;" json:"registration"`
-	Brand        string `gorm:"not null" json:"cabrand"`
-	Category     string `gorm:"not null" json:"cabtype"`
-	VehicleModel string `gorm:"not null" json:"cabmodel"`
-	Colour       string `gorm:"not null" json:"cabcolour"`
+	VehicleId    uint64 `gorm:"primaryKey;autoIncrement;" json:"vehicleid"`
+	Registration string `json:"registration"`
+	Brand        string `json:"brand"`
+	Category     string `json:"type"`
+	VehicleModel string `json:"model"`
+	Colour       string `json:"colour"`
+	DriverId     uint64
+}
+
+//add new vehicle into database
+func (v *Vehicle) Add() error {
+	db := database.Db
+	db.AutoMigrate(&Vehicle{})
+
+	result := db.Create(&v)
+	return result.Error
 }

@@ -1,4 +1,4 @@
-package auth
+package googleauth
 
 import (
 	"context"
@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
 var (
@@ -27,7 +29,8 @@ var (
 
 type AuthContent struct {
 	ID            string `json:"id"`
-	Name          string `json:"name"`
+	Firstname     string `json:"given_name"`
+	Lastname      string `json:"family_name"`
 	Email         string `json:"email"`
 	VerifiedEmail bool   `json:"verified_email"`
 	Picture       string `json:"picture"`
@@ -47,7 +50,6 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseStatus:  "fail",
 			ResponseMessage: "states don't match",
 			ResponseData:    nil,
-			Token:           "",
 		}
 		json.NewEncoder(w).Encode(&response)
 		return
@@ -100,7 +102,19 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&authContent)
+	newUser := &models.User{}
+
+	newUser.Firstname = authContent.Firstname
+	newUser.Lastname = authContent.Lastname
+	newUser.Email = authContent.Email
+	newUser.Picture = authContent.Picture
+
+	user.GoogleAuthUser(newUser)
+
+	// json.NewEncoder(w).Encode(&authContent)
+
+	// http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
+
 	// fmt.Fprintln(w, string(content))
 	// {
 	// 	"id": "109429758760150763543",
