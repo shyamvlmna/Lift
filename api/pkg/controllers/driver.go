@@ -468,13 +468,44 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "start trip",
 		ResponseData:    ride,
 	}
-	err = json.NewEncoder(w).Encode(&response)
-	if err != nil {
+	if err = json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
 }
 func EndTrip(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	c, _ := r.Cookie("jwt-token")
+
+	_, phone := auth.ParseJWT(c.Value)
+
+	curDriver := driver.GetDriver("phone_number", phone)
+
+	trip, err := redis.GetTrip("trip-" + strconv.Itoa(int(curDriver.DriverId)))
+	if err != nil {
+		return
+	}
+
+	if trip.PaymentMethod == "Wallet" {
+		err = models.WalletTransactions(trip.UserId, trip.DriverId, trip.Fare)
+		if err != nil {
+			return
+		}
+	} else {
+		err = models.CashTransactions(trip.DriverId, trip.Fare)
+		if err != nil {
+			return
+		}
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "trip completed",
+		ResponseData:    nil,
+	}
+	if err = json.NewEncoder(w).Encode(&response); err != nil {
+		return
+	}
 }
 
 func DriverTripHistory(w http.ResponseWriter, r *http.Request) {

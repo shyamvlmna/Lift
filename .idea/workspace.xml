@@ -4,16 +4,18 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="completed all things related to trip booking&#10;except send trip code to the user">
+    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="changes">
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f/storage_v2/_src_/database/cab-booking-app.JC5ZEQ/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f/storage_v2/_src_/database/cab-booking-app.JC5ZEQ/schema/public.abK9xQ.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/driver.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/database/databasetup.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/database/databasetup.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/models/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/admin.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/models/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/driver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/models/trip.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/trip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/models/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/user.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/models/wallet.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/wallet.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +25,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Go Application" />
         <option value="Go File" />
       </list>
     </option>
@@ -38,35 +41,38 @@
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="2BJtAIwP52XdacqALGWyKDXCgEA" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.format.on.save.advertiser.fired&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;full.screen.before.presentation.mode&quot;: &quot;false&quot;,
-    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
-    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/shyamjith&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultGoTemplateProperty": "Go File",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "full.screen.before.presentation.mode": "false",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/home/shyamjith",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Go Build.go build github.com/shayamvlmna/cab-booking-app">
     <configuration name="go build github.com/shayamvlmna/cab-booking-app" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="cab-booking-app" />
@@ -129,7 +135,8 @@
     <MESSAGE value="completed trip accepting&#10;ending part left" />
     <MESSAGE value="fixed bugs with the trip history&#10;removed trip history field from user and driver models" />
     <MESSAGE value="completed all things related to trip booking&#10;except send trip code to the user" />
-    <option name="LAST_COMMIT_MESSAGE" value="completed all things related to trip booking&#10;except send trip code to the user" />
+    <MESSAGE value="changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

@@ -7,9 +7,11 @@ import (
 
 type Admin struct {
 	gorm.Model
-	Username string `gorm:"not null;unique;" json:"username"`
-	Password string `gorm:"not null;" json:"password"`
-	IsAdmin  bool   `gorm:"default:true;" json:"isadmin"`
+	AdminId       uint64 `gorm:"primaryKey;unique;autoIncrement;" json:"adminid"`
+	Username      string `gorm:"not null;unique;" json:"username"`
+	Password      string `gorm:"not null;" json:"password"`
+	IsAdmin       bool   `gorm:"default:true;" json:"isadmin"`
+	WalletBalance uint   `gorm:"default:0" json:"adminwallet"`
 }
 
 func (a *Admin) Add() error {

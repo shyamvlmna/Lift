@@ -9,19 +9,19 @@ import (
 
 type Driver struct {
 	gorm.Model
-	DriverId    uint64       `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
-	PhoneNumber string       `gorm:"not null;unique" json:"phonenumber"`
-	FirstName   string       `gorm:"not null" json:"firstname"`
-	LastName    string       `json:"lastname"`
-	Email       string       `gorm:"not null;unique" json:"email"`
-	Password    string       `gorm:"not null" json:"password"`
-	City        string       `json:"city"`
-	LicenceNum  string       `json:"licence"`
-	Rating      int          `gorm:"default:0" json:"driver_rating"`
-	Approved    bool         `gorm:"default:false" json:"approved"`
-	Active      bool         `gorm:"default:true" json:"status"`
-	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
-	Wallet      DriverWallet `json:"driverwallet"  gorm:"foreignKey:DriverId"`
+	DriverId      uint64   `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
+	PhoneNumber   string   `gorm:"not null;unique" json:"phonenumber"`
+	FirstName     string   `gorm:"not null" json:"firstname"`
+	LastName      string   `json:"lastname"`
+	Email         string   `gorm:"not null;unique" json:"email"`
+	Password      string   `gorm:"not null" json:"password"`
+	City          string   `json:"city"`
+	LicenceNum    string   `json:"licence"`
+	Rating        int      `gorm:"default:0" json:"driver_rating"`
+	Approved      bool     `gorm:"default:false" json:"approved"`
+	Active        bool     `gorm:"default:true" json:"status"`
+	Cab           *Vehicle `json:"cab" gorm:"embedded"`
+	WalletBalance uint     `json:"driverwallet"  gorm:"default:0;"`
 }
 
 // Add new driver to database
@@ -36,7 +36,7 @@ func (d *Driver) Add() error {
 	return result.Error
 }
 
-//get driver by key
+// Get driver by key
 func (d *Driver) Get(key, value string) (Driver, bool) {
 	db := database.Db
 
@@ -94,7 +94,7 @@ func (d *Driver) Delete(id uint64) error {
 	return result.Error
 }
 
-//block/unblock driver by toggling driver approved field
+// BlockUnblock driver by toggling driver approved field
 func (d *Driver) BlockUnblock(id uint64) error {
 	db := database.Db
 

@@ -331,6 +331,11 @@ func validPassword(password, hashPassword string) error {
 func BookTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	c, _ := r.Cookie("jwt-token")
+	_, phone := auth.ParseJWT(c.Value)
+
+	user := user.GetUser("phonenumber", phone)
+
 	newRide := &trip.Ride{}
 
 	err := json.NewDecoder(r.Body).Decode(&newRide)
@@ -348,14 +353,23 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		Fare:          newTrip.Fare,
 		PaymentMethod: "",
 	}
+	if user.WalletBalance < newTrip.Fare {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "not enough balance in wallet",
+			ResponseData:    &ride,
+		}
+		if err = json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "trip created successfully",
 		ResponseData:    &ride,
 	}
-
-	err = json.NewEncoder(w).Encode(&response)
-	if err != nil {
+	if err = json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
 }

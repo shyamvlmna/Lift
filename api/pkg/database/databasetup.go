@@ -22,7 +22,9 @@ func DBSet() *gorm.DB {
 	dbName := os.Getenv("dbName")
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable port=%s", dbHost, dbUser, dbPassword, dbName, dbPort)
-	Db, err := gorm.Open(postgres.Open(dsn))
+	Db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
 	if err != nil {
 		fmt.Println("failed to connect to Postgresql")
 		return nil
