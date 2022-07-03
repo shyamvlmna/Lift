@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -26,7 +27,12 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
 
+		}
+	}(r.Body)
 	phonenumber := newDriver.PhoneNumber
 
 	if phonenumber != "" {
@@ -58,11 +64,13 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 
 func DriverSignUpPage(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "submit driver data",
 		ResponseData:    nil,
 	}
+
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
@@ -101,7 +109,12 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
 
 	if err := driver.RegisterDriver(&newDriver); err != nil {
 		fmt.Println(err)
@@ -111,17 +124,20 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "signup failed",
 			ResponseData:    nil,
 		}
+
 		err := json.NewEncoder(w).Encode(&response)
 		if err != nil {
 			return
 		}
 		return
 	}
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "signup sucess",
 		ResponseData:    nil,
 	}
+
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
@@ -142,7 +158,12 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
 
 	password := newDriver.Password
 
@@ -221,7 +242,19 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	tokenString := c.Value
 
 	_, phone := auth.ParseJWT(tokenString)
@@ -254,7 +287,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    &driverData,
 	}
 
-	err := json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
@@ -280,6 +313,7 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 	c.Value = ""
 	c.Path = "/"
 	c.MaxAge = -1
+
 	http.SetCookie(w, c)
 
 	response := &models.Response{
@@ -309,22 +343,64 @@ func RegisterDriver(w http.ResponseWriter, r *http.Request) {
 	// dlNumber := r.FormValue("driving_licence")
 }
 
-func AddCab(_ http.ResponseWriter, r *http.Request) {
+func AddCab(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	vehicle := &models.Vehicle{}
+
 	err := json.NewDecoder(r.Body).Decode(&vehicle)
 	if err != nil {
 		return
 	}
-	c, _ := r.Cookie("jwt-token")
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	tokenString := c.Value
+
 	_, phone := auth.ParseJWT(tokenString)
 
 	driver := driver.GetDriver("phone_number", phone)
+
 	vehicle.DriverId = driver.DriverId
 	driver.Cab = vehicle
 
 	err = driver.Update(*driver)
 	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error adding cab",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "cab added",
+		ResponseData:    nil,
+	}
+
+	if err := json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
 }
@@ -333,8 +409,21 @@ func AddCab(_ http.ResponseWriter, r *http.Request) {
 func GetTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	tokenString := c.Value
+
 	_, phone := auth.ParseJWT(tokenString)
 
 	driver := driver.GetDriver("phone_number", phone)
@@ -351,7 +440,7 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ride := trip.GetRide()
-	err := json.NewEncoder(w).Encode(&ride)
+	err = json.NewEncoder(w).Encode(&ride)
 	if err != nil {
 		return
 	}
@@ -362,11 +451,30 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	ride := &models.Ride{}
+
 	err := json.NewDecoder(r.Body).Decode(&ride)
 	if err != nil {
 		return
 	}
-	c, _ := r.Cookie("jwt-token")
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 	tokenString := c.Value
 
 	_, phone := auth.ParseJWT(tokenString)
@@ -421,7 +529,18 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 	_, phone := auth.ParseJWT(c.Value)
 	driver := driver.GetDriver("phone_number", phone)
 
@@ -453,7 +572,18 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 
 func StartTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 	_, phone := auth.ParseJWT(c.Value)
 	curDriver := driver.GetDriver("phone_number", phone)
 
@@ -475,7 +605,18 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 func EndTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 
 	_, phone := auth.ParseJWT(c.Value)
 
@@ -510,7 +651,18 @@ func EndTrip(w http.ResponseWriter, r *http.Request) {
 
 func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 	tokenString := c.Value
 
 	_, phone := auth.ParseJWT(tokenString)
@@ -524,7 +676,7 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "fetched trip history",
 		ResponseData:    tripHistory,
 	}
-	err := json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}

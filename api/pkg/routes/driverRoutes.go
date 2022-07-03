@@ -28,7 +28,10 @@ func DriverRoutes(r *mux.Router) {
 			ResponseMessage: "new driver",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 	}).Methods("GET")
 
 	//validate submited otp

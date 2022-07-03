@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	auth "github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -16,6 +16,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	if err == nil {
 		tokenString := c.Value
+
 		role, _ := auth.ParseJWT(tokenString)
 
 		if role == "driver" {
@@ -31,6 +32,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "app index",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 	}
 }

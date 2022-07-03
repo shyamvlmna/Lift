@@ -19,7 +19,10 @@ func ValidateOtp(endpoint func(http.ResponseWriter, *http.Request)) http.Handler
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		otp := &Otp{}
-		json.NewDecoder(r.Body).Decode(&otp)
+		err := json.NewDecoder(r.Body).Decode(&otp)
+		if err != nil {
+			return
+		}
 		OTP := otp.Otp
 		phone := auth.GetPhone()
 		auth.StorePhone(phone)
@@ -32,7 +35,10 @@ func ValidateOtp(endpoint func(http.ResponseWriter, *http.Request)) http.Handler
 					ResponseMessage: "otp expired",
 					ResponseData:    nil,
 				}
-				json.NewEncoder(w).Encode(&response)
+				err := json.NewEncoder(w).Encode(&response)
+				if err != nil {
+					return
+				}
 				return
 			} else {
 				fmt.Println("invalid otp")
@@ -42,7 +48,10 @@ func ValidateOtp(endpoint func(http.ResponseWriter, *http.Request)) http.Handler
 					ResponseMessage: "invalid otp",
 					ResponseData:    nil,
 				}
-				json.NewEncoder(w).Encode(&response)
+				err := json.NewEncoder(w).Encode(&response)
+				if err != nil {
+					return
+				}
 				return
 			}
 

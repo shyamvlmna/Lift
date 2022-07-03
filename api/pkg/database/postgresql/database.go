@@ -11,7 +11,10 @@ import (
 )
 
 func openDB() (*gorm.DB, error) {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
 
 	dbHost := os.Getenv("dbHost")
 	dbPort := os.Getenv("dbPort")
@@ -24,7 +27,6 @@ func openDB() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	
 
 	return Db, nil
 }

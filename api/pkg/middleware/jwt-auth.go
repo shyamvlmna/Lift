@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"net/http"
 	"os"
 	"strings"
@@ -20,7 +22,10 @@ func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handle
 		if reqToken != "" {
 			splitToken := strings.Split(reqToken, "Bearer ")
 			tokenString := splitToken[1]
-			godotenv.Load()
+			err := godotenv.Load()
+			if err != nil {
+				return
+			}
 			key := []byte(os.Getenv("SECRET_KEY"))
 
 			claims := &auth.Claims{}
@@ -39,14 +44,32 @@ func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handle
 			})
 
 			if err != nil {
-				fmt.Fprint(w, err.Error())
+				response := &models.Response{
+					ResponseStatus:  "failed",
+					ResponseMessage: "No Authorization Token provided",
+					ResponseData:    err.Error(),
+				}
+				err := json.NewEncoder(w).Encode(&response)
+				if err != nil {
+					return
+				}
+				return
 			}
 
 			if token.Valid {
 				endpoint(w, r)
 			}
 		} else {
-			fmt.Fprintf(w, "No Authorization Token provided")
+			response := &models.Response{
+				ResponseStatus:  "failed",
+				ResponseMessage: "No Authorization Token provided",
+				ResponseData:    nil,
+			}
+			err := json.NewEncoder(w).Encode(&response)
+			if err != nil {
+				return
+			}
+			return
 		}
 	})
 }

@@ -4,18 +4,26 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="changes">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f/storage_v2/_src_/database/cab-booking-app.JC5ZEQ/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f/storage_v2/_src_/database/cab-booking-app.JC5ZEQ/schema/public.abK9xQ.meta" afterDir="false" />
+    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="trip fare deducted from user wallet&#10;credited to admin and driver">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/controllers/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/admin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/controllers/controllers.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/controllers.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/driver.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/database/databasetup.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/database/databasetup.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/database/postgresql/database.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/database/postgresql/database.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/middleware/jwt-auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/middleware/jwt-auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/middleware/otp-auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/middleware/otp-auth.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/models/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/admin.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/models/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/driver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/models/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/models/wallet.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/wallet.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/models/vehicle.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/vehicle.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/routes/adminRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/adminRoutes.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/routes/userRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/userRoutes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/auth/otp.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/auth/otp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/driver/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/driver/driver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/googleAuth/googleLogin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/googleAuth/googleLogin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/user/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/user/user.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +144,8 @@
     <MESSAGE value="fixed bugs with the trip history&#10;removed trip history field from user and driver models" />
     <MESSAGE value="completed all things related to trip booking&#10;except send trip code to the user" />
     <MESSAGE value="changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes" />
+    <MESSAGE value="trip fare deducted from user wallet&#10;credited to admin and driver" />
+    <option name="LAST_COMMIT_MESSAGE" value="trip fare deducted from user wallet&#10;credited to admin and driver" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

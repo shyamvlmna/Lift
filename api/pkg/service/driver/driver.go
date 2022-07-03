@@ -47,7 +47,10 @@ func GetDriver(key, value string) *models.Driver {
 
 	driver := &models.Driver{}
 
-	json.Unmarshal([]byte(p), &driver)
+	err = json.Unmarshal([]byte(p), &driver)
+	if err != nil {
+		return nil
+	}
 
 	return driver
 }
@@ -61,7 +64,10 @@ func GetAllDrivers() []models.Driver {
 // UpdateDriver update the driver by accepting the updated driver fields
 //only update fields with null values
 func UpdateDriver(driver models.Driver) {
-	d.Update(driver)
+	err := d.Update(driver)
+	if err != nil {
+		return
+	}
 }
 
 //delete driver from the database by the id

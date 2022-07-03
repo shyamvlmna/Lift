@@ -3,6 +3,7 @@ package googleauth
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -51,7 +52,10 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "states don't match",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 	// if r.FormValue("state") != randomState {
@@ -67,7 +71,10 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "code token exange failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + tok.AccessToken)
@@ -77,10 +84,18 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "data fetch failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		response := &models.Response{
@@ -88,7 +103,10 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "json parsing failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 	authContent := &AuthContent{}
@@ -98,7 +116,10 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			ResponseMessage: "unmarshal failed",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 		return
 	}
 

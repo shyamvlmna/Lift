@@ -35,7 +35,10 @@ func UserRoutes(r *mux.Router) {
 			ResponseMessage: "new user",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
 
 	}).Methods("GET")
 

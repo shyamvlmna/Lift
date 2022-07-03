@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -60,6 +61,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 // UserSignupPage render the signup page to submit the details of the new user
 func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "submit user data",
@@ -99,15 +101,21 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newUser := models.User{}
+
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		return
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
 
 	if err := user.RegisterUser(&newUser); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "signup failed",
@@ -145,7 +153,12 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
 
 	password := newUser.Password
 
@@ -171,8 +184,8 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	//validate the entered password with stored hash password
 	if err := validPassword(password, User.Password); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
+
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "password authentication failed",
@@ -224,7 +237,19 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	tokenString := c.Value
 
 	_, phone := auth.ParseJWT(tokenString)
@@ -245,7 +270,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    userData,
 	}
 
-	err := json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
@@ -271,6 +296,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 	c.Value = ""
 	c.Path = "/"
 	c.MaxAge = -1
+
 	http.SetCookie(w, c)
 
 	response := &models.Response{
@@ -288,8 +314,10 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+
 	params := mux.Vars(r)
 	id := params["id"]
+
 	user := user.GetUser("id", id)
 
 	err := json.NewEncoder(w).Encode(&user)
@@ -302,6 +330,7 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
 	newUser := models.User{}
+
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		return
@@ -331,14 +360,25 @@ func validPassword(password, hashPassword string) error {
 func BookTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
 	_, phone := auth.ParseJWT(c.Value)
 
 	user := user.GetUser("phonenumber", phone)
 
 	newRide := &trip.Ride{}
 
-	err := json.NewDecoder(r.Body).Decode(&newRide)
+	err = json.NewDecoder(r.Body).Decode(&newRide)
 	if err != nil {
 		return
 	}
@@ -353,6 +393,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		Fare:          newTrip.Fare,
 		PaymentMethod: "",
 	}
+
 	if user.WalletBalance < newTrip.Fare {
 		response := &models.Response{
 			ResponseStatus:  "failed",
@@ -364,6 +405,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "trip created successfully",
@@ -381,12 +423,25 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	cnftrip := &models.Ride{}
+
 	err := json.NewDecoder(r.Body).Decode(&cnftrip)
 	if err != nil {
 		return
 	}
 
-	c, _ := r.Cookie("jwt-token")
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	tokenString := c.Value
 
 	_, phone := auth.ParseJWT(tokenString)
@@ -414,7 +469,20 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 //TripHistory returns saved trips for the user
 func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	c, _ := r.Cookie("jwt-token")
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	tokenString := c.Value
 
 	_, phone := auth.ParseJWT(tokenString)
@@ -428,7 +496,7 @@ func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "fetched trip history",
 		ResponseData:    tripHistory,
 	}
-	err := json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}

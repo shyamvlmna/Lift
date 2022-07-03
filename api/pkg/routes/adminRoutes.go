@@ -15,7 +15,7 @@ func AdminRoutes(r *mux.Router) {
 	adminRouter.HandleFunc("/create", controllers.CreateAdmin).Methods("POST")
 
 	adminRouter.HandleFunc("/login", controllers.AdminLogin)
-	adminRouter.HandleFunc("/managedrivers", controllers.Managedrivers)
+	adminRouter.HandleFunc("/managedrivers", controllers.ManageDrivers)
 	adminRouter.HandleFunc("/login", controllers.AdminLogin)
 	adminRouter.HandleFunc("/approve", controllers.ApproveDriver).Methods("POST")
 

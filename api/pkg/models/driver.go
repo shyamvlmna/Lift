@@ -55,7 +55,7 @@ func (d *Driver) Get(key, value string) (Driver, bool) {
 	}
 }
 
-//get all drivers in the database
+// GetAll drivers in the database
 func (d *Driver) GetAll() *[]Driver {
 	db := database.Db
 
@@ -65,7 +65,7 @@ func (d *Driver) GetAll() *[]Driver {
 	return drivers
 }
 
-//update a driver by getting updated driver fields
+// Update a driver by getting updated driver fields
 //only update the not null driver fields
 func (*Driver) Update(d Driver) error {
 	db := database.Db
@@ -85,10 +85,13 @@ func (*Driver) Update(d Driver) error {
 	return result.Error
 }
 
-//delete driver by id
+// Delete driver by id
 func (d *Driver) Delete(id uint64) error {
 	db := database.Db
-	db.AutoMigrate(&Driver{})
+	err := db.AutoMigrate(&Driver{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Delete(&Driver{}, id)
 	return result.Error

@@ -16,7 +16,10 @@ type Admin struct {
 
 func (a *Admin) Add() error {
 	db := database.Db
-	db.AutoMigrate(&Admin{})
+	err := db.AutoMigrate(&Admin{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Create(&a)
 	return result.Error

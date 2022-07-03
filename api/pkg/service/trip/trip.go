@@ -3,6 +3,7 @@ package trip
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -126,7 +127,12 @@ func DistanceAPI(r *Ride) *Result {
 		fmt.Println(err)
 
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(res.Body)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -136,7 +142,10 @@ func DistanceAPI(r *Ride) *Result {
 
 	fmt.Println(string(body))
 	result := &Result{}
-	json.Unmarshal([]byte(body), &result)
+	err = json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return nil
+	}
 	return result
 }
 
@@ -158,7 +167,12 @@ func GeoCodeApi(l LatLng) *Result {
 		fmt.Println(err)
 
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(res.Body)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -168,7 +182,10 @@ func GeoCodeApi(l LatLng) *Result {
 
 	fmt.Println(string(body))
 	result := &Result{}
-	json.Unmarshal([]byte(body), &result)
+	err = json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return nil
+	}
 	return result
 }
 

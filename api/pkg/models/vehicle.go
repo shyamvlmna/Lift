@@ -16,10 +16,13 @@ type Vehicle struct {
 	DriverId     uint64
 }
 
-//add new vehicle into database
+// Add new vehicle into database
 func (v *Vehicle) Add() error {
 	db := database.Db
-	db.AutoMigrate(&Vehicle{})
+	err := db.AutoMigrate(&Vehicle{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Create(&v)
 	return result.Error
