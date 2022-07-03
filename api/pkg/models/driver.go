@@ -1,10 +1,9 @@
 package models
 
 import (
-	"strconv"
-
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type Driver struct {
@@ -77,7 +76,14 @@ func (*Driver) Update(d Driver) error {
 	db.Where("id=?", id).First(&driver)
 
 	result := db.Model(&driver).Updates(Driver{
-		Cab: d.Cab,
+		PhoneNumber: d.PhoneNumber,
+		FirstName:   d.FirstName,
+		LastName:    d.LastName,
+		Email:       d.Email,
+		Password:    d.Password,
+		City:        d.City,
+		LicenceNum:  d.LicenceNum,
+		Cab:         d.Cab,
 	})
 
 	db.Save(&driver)

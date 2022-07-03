@@ -54,32 +54,3 @@ func GeoCode(g *maps.LatLng) string {
 	}
 	return reverseGeocode[0].FormattedAddress
 }
-
-
-
-// {
-//     "destination_addresses": [
-//         "Westminster Abbey, Westminster, London SW1P 3PA, UK"
-//     ],
-//     "origin_addresses": [
-//         "Chapel, Fulham, London SW6 1BA, UK"
-//     ],
-//     "rows": [
-//         {
-//             "elements": [
-//                 {
-//                     "distance": {
-//                         "text": "7.6 km",
-//                         "value": 7561
-//                     },
-//                     "duration": {
-//                         "text": "22 min",
-//                         "value": 1303
-//                     },
-//                     "status": "OK"
-//                 }
-//             ]
-//         }
-//     ],
-//     "status": "OK"
-// }

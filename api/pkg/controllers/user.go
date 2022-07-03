@@ -3,11 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/payment"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
@@ -314,16 +314,32 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
+	w.Header().Set("Content-Type", "application/json")
 
-	params := mux.Vars(r)
-	id := params["id"]
-
-	user := user.GetUser("id", id)
-
-	err := json.NewEncoder(w).Encode(&user)
+	c, err := r.Cookie("jwt-token")
 	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
 		return
 	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	user := user.GetUser("phonenumber", phone)
+
+	userdata := &models.UserData{
+		Phonenumber: user.Phonenumber,
+	}
+
+	json.NewEncoder(w).Encode(&userdata)
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -501,3 +517,71 @@ func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func UserWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+	_, phone := auth.ParseJWT(c.Value)
+
+	user := user.GetUser("phonenumber", phone)
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "user wallet",
+		ResponseData:    user.WalletBalance,
+	}
+	if err := json.NewEncoder(w).Encode(&response); err != nil {
+		return
+	}
+	return
+
+}
+
+func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	resp := payment.AddMoney()
+
+	json.NewEncoder(w).Encode(&resp)
+}
+
+func RazorpayCallback(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	fmt.Println("successss")
+
+	//w.Write([]byte("success"))
+}
+
+//func GetUserFromCookie(r *http.Request) (models.User, error) {
+//	c, err := r.Cookie("jwt-token")
+//	if err != nil {
+//		response := &models.Response{
+//			ResponseStatus:  "failed",
+//			ResponseMessage: "no cookie",
+//			ResponseData:    nil,
+//		}
+//		if err := json.NewEncoder(w).Encode(&response); err != nil {
+//			return
+//		}
+//		return , err
+//	}
+//
+//	tokenString := c.Value
+//
+//	_, phone := auth.ParseJWT(tokenString)
+//
+//	user := user.GetUser("phonenumber", phone)
+//
+//}

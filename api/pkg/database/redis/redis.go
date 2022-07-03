@@ -16,7 +16,6 @@ func OpenRDb() *redis.Client {
 		Password: "",
 		DB:       0,
 	})
-	fmt.Print("rdb opened", rdb)
 	return rdb
 }
 

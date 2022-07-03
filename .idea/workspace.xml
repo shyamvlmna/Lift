@@ -4,26 +4,24 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="trip fare deducted from user wallet&#10;credited to admin and driver">
+    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="clean code">
+      <change afterPath="$PROJECT_DIR$/.idea/redisSettings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/pkg/service/payment/app.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/pkg/service/payment/razorpay.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/controllers/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/admin.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/controllers/controllers.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/controllers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/.env" beforeDir="false" afterPath="$PROJECT_DIR$/api/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/api/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/api/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/driver.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/database/postgresql/database.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/database/postgresql/database.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/middleware/jwt-auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/middleware/jwt-auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/middleware/otp-auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/middleware/otp-auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/models/admin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/admin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/database/redis/redis.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/database/redis/redis.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/models/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/driver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/models/vehicle.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/vehicle.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/routes/adminRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/adminRoutes.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/routes/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/router.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/routes/userRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/userRoutes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/auth/otp.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/auth/otp.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/driver/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/driver/driver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/googleAuth/googleLogin.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/googleAuth/googleLogin.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/mapservice/maps.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/mapservice/maps.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/user/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/user/user.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +40,19 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/api/.env" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/controllers/driver.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/controllers/user.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/models/driver.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/models/response.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/routes/router.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/routes/userRoutes.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/api/pkg/service/payment/razorpay.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../go/pkg/mod/github.com/razorpay/razorpay-go@v0.0.0-20220513105205-d3f04070e418/client.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../go/pkg/mod/github.com/razorpay/razorpay-go@v0.0.0-20220513105205-d3f04070e418/resources/order.go" root0="SKIP_INSPECTION" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -56,31 +67,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "full.screen.before.presentation.mode": "false",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/home/shyamjith",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.format.on.save.advertiser.fired&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;full.screen.before.presentation.mode&quot;: &quot;false&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/shyamjith&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;,
+      &quot;mongo&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Go Build.go build github.com/shayamvlmna/cab-booking-app">
     <configuration name="go build github.com/shayamvlmna/cab-booking-app" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="cab-booking-app" />
@@ -125,7 +139,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="working" />
+                        <option value="HEAD" />
                       </list>
                     </value>
                   </entry>
@@ -145,7 +159,8 @@
     <MESSAGE value="completed all things related to trip booking&#10;except send trip code to the user" />
     <MESSAGE value="changes" />
     <MESSAGE value="trip fare deducted from user wallet&#10;credited to admin and driver" />
-    <option name="LAST_COMMIT_MESSAGE" value="trip fare deducted from user wallet&#10;credited to admin and driver" />
+    <MESSAGE value="clean code" />
+    <option name="LAST_COMMIT_MESSAGE" value="clean code" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

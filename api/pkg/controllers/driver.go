@@ -330,17 +330,91 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	driver := driver.GetDriver("phone_number", phone)
+
+	cab := &models.CabData{
+		VehicleId:    driver.Cab.VehicleId,
+		Registration: driver.Cab.Registration,
+		Brand:        driver.Cab.Brand,
+		Category:     driver.Cab.Category,
+		VehicleModel: driver.Cab.VehicleModel,
+		Colour:       driver.Cab.Colour,
+	}
+
+	driverData := &models.DriverData{
+		Id:          driver.DriverId,
+		Phonenumber: driver.PhoneNumber,
+		Firstname:   driver.FirstName,
+		Lastname:    driver.LastName,
+		Email:       driver.Email,
+		City:        driver.City,
+		LicenceNum:  driver.LicenceNum,
+		Cab:         cab,
+	}
+
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "Driver data fetched",
+		ResponseData:    &driverData,
+	}
+
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func UpdateDriverProfile(w http.ResponseWriter, r *http.Request) {
-}
+	w.Header().Set("Content-Type", "application/json")
 
-func GetDrivers(w http.ResponseWriter, r *http.Request) {
-}
+	d := models.Driver{}
 
-func RegisterDriver(w http.ResponseWriter, r *http.Request) {
-	// city := r.FormValue("city")
-	// dlNumber := r.FormValue("driving_licence")
+	err := json.NewDecoder(r.Body).Decode(&d)
+	if err != nil {
+		return
+	}
+
+	err = d.Update(d)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "driver profile update failed",
+			ResponseData:    nil,
+		}
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
+		return
+	}
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "driver profile update success",
+		ResponseData:    nil,
+	}
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func AddCab(w http.ResponseWriter, r *http.Request) {
@@ -403,6 +477,102 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
+}
+
+func EditCab(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	driver := driver.GetDriver("phone_number", phone)
+
+	cab := &models.CabData{
+		VehicleId:    driver.Cab.VehicleId,
+		Registration: driver.Cab.Registration,
+		Brand:        driver.Cab.Brand,
+		Category:     driver.Cab.Category,
+		VehicleModel: driver.Cab.VehicleModel,
+		Colour:       driver.Cab.Colour,
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "edit cab data",
+		ResponseData:    cab,
+	}
+
+	json.NewEncoder(w).Encode(&response)
+}
+
+func UpdateCab(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	cab := &models.CabData{}
+
+	err := json.NewDecoder(r.Body).Decode(&cab)
+	if err != nil {
+		return
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
+
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		//TODO
+	}
+	_, phone := auth.ParseJWT(c.Value)
+
+	driver := driver.GetDriver("phone_number", phone)
+
+	driver.Cab.Registration = cab.Registration
+	driver.Cab.Brand = cab.Brand
+	driver.Cab.Category = cab.Category
+	driver.Cab.VehicleModel = cab.VehicleModel
+	driver.Cab.Colour = cab.Colour
+
+	err = driver.Update(*driver)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error updating cab",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "cab updated",
+		ResponseData:    cab,
+	}
+
+	if err := json.NewEncoder(w).Encode(&response); err != nil {
+		return
+	}
+
 }
 
 //GetTrip returns the available trips booked by the users
@@ -523,6 +693,7 @@ type otp struct {
 //MatchTripCode match the trip code from user
 func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	code := &otp{}
 
 	err := json.NewDecoder(r.Body).Decode(&code)
@@ -602,6 +773,7 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func EndTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -651,6 +823,7 @@ func EndTrip(w http.ResponseWriter, r *http.Request) {
 
 func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	c, err := r.Cookie("jwt-token")
 	if err != nil {
 		response := &models.Response{
@@ -667,9 +840,9 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 
 	_, phone := auth.ParseJWT(tokenString)
 
-	driver := driver.GetDriver("phone_number", phone)
+	d := driver.GetDriver("phone_number", phone)
 
-	tripHistory := trip.GetTripHistory("driver_id", driver.DriverId)
+	tripHistory := trip.GetTripHistory("driver_id", d.DriverId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",
@@ -680,4 +853,9 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+}
+
+func GetDriverFromCookie(r *http.Request) *models.Driver {
+
+	return nil
 }
