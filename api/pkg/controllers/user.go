@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
@@ -11,6 +12,7 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
 	"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -236,24 +238,16 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	user, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	user := user.GetUser("phonenumber", phone)
 
 	userData := &models.UserData{
 		Id:          user.UserId,
@@ -315,24 +309,16 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	user, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	user := user.GetUser("phonenumber", phone)
 
 	userdata := &models.UserData{
 		Phonenumber: user.Phonenumber,
@@ -365,34 +351,20 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-//match the entered password with
-//the hash password stored in the database
-func validPassword(password, hashPassword string) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
-		return err
-	}
-	return nil
-}
-
 // BookTrip get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	user, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-	_, phone := auth.ParseJWT(c.Value)
-
-	user := user.GetUser("phonenumber", phone)
 
 	newRide := &trip.Ride{}
 
@@ -447,24 +419,16 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := r.Cookie("jwt-token")
+	curUser, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	curUser := user.GetUser("phone_number", phone)
 
 	cnftrip.UserId = curUser.UserId
 	go trip.FindCab(&cnftrip)
@@ -488,24 +452,16 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	user, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	user := user.GetUser("phonenumber", phone)
 
 	tripHistory := trip.GetTripHistory("user_id", user.UserId)
 
@@ -523,21 +479,16 @@ func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 func UserWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	user, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-	_, phone := auth.ParseJWT(c.Value)
-
-	user := user.GetUser("phonenumber", phone)
 
 	response := &models.Response{
 		ResponseStatus:  "success",
@@ -554,24 +505,16 @@ func UserWallet(w http.ResponseWriter, r *http.Request) {
 func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	curUser, err := GetUserFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	curUser := user.GetUser("phone_number", phone)
 
 	pmt := &payment.Payment{}
 
@@ -614,47 +557,61 @@ func RazorpayCallback(w http.ResponseWriter, r *http.Request) {
 func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	fmt.Println("webhook called")
-	wh := &payment.Webhook{}
-	err := json.NewDecoder(r.Body).Decode(&wh)
-	if err != nil {
+	signature := r.Header.Get("X-Razorpay-Signature")
+
+	msg, err := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+
+	if ok := payment.ValidateWebhook(msg, signature); !ok {
+		fmt.Println("unauthorized webhook call")
 		return
 	}
 
-	if err != nil {
-		return
-	}
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(msg))
+
+	fmt.Println("webhook called")
+
+	wh := &payment.Webhook{}
+	err = json.NewDecoder(r.Body).Decode(&wh)
+	r.Body.Close()
+
 	fmt.Println(wh.Event)
 
 	if wh.Event == "order.paid" {
-		payment.UpdatePayment(string(wh.Payload.Order.Entity.Receipt))
+		payment.UpdatePayment(wh.Payload.Order.Entity.Receipt)
 	}
 	fmt.Println(wh.Payload.Payment.Entity.Amount)
 	fmt.Println(wh.Payload.Order.Entity.Receipt)
-	err = json.NewEncoder(w).Encode(&wh)
-	//json.NewEncoder(w).
-	//w.Write([]byte("success"))
-
+	if err = json.NewEncoder(w).Encode(wh); err != nil {
+		return
+	}
 }
 
-//func GetUserFromCookie(r *http.Request) (models.User, error) {
-//	c, err := r.Cookie("jwt-token")
-//	if err != nil {
-//		response := &models.Response{
-//			ResponseStatus:  "failed",
-//			ResponseMessage: "no cookie",
-//			ResponseData:    nil,
-//		}
-//		if err := json.NewEncoder(w).Encode(&response); err != nil {
-//			return
-//		}
-//		return , err
-//	}
-//
-//	tokenString := c.Value
-//
-//	_, phone := auth.ParseJWT(tokenString)
-//
-//	user := user.GetUser("phonenumber", phone)
-//
-//}
+// GetUserFromCookie returns the logged-in user from the stored cookie in session
+func GetUserFromCookie(r *http.Request) (*models.User, error) {
+	c, err := r.Cookie("jwt-token")
+
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return &models.User{}, err
+		}
+		return &models.User{}, err
+	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	u := user.GetUser("phonenumber", phone)
+
+	return u, nil
+}
+
+//match the entered password with
+//the hash password stored in the database
+func validPassword(password, hashPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
+		return err
+	}
+	return nil
+}

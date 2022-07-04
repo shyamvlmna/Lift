@@ -1,11 +1,15 @@
 package payment
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/razorpay/razorpay-go"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"gorm.io/gorm"
 	"os"
 	"strconv"
@@ -113,14 +117,38 @@ func SavePayment(userid uint, res *OrderResponse) {
 
 	db.Create(&pmt)
 
+	err = db.AutoMigrate(&models.User{})
+	if err != nil {
+		return
+	}
+
+	db.Model(&models.User{}).Where("user_id=?", userid).UpdateColumn("wallet_balance", gorm.Expr("wallet_balance + ?", res.Amount/100))
+
 }
 
 func UpdatePayment(paymentId string) {
 	db := database.Db
 
-	db.AutoMigrate(&Payment{})
+	if err := db.AutoMigrate(&Payment{}); err != nil {
+		return
+	}
 
 	db.Model(&Payment{}).Where("payment_id=?", paymentId).Update("status", "paid")
+
+}
+
+func ValidateWebhook(body []byte, signature string) bool {
+
+	h := hmac.New(sha256.New, []byte("funnyhow"))
+
+	h.Write(body)
+
+	sha := hex.EncodeToString(h.Sum(nil))
+
+	if signature != sha {
+		return false
+	}
+	return true
 }
 
 //{

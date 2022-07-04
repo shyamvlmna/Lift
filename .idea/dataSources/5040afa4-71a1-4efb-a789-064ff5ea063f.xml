@@ -1397,7 +1397,7 @@ true posixrules
 13429||10|C|G
 13429||-9223372036854775808|U|G
 13429||10|U|G</Grants>
-      <IntrospectionStateNumber>2377</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2493</IntrospectionStateNumber>
       <ObjectId>16438</ObjectId>
       <Relations>sequence|table|20147|19168|8
 sequence|table|20057|20059|1
@@ -4846,7 +4846,7 @@ sequence|table|20230|20231|1
     <schema id="264" parent="2" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>2377</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2493</IntrospectionStateNumber>
       <ObjectId>2200</ObjectId>
       <StateNumber>526</StateNumber>
       <OwnerName>postgres</OwnerName>
@@ -5303,13 +5303,13 @@ deleted_at</ColNames>
     <column id="331" parent="276" name="user_id">
       <DataType>bigint|0s</DataType>
       <Position>6</Position>
-      <StateNumber>2374</StateNumber>
+      <StateNumber>2486</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <column id="332" parent="276" name="amount">
       <DataType>bigint|0s</DataType>
       <Position>7</Position>
-      <StateNumber>2375</StateNumber>
+      <StateNumber>2487</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <column id="333" parent="276" name="status">
@@ -5521,7 +5521,7 @@ payment_id</ColNames>
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>12</Position>
-      <StateNumber>2370</StateNumber>
+      <StateNumber>2489</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <column id="365" parent="278" name="active">
@@ -5535,7 +5535,7 @@ payment_id</ColNames>
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>14</Position>
-      <StateNumber>2371</StateNumber>
+      <StateNumber>2490</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <index id="367" parent="278" name="users_pkey">

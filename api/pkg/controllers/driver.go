@@ -242,24 +242,16 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	driver := driver.GetDriver("phone_number", phone)
 
 	cab := &models.CabData{
 		VehicleId:    driver.Cab.VehicleId,
@@ -332,24 +324,16 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	driver := driver.GetDriver("phone_number", phone)
 
 	cab := &models.CabData{
 		VehicleId:    driver.Cab.VehicleId,
@@ -433,24 +417,16 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 		}
 	}(r.Body)
 
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	driver := driver.GetDriver("phone_number", phone)
 
 	vehicle.DriverId = driver.DriverId
 	driver.Cab = vehicle
@@ -482,24 +458,16 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 func EditCab(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	driver := driver.GetDriver("phone_number", phone)
 
 	cab := &models.CabData{
 		VehicleId:    driver.Cab.VehicleId,
@@ -536,13 +504,16 @@ func UpdateCab(w http.ResponseWriter, r *http.Request) {
 		}
 	}(r.Body)
 
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
-		//TODO
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
-	_, phone := auth.ParseJWT(c.Value)
-
-	driver := driver.GetDriver("phone_number", phone)
 
 	driver.Cab.Registration = cab.Registration
 	driver.Cab.Brand = cab.Brand
@@ -579,24 +550,16 @@ func UpdateCab(w http.ResponseWriter, r *http.Request) {
 func GetTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	driver := driver.GetDriver("phone_number", phone)
 
 	if !driver.Approved {
 		err := json.NewEncoder(w).Encode(&models.Response{
@@ -633,23 +596,16 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 		}
 	}(r.Body)
 
-	c, err := r.Cookie("jwt-token")
+	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	curDriver := driver.GetDriver("phone_number", phone)
 
 	ride.DriverId = curDriver.DriverId
 
@@ -700,20 +656,16 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	c, err := r.Cookie("jwt-token")
+	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-	_, phone := auth.ParseJWT(c.Value)
-	driver := driver.GetDriver("phone_number", phone)
 
 	ride, err := redis.GetTrip("trip-" + strconv.Itoa(int(driver.DriverId)))
 	if err != nil {
@@ -743,20 +695,16 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 
 func StartTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	c, err := r.Cookie("jwt-token")
+	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-	_, phone := auth.ParseJWT(c.Value)
-	curDriver := driver.GetDriver("phone_number", phone)
 
 	driverID := strconv.Itoa(int(curDriver.DriverId))
 
@@ -777,22 +725,16 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 func EndTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-
-	_, phone := auth.ParseJWT(c.Value)
-
-	curDriver := driver.GetDriver("phone_number", phone)
 
 	trip, err := redis.GetTrip("trip-" + strconv.Itoa(int(curDriver.DriverId)))
 	if err != nil {
@@ -824,23 +766,16 @@ func EndTrip(w http.ResponseWriter, r *http.Request) {
 func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c, err := r.Cookie("jwt-token")
+	d, err := GetDriverFromCookie(r)
 	if err != nil {
 		response := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "no cookie",
-			ResponseData:    nil,
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
 		}
-		if err := json.NewEncoder(w).Encode(&response); err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&response)
 		return
 	}
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	d := driver.GetDriver("phone_number", phone)
 
 	tripHistory := trip.GetTripHistory("driver_id", d.DriverId)
 
@@ -855,7 +790,19 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetDriverFromCookie(r *http.Request) *models.Driver {
+// GetDriverFromCookie returns the logged-in user from the stored cookie in session
+func GetDriverFromCookie(r *http.Request) (*models.Driver, error) {
+	c, err := r.Cookie("jwt-token")
 
-	return nil
+	if err != nil {
+		return &models.Driver{}, err
+	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	u := driver.GetDriver("phone_number", phone)
+
+	return u, nil
 }
