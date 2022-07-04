@@ -81,6 +81,8 @@ func UserRoutes(r *mux.Router) {
 
 	userRouter.HandleFunc("/razorpaycallback", controllers.RazorpayCallback)
 
+	userRouter.HandleFunc("/razorpay/webhook", controllers.RazorpayWebhook)
+
 	// userRouter.HandleFunc("/test", controllers.Test)
 
 }

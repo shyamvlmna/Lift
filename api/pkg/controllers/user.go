@@ -551,9 +551,21 @@ func UserWallet(w http.ResponseWriter, r *http.Request) {
 
 func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	resp := payment.AddMoney()
 
-	json.NewEncoder(w).Encode(&resp)
+	pmt := &payment.Payment{}
+
+	json.NewDecoder(r.Body).Decode(&pmt)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
+	resp := payment.AddMoney(pmt.Amount)
+	err := json.NewEncoder(w).Encode(&resp)
+	if err != nil {
+		return
+	}
 }
 
 func RazorpayCallback(w http.ResponseWriter, r *http.Request) {
@@ -561,6 +573,33 @@ func RazorpayCallback(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("successss")
 
+	err := json.NewEncoder(w).Encode(&models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "amount added to wallet",
+		ResponseData:    nil,
+	})
+	if err != nil {
+		return
+	}
+}
+
+func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	fmt.Println("webhook called")
+	wh := &payment.Webhook{}
+	err := json.NewDecoder(r.Body).Decode(&wh)
+	if err != nil {
+		return
+	}
+
+	if err != nil {
+		return
+	}
+	fmt.Println(wh.Event)
+	fmt.Println(wh.Payload.Payment.Entity.Amount)
+	err = json.NewEncoder(w).Encode(&wh)
+	//json.NewEncoder(w).
 	//w.Write([]byte("success"))
 }
 

@@ -4,24 +4,14 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="clean code">
-      <change afterPath="$PROJECT_DIR$/.idea/redisSettings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api/pkg/service/payment/app.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api/pkg/service/payment/razorpay.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/5040afa4-71a1-4efb-a789-064ff5ea063f.xml" afterDir="false" />
+    <list default="true" id="616b6ed3-ee85-41a7-90b7-d9a2e54ba04c" name="Changes" comment="integrated Razorpay">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.env" beforeDir="false" afterPath="$PROJECT_DIR$/api/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/api/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/api/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/controllers/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/driver.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/controllers/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/controllers/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/database/redis/redis.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/database/redis/redis.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/models/driver.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/models/driver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/driverRoutes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/routes/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/router.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/pkg/routes/userRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/routes/userRoutes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/mapservice/maps.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/mapservice/maps.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/trip/trip.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/payment/app.html" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/payment/app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pkg/service/payment/razorpay.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/pkg/service/payment/razorpay.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -160,7 +150,8 @@
     <MESSAGE value="changes" />
     <MESSAGE value="trip fare deducted from user wallet&#10;credited to admin and driver" />
     <MESSAGE value="clean code" />
-    <option name="LAST_COMMIT_MESSAGE" value="clean code" />
+    <MESSAGE value="integrated Razorpay" />
+    <option name="LAST_COMMIT_MESSAGE" value="integrated Razorpay" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
