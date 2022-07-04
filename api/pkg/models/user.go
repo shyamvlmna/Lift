@@ -9,7 +9,7 @@ import (
 
 type User struct {
 	gorm.Model
-	UserId        uint64 `gorm:"primaryKey;autoIncrement;unique" json:"userid"`
+	UserId        uint   `gorm:"primaryKey;autoIncrement;unique" json:"userid"`
 	Picture       string `json:"picture"`
 	Phonenumber   string `gorm:"not null;unique;" json:"phonenumber"`
 	Firstname     string `gorm:"not null;" json:"firstname"`

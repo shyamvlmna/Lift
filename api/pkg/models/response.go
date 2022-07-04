@@ -7,7 +7,7 @@ type Response struct {
 }
 
 type UserData struct {
-	Id          uint64 `json:"id"`
+	Id          uint   `json:"id"`
 	Phonenumber string `json:"phonenumber"`
 	Firstname   string `json:"firstname"`
 	Lastname    string `json:"lastname"`
@@ -15,7 +15,7 @@ type UserData struct {
 }
 
 type DriverData struct {
-	Id          uint64   `json:"id"`
+	Id          uint     `json:"id"`
 	Phonenumber string   `json:"phonenumber"`
 	Firstname   string   `json:"firstname"`
 	Lastname    string   `json:"lastname"`

@@ -13,7 +13,7 @@ type Vehicle struct {
 	Category     string `json:"type"`
 	VehicleModel string `json:"model"`
 	Colour       string `json:"colour"`
-	DriverId     uint64
+	DriverId     uint
 }
 
 // Add new vehicle into database

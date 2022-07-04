@@ -3,16 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/payment"
-	"golang.org/x/crypto/bcrypt"
-	"io"
-	"net/http"
-
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/payment"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
+	"golang.org/x/crypto/bcrypt"
+	"io"
+	"net/http"
 )
 
 // UserAuth Check if the user already exist in the system.
@@ -339,7 +338,10 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 		Phonenumber: user.Phonenumber,
 	}
 
-	json.NewEncoder(w).Encode(&userdata)
+	err = json.NewEncoder(w).Encode(&userdata)
+	if err != nil {
+		return
+	}
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -432,7 +434,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var OTPchan = make(chan int)
+//var OTPchan = make(chan int)
 
 //ConfirmTrip returns the trip code to match with the driver to start the ride
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
@@ -482,7 +484,7 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//TripHistory returns saved trips for the user
+// UserTripHistory returns saved trips of the user
 func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -552,18 +554,44 @@ func UserWallet(w http.ResponseWriter, r *http.Request) {
 func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	c, err := r.Cookie("jwt-token")
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "no cookie",
+			ResponseData:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	curUser := user.GetUser("phone_number", phone)
+
 	pmt := &payment.Payment{}
 
-	json.NewDecoder(r.Body).Decode(&pmt)
+	err = json.NewDecoder(r.Body).Decode(&pmt)
+	if err != nil {
+		return
+	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
-	resp := payment.AddMoney(pmt.Amount)
-	err := json.NewEncoder(w).Encode(&resp)
-	if err != nil {
+
+	resp := payment.AddMoney(curUser.UserId, pmt.Amount)
+
+	//tmp, _ := template.ParseFiles("/home/shyamjith/cab-booking-app/api/pkg/service/payment/app.html")
+	//tmp.Execute(w, nil)
+
+	if err = json.NewEncoder(w).Encode(&resp); err != nil {
 		return
 	}
 }
@@ -597,10 +625,16 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(wh.Event)
+
+	if wh.Event == "order.paid" {
+		payment.UpdatePayment(string(wh.Payload.Order.Entity.Receipt))
+	}
 	fmt.Println(wh.Payload.Payment.Entity.Amount)
+	fmt.Println(wh.Payload.Order.Entity.Receipt)
 	err = json.NewEncoder(w).Encode(&wh)
 	//json.NewEncoder(w).
 	//w.Write([]byte("success"))
+
 }
 
 //func GetUserFromCookie(r *http.Request) (models.User, error) {

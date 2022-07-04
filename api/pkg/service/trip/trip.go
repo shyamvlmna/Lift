@@ -249,7 +249,7 @@ func GetRide() models.Ride {
 	}
 }
 
-func GetTripHistory(role string, id uint64) *[]models.Trip {
+func GetTripHistory(role string, id uint) *[]models.Trip {
 	return database.GetTrips(role, id)
 }
 

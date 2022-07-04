@@ -8,7 +8,7 @@ import (
 
 type Driver struct {
 	gorm.Model
-	DriverId      uint64   `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
+	DriverId      uint     `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
 	PhoneNumber   string   `gorm:"not null;unique" json:"phonenumber"`
 	FirstName     string   `gorm:"not null" json:"firstname"`
 	LastName      string   `json:"lastname"`
