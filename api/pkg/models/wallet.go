@@ -67,7 +67,7 @@ func CashTransactions(driverId uint, fare uint) error {
 			return err
 		}
 
-		if err := tx.Model(&Driver{}).Where("driver_id=?", driverId).UpdateColumn("wallet_balance", gorm.Expr("wallet_balance + ?", fare*85/100)).Error; err != nil {
+		if err := tx.Model(&Driver{}).Where("driver_id=?", driverId).UpdateColumn("wallet_balance", gorm.Expr("wallet_balance - ?", fare*15/100)).Error; err != nil {
 			return err
 		}
 

@@ -41,10 +41,10 @@ func TripCode() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := redis.Set("tripcode", otp); err != nil {
-		fmt.Println(err)
-		return "", err
-	}
+	// if err := redis.Set("tripcode", otp); err != nil {
+	// 	fmt.Println(err)
+	// 	return "", err
+	// }
 	return otp, nil
 }
 

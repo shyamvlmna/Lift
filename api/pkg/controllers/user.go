@@ -498,8 +498,6 @@ func UserWallet(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
-	return
-
 }
 
 func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
@@ -560,6 +558,7 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	signature := r.Header.Get("X-Razorpay-Signature")
 
 	msg, err := ioutil.ReadAll(r.Body)
+	fmt.Println(err)
 	r.Body.Close()
 
 	if ok := payment.ValidateWebhook(msg, signature); !ok {
@@ -573,6 +572,7 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 
 	wh := &payment.Webhook{}
 	err = json.NewDecoder(r.Body).Decode(&wh)
+	fmt.Println(err)
 	r.Body.Close()
 
 	fmt.Println(wh.Event)

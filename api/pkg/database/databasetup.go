@@ -30,6 +30,7 @@ func DBSet() *gorm.DB {
 		return nil
 	}
 	fmt.Println("successfully connected to Postgresql")
+
 	return Db
 }
 

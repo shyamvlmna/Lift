@@ -30,9 +30,10 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
+
 	phonenumber := newDriver.PhoneNumber
 
 	if phonenumber != "" {
@@ -50,7 +51,7 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		response := models.Response{
-			ResponseStatus:  "fail",
+			ResponseStatus:  "failed",
 			ResponseMessage: "phonenumber required",
 			ResponseData:    nil,
 		}
@@ -66,7 +67,7 @@ func DriverSignUpPage(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	response := &models.Response{
-		ResponseStatus:  "success",
+		ResponseStatus:  "OTP validation success",
 		ResponseMessage: "submit driver data",
 		ResponseData:    nil,
 	}
@@ -112,7 +113,7 @@ func DriverSignUp(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
@@ -161,7 +162,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
@@ -175,6 +176,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	Driver := driver.GetDriver("phone_number", phonenumber)
 
 	if !Driver.Active {
+		w.WriteHeader(http.StatusForbidden)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "driver not active",
@@ -244,6 +246,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -326,6 +329,7 @@ func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -379,6 +383,7 @@ func UpdateDriverProfile(w http.ResponseWriter, r *http.Request) {
 
 	err = d.Update(d)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "driver profile update failed",
@@ -413,12 +418,13 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -433,6 +439,7 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 
 	err = driver.Update(*driver)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error adding cab",
@@ -460,6 +467,7 @@ func EditCab(w http.ResponseWriter, r *http.Request) {
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -500,12 +508,13 @@ func UpdateCab(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -523,6 +532,7 @@ func UpdateCab(w http.ResponseWriter, r *http.Request) {
 
 	err = driver.Update(*driver)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error updating cab",
@@ -552,6 +562,7 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -562,6 +573,7 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !driver.Approved {
+		w.WriteHeader(http.StatusUnauthorized)
 		err := json.NewEncoder(w).Encode(&models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "not an approved driver",
@@ -592,12 +604,13 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
 	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -610,6 +623,7 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 	ride.DriverId = curDriver.DriverId
 
 	if err := trip.RegisterTrip(ride); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error registering trip",
@@ -658,6 +672,7 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	}
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -669,7 +684,14 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 
 	ride, err := redis.GetTrip("trip-" + strconv.Itoa(int(driver.DriverId)))
 	if err != nil {
-		//	TODO
+		w.WriteHeader(http.StatusServiceUnavailable)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "couldn't find a trip",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
 
 	tripCode, _ := redis.Get("tripcode-" + strconv.Itoa(int(ride.DriverId)) + strconv.Itoa(int(ride.UserId)))
@@ -679,9 +701,11 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(matchCode)
 	fmt.Println(tripCode)
 	if code.TripCode == matchCode {
+		redis.DeleteData("tripcode-" + strconv.Itoa(int(ride.DriverId)) + strconv.Itoa(int(ride.UserId)))
 		http.Redirect(w, r, "/driver/startrip", http.StatusSeeOther)
 		return
 	}
+	w.WriteHeader(http.StatusBadRequest)
 	response := &models.Response{
 		ResponseStatus:  "failed",
 		ResponseMessage: "trip code doesn't match",
@@ -697,6 +721,7 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -710,7 +735,14 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 
 	ride, err := redis.GetTrip("trip-" + driverID)
 	if err != nil {
-		//	TODO
+		w.WriteHeader(http.StatusInternalServerError)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error geting trip data",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
 	}
 	response := &models.Response{
 		ResponseStatus:  "success",
@@ -727,6 +759,7 @@ func EndTrip(w http.ResponseWriter, r *http.Request) {
 
 	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "error parsing cookie",
@@ -802,7 +835,7 @@ func GetDriverFromCookie(r *http.Request) (*models.Driver, error) {
 
 	_, phone := auth.ParseJWT(tokenString)
 
-	u := driver.GetDriver("phone_number", phone)
+	d := driver.GetDriver("phone_number", phone)
 
-	return u, nil
+	return d, nil
 }

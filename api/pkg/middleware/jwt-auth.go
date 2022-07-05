@@ -3,10 +3,11 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
@@ -15,6 +16,7 @@ import (
 
 func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		reqToken := r.Header.Get("Authorization")
 
 		// c, err := r.Cookie("jwt-token")

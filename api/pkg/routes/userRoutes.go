@@ -17,13 +17,13 @@ func UserRoutes(r *mux.Router) {
 	userRouter := r.PathPrefix("/user").Subrouter()
 
 	//check wheather phonenumber already registerd or is a new entry
-	userRouter.HandleFunc("/auth", controllers.UserAuth).Methods("POST")
+	userRouter.HandleFunc("/auth", controllers.UserAuth).Methods(http.MethodPost)
 
 	//register new user insert user data to database
-	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods("POST")
+	userRouter.HandleFunc("/signup", controllers.UserSignUp).Methods(http.MethodPost)
 
 	//match entered password with the phone-number then redirect to the home page
-	userRouter.HandleFunc("/login", controllers.UserLogin).Methods("POST")
+	userRouter.HandleFunc("/login", controllers.UserLogin).Methods(http.MethodPost)
 
 	//login with Google handler
 	userRouter.HandleFunc("/googlelogin", googleauth.GoogleLogin)
@@ -47,42 +47,40 @@ func UserRoutes(r *mux.Router) {
 			return
 		}
 
-	}).Methods("GET")
+	}).Methods(http.MethodGet)
 
 	//validate submited otp
-	userRouter.Handle("/otp", middleware.ValidateOtp(controllers.UserSignupPage)).Methods("POST")
+	userRouter.Handle("/otp", middleware.ValidateOtp(controllers.UserSignupPage)).Methods(http.MethodPost)
 
 	//render login page to enter password
-	userRouter.HandleFunc("/loginpage", controllers.UserLoginPage).Methods("GET")
+	userRouter.HandleFunc("/loginpage", controllers.UserLoginPage).Methods(http.MethodGet)
 
 	//render the homepage only if authorized with JWT
-	userRouter.Handle("/userhome", middleware.IsAuthorized(controllers.UserHome)).Methods("GET")
+	userRouter.Handle("/userhome", middleware.IsAuthorized(controllers.UserHome)).Methods(http.MethodGet)
 
 	//get current user profile details to update
-	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods("GET")
+	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods(http.MethodGet)
 
 	//update user profile details
-	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods("POST")
+	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods(http.MethodPost)
 
 	//book new trip with location latitude and longitude from the frontend
-	userRouter.Handle("/booktrip", middleware.IsAuthorized(controllers.BookTrip)).Methods("POST")
+	userRouter.Handle("/booktrip", middleware.IsAuthorized(controllers.BookTrip)).Methods(http.MethodPost)
 
 	//confirm the trip and select payment method
-	userRouter.Handle("/confirmtrip", middleware.IsAuthorized(controllers.ConfirmTrip)).Methods("POST")
+	userRouter.Handle("/confirmtrip", middleware.IsAuthorized(controllers.ConfirmTrip)).Methods(http.MethodPost)
 
 	//get user trip history
-	userRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.UserTripHistory)).Methods("GET")
+	userRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.UserTripHistory)).Methods(http.MethodGet)
 
 	//get user wallet details
-	userRouter.Handle("/wallet", middleware.IsAuthorized(controllers.UserWallet)).Methods("GET")
+	userRouter.Handle("/wallet", middleware.IsAuthorized(controllers.UserWallet)).Methods(http.MethodGet)
 
 	//add money to user wallet
-	userRouter.Handle("/addmoney", middleware.IsAuthorized(controllers.AddMoneyToWallet)).Methods("GET")
+	userRouter.Handle("/addmoney", middleware.IsAuthorized(controllers.AddMoneyToWallet)).Methods(http.MethodGet)
 
 	userRouter.HandleFunc("/razorpaycallback", controllers.RazorpayCallback)
 
 	userRouter.HandleFunc("/razorpay/webhook", controllers.RazorpayWebhook)
-
-	// userRouter.HandleFunc("/test", controllers.Test)
 
 }
