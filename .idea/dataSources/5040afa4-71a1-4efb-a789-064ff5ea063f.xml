@@ -3,9 +3,9 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.40">
     <root id="1">
       <DateStyle>dmy</DateStyle>
-      <IntrospectionStateNumber>2365</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2922</IntrospectionStateNumber>
       <ServerVersion>14.4</ServerVersion>
-      <StartupTime>1656943401</StartupTime>
+      <StartupTime>1657030249</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -1397,7 +1397,7 @@ true posixrules
 13429||10|C|G
 13429||-9223372036854775808|U|G
 13429||10|U|G</Grants>
-      <IntrospectionStateNumber>2493</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2922</IntrospectionStateNumber>
       <ObjectId>16438</ObjectId>
       <Relations>sequence|table|20147|19168|8
 sequence|table|20057|20059|1
@@ -1420,7 +1420,43 @@ sequence|table|20230|20231|1
       <ObjectId>16385</ObjectId>
       <OwnerName>shyamjith</OwnerName>
     </database>
-    <role id="5" parent="1" name="postgres">
+    <role id="5" parent="1" name="pg_database_owner">
+      <ObjectId>6171</ObjectId>
+    </role>
+    <role id="6" parent="1" name="pg_execute_server_program">
+      <ObjectId>4571</ObjectId>
+    </role>
+    <role id="7" parent="1" name="pg_monitor">
+      <ObjectId>3373</ObjectId>
+      <RoleGrants>3374
+3375
+3377</RoleGrants>
+    </role>
+    <role id="8" parent="1" name="pg_read_all_data">
+      <ObjectId>6181</ObjectId>
+    </role>
+    <role id="9" parent="1" name="pg_read_all_settings">
+      <ObjectId>3374</ObjectId>
+    </role>
+    <role id="10" parent="1" name="pg_read_all_stats">
+      <ObjectId>3375</ObjectId>
+    </role>
+    <role id="11" parent="1" name="pg_read_server_files">
+      <ObjectId>4569</ObjectId>
+    </role>
+    <role id="12" parent="1" name="pg_signal_backend">
+      <ObjectId>4200</ObjectId>
+    </role>
+    <role id="13" parent="1" name="pg_stat_scan_tables">
+      <ObjectId>3377</ObjectId>
+    </role>
+    <role id="14" parent="1" name="pg_write_all_data">
+      <ObjectId>6182</ObjectId>
+    </role>
+    <role id="15" parent="1" name="pg_write_server_files">
+      <ObjectId>4570</ObjectId>
+    </role>
+    <role id="16" parent="1" name="postgres">
       <BypassRls>1</BypassRls>
       <CanLogin>1</CanLogin>
       <CreateDb>1</CreateDb>
@@ -1428,42 +1464,6 @@ sequence|table|20230|20231|1
       <ObjectId>10</ObjectId>
       <Replication>1</Replication>
       <SuperRole>1</SuperRole>
-    </role>
-    <role id="6" parent="1" name="pg_database_owner">
-      <ObjectId>6171</ObjectId>
-    </role>
-    <role id="7" parent="1" name="pg_read_all_data">
-      <ObjectId>6181</ObjectId>
-    </role>
-    <role id="8" parent="1" name="pg_write_all_data">
-      <ObjectId>6182</ObjectId>
-    </role>
-    <role id="9" parent="1" name="pg_monitor">
-      <ObjectId>3373</ObjectId>
-      <RoleGrants>3374
-3375
-3377</RoleGrants>
-    </role>
-    <role id="10" parent="1" name="pg_read_all_settings">
-      <ObjectId>3374</ObjectId>
-    </role>
-    <role id="11" parent="1" name="pg_read_all_stats">
-      <ObjectId>3375</ObjectId>
-    </role>
-    <role id="12" parent="1" name="pg_stat_scan_tables">
-      <ObjectId>3377</ObjectId>
-    </role>
-    <role id="13" parent="1" name="pg_read_server_files">
-      <ObjectId>4569</ObjectId>
-    </role>
-    <role id="14" parent="1" name="pg_write_server_files">
-      <ObjectId>4570</ObjectId>
-    </role>
-    <role id="15" parent="1" name="pg_execute_server_program">
-      <ObjectId>4571</ObjectId>
-    </role>
-    <role id="16" parent="1" name="pg_signal_backend">
-      <ObjectId>4200</ObjectId>
     </role>
     <role id="17" parent="1" name="shyamjith">
       <BypassRls>1</BypassRls>
@@ -4846,7 +4846,7 @@ sequence|table|20230|20231|1
     <schema id="264" parent="2" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>2493</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2922</IntrospectionStateNumber>
       <ObjectId>2200</ObjectId>
       <StateNumber>526</StateNumber>
       <OwnerName>postgres</OwnerName>
@@ -4919,7 +4919,7 @@ sequence|table|20230|20231|1
     </table>
     <table id="276" parent="264" name="payments">
       <ObjectId>20231</ObjectId>
-      <StateNumber>2372</StateNumber>
+      <StateNumber>2921</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>shyamjith</OwnerName>
     </table>
@@ -4994,7 +4994,7 @@ sequence|table|20230|20231|1
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>9</Position>
-      <StateNumber>2247</StateNumber>
+      <StateNumber>2676</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <index id="288" parent="274" name="admins_username_key">
@@ -5132,7 +5132,7 @@ sequence|table|20230|20231|1
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>13</Position>
-      <StateNumber>2203</StateNumber>
+      <StateNumber>2683</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <column id="308" parent="275" name="approved">
@@ -5191,7 +5191,7 @@ sequence|table|20230|20231|1
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>22</Position>
-      <StateNumber>2244</StateNumber>
+      <StateNumber>2684</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <index id="317" parent="275" name="drivers_pkey">
@@ -5294,22 +5294,22 @@ deleted_at</ColNames>
       <TypeId>1184</TypeId>
     </column>
     <column id="330" parent="276" name="payment_id">
-      <DataType>bigint|0s</DataType>
+      <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <Position>5</Position>
-      <StateNumber>2372</StateNumber>
-      <TypeId>20</TypeId>
+      <StateNumber>2921</StateNumber>
+      <TypeId>25</TypeId>
     </column>
     <column id="331" parent="276" name="user_id">
       <DataType>bigint|0s</DataType>
       <Position>6</Position>
-      <StateNumber>2486</StateNumber>
+      <StateNumber>2913</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <column id="332" parent="276" name="amount">
       <DataType>bigint|0s</DataType>
       <Position>7</Position>
-      <StateNumber>2487</StateNumber>
+      <StateNumber>2914</StateNumber>
       <TypeId>20</TypeId>
     </column>
     <column id="333" parent="276" name="status">
@@ -5322,26 +5322,42 @@ deleted_at</ColNames>
       <ColNames>id
 payment_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>20237</ObjectId>
+      <ObjectId>20451</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>2372</StateNumber>
+      <StateNumber>2921</StateNumber>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
+      <CollationIds>
+100</CollationIds>
+      <CollationParentNames>
+pg_catalog</CollationParentNames>
+      <CollationNames>
+default</CollationNames>
     </index>
-    <index id="335" parent="276" name="idx_payments_deleted_at">
+    <index id="335" parent="276" name="payments_payment_id_uindex">
+      <ColNames>payment_id</ColNames>
+      <ObjectId>20453</ObjectId>
+      <StateNumber>2921</StateNumber>
+      <Unique>1</Unique>
+      <AccessMethodId>403</AccessMethodId>
+      <CollationNames>default</CollationNames>
+      <CollationIds>100</CollationIds>
+      <CollationParentNames>pg_catalog</CollationParentNames>
+    </index>
+    <index id="336" parent="276" name="idx_payments_deleted_at">
       <ColNames>deleted_at</ColNames>
       <ObjectId>20239</ObjectId>
-      <StateNumber>2373</StateNumber>
+      <StateNumber>2921</StateNumber>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="336" parent="276" name="payments_pkey">
+    <key id="337" parent="276" name="payments_pkey">
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>20238</ObjectId>
+      <ObjectId>20452</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>2372</StateNumber>
-      <UnderlyingIndexId>20237</UnderlyingIndexId>
+      <StateNumber>2921</StateNumber>
+      <UnderlyingIndexId>20451</UnderlyingIndexId>
     </key>
-    <column id="337" parent="277" name="id">
+    <column id="338" parent="277" name="id">
       <DataType>bigint|0s</DataType>
       <DefaultExpression>nextval(&apos;trips_id_seq&apos;::regclass)</DefaultExpression>
       <NotNull>1</NotNull>
@@ -5349,79 +5365,79 @@ payment_id</ColNames>
       <StateNumber>2210</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="338" parent="277" name="created_at">
+    <column id="339" parent="277" name="created_at">
       <DataType>timestamp with time zone|0s</DataType>
       <Position>2</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>1184</TypeId>
     </column>
-    <column id="339" parent="277" name="updated_at">
+    <column id="340" parent="277" name="updated_at">
       <DataType>timestamp with time zone|0s</DataType>
       <Position>3</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>1184</TypeId>
     </column>
-    <column id="340" parent="277" name="deleted_at">
+    <column id="341" parent="277" name="deleted_at">
       <DataType>timestamp with time zone|0s</DataType>
       <Position>4</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>1184</TypeId>
     </column>
-    <column id="341" parent="277" name="user_id">
+    <column id="342" parent="277" name="user_id">
       <DataType>bigint|0s</DataType>
       <Position>5</Position>
-      <StateNumber>2210</StateNumber>
+      <StateNumber>2679</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="342" parent="277" name="driver_id">
+    <column id="343" parent="277" name="driver_id">
       <DataType>bigint|0s</DataType>
       <Position>6</Position>
-      <StateNumber>2210</StateNumber>
+      <StateNumber>2680</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="343" parent="277" name="source">
+    <column id="344" parent="277" name="source">
       <DataType>text|0s</DataType>
       <Position>7</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="344" parent="277" name="destination">
+    <column id="345" parent="277" name="destination">
       <DataType>text|0s</DataType>
       <Position>8</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="345" parent="277" name="distance">
+    <column id="346" parent="277" name="distance">
       <DataType>text|0s</DataType>
       <Position>9</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="346" parent="277" name="fare">
+    <column id="347" parent="277" name="fare">
       <DataType>bigint|0s</DataType>
       <Position>10</Position>
-      <StateNumber>2210</StateNumber>
+      <StateNumber>2681</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="347" parent="277" name="eta">
+    <column id="348" parent="277" name="eta">
       <DataType>text|0s</DataType>
       <Position>11</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="348" parent="277" name="payment_method">
+    <column id="349" parent="277" name="payment_method">
       <DataType>text|0s</DataType>
       <Position>12</Position>
       <StateNumber>2210</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="349" parent="277" name="rating">
+    <column id="350" parent="277" name="rating">
       <DataType>smallint|0s</DataType>
       <Position>13</Position>
-      <StateNumber>2279</StateNumber>
+      <StateNumber>2682</StateNumber>
       <TypeId>21</TypeId>
     </column>
-    <index id="350" parent="277" name="trips_pkey">
+    <index id="351" parent="277" name="trips_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20131</ObjectId>
@@ -5430,20 +5446,20 @@ payment_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="351" parent="277" name="idx_trips_deleted_at">
+    <index id="352" parent="277" name="idx_trips_deleted_at">
       <ColNames>deleted_at</ColNames>
       <ObjectId>20133</ObjectId>
       <StateNumber>2211</StateNumber>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="352" parent="277" name="trips_pkey">
+    <key id="353" parent="277" name="trips_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20132</ObjectId>
       <Primary>1</Primary>
       <StateNumber>2210</StateNumber>
       <UnderlyingIndexId>20131</UnderlyingIndexId>
     </key>
-    <column id="353" parent="278" name="id">
+    <column id="354" parent="278" name="id">
       <DataType>bigint|0s</DataType>
       <DefaultExpression>nextval(&apos;users_id_seq&apos;::regclass)</DefaultExpression>
       <NotNull>1</NotNull>
@@ -5451,25 +5467,25 @@ payment_id</ColNames>
       <StateNumber>2188</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="354" parent="278" name="created_at">
+    <column id="355" parent="278" name="created_at">
       <DataType>timestamp with time zone|0s</DataType>
       <Position>2</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>1184</TypeId>
     </column>
-    <column id="355" parent="278" name="updated_at">
+    <column id="356" parent="278" name="updated_at">
       <DataType>timestamp with time zone|0s</DataType>
       <Position>3</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>1184</TypeId>
     </column>
-    <column id="356" parent="278" name="deleted_at">
+    <column id="357" parent="278" name="deleted_at">
       <DataType>timestamp with time zone|0s</DataType>
       <Position>4</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>1184</TypeId>
     </column>
-    <column id="357" parent="278" name="user_id">
+    <column id="358" parent="278" name="user_id">
       <DataType>bigint|0s</DataType>
       <DefaultExpression>nextval(&apos;users_user_id_seq&apos;::regclass)</DefaultExpression>
       <NotNull>1</NotNull>
@@ -5477,68 +5493,68 @@ payment_id</ColNames>
       <StateNumber>2188</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="358" parent="278" name="picture">
+    <column id="359" parent="278" name="picture">
       <DataType>text|0s</DataType>
       <Position>6</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="359" parent="278" name="phonenumber">
+    <column id="360" parent="278" name="phonenumber">
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="360" parent="278" name="firstname">
+    <column id="361" parent="278" name="firstname">
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="361" parent="278" name="lastname">
+    <column id="362" parent="278" name="lastname">
       <DataType>text|0s</DataType>
       <Position>9</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="362" parent="278" name="email">
+    <column id="363" parent="278" name="email">
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <Position>10</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="363" parent="278" name="password">
+    <column id="364" parent="278" name="password">
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <Position>11</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>25</TypeId>
     </column>
-    <column id="364" parent="278" name="rating">
+    <column id="365" parent="278" name="rating">
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>12</Position>
-      <StateNumber>2489</StateNumber>
+      <StateNumber>2909</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <column id="365" parent="278" name="active">
+    <column id="366" parent="278" name="active">
       <DataType>boolean|0s</DataType>
       <DefaultExpression>true</DefaultExpression>
       <Position>13</Position>
       <StateNumber>2188</StateNumber>
       <TypeId>16</TypeId>
     </column>
-    <column id="366" parent="278" name="wallet_balance">
+    <column id="367" parent="278" name="wallet_balance">
       <DataType>bigint|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
       <Position>14</Position>
-      <StateNumber>2490</StateNumber>
+      <StateNumber>2910</StateNumber>
       <TypeId>20</TypeId>
     </column>
-    <index id="367" parent="278" name="users_pkey">
+    <index id="368" parent="278" name="users_pkey">
       <ColNames>id
 user_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
@@ -5548,7 +5564,7 @@ user_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="368" parent="278" name="users_user_id_key">
+    <index id="369" parent="278" name="users_user_id_key">
       <ColNames>user_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20070</ObjectId>
@@ -5556,7 +5572,7 @@ user_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="369" parent="278" name="users_phonenumber_key">
+    <index id="370" parent="278" name="users_phonenumber_key">
       <ColNames>phonenumber</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20072</ObjectId>
@@ -5567,7 +5583,7 @@ user_id</ColNames>
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <index id="370" parent="278" name="users_email_key">
+    <index id="371" parent="278" name="users_email_key">
       <ColNames>email</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20074</ObjectId>
@@ -5578,32 +5594,32 @@ user_id</ColNames>
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <index id="371" parent="278" name="idx_users_deleted_at">
+    <index id="372" parent="278" name="idx_users_deleted_at">
       <ColNames>deleted_at</ColNames>
       <ObjectId>20076</ObjectId>
       <StateNumber>2189</StateNumber>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="372" parent="278" name="users_pkey">
+    <key id="373" parent="278" name="users_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20069</ObjectId>
       <Primary>1</Primary>
       <StateNumber>2188</StateNumber>
       <UnderlyingIndexId>20068</UnderlyingIndexId>
     </key>
-    <key id="373" parent="278" name="users_user_id_key">
+    <key id="374" parent="278" name="users_user_id_key">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20071</ObjectId>
       <StateNumber>2188</StateNumber>
       <UnderlyingIndexId>20070</UnderlyingIndexId>
     </key>
-    <key id="374" parent="278" name="users_phonenumber_key">
+    <key id="375" parent="278" name="users_phonenumber_key">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20073</ObjectId>
       <StateNumber>2188</StateNumber>
       <UnderlyingIndexId>20072</UnderlyingIndexId>
     </key>
-    <key id="375" parent="278" name="users_email_key">
+    <key id="376" parent="278" name="users_email_key">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>20075</ObjectId>
       <StateNumber>2188</StateNumber>

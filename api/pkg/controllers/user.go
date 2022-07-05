@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
@@ -11,9 +15,6 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
-	"io"
-	"io/ioutil"
-	"net/http"
 )
 
 // UserAuth Check if the user already exist in the system.
@@ -558,7 +559,9 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	signature := r.Header.Get("X-Razorpay-Signature")
 
 	msg, err := ioutil.ReadAll(r.Body)
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println(err)
+	}
 	r.Body.Close()
 
 	if ok := payment.ValidateWebhook(msg, signature); !ok {
@@ -571,14 +574,15 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("webhook called")
 
 	wh := &payment.Webhook{}
-	err = json.NewDecoder(r.Body).Decode(&wh)
-	fmt.Println(err)
+	if err = json.NewDecoder(r.Body).Decode(&wh); err != nil {
+		fmt.Println(err)
+	}
 	r.Body.Close()
 
 	fmt.Println(wh.Event)
 
 	if wh.Event == "order.paid" {
-		payment.UpdatePayment(wh.Payload.Order.Entity.Receipt)
+		payment.UpdatePayment((*payment.Order)(&wh.Payload.Order))
 	}
 	fmt.Println(wh.Payload.Payment.Entity.Amount)
 	fmt.Println(wh.Payload.Order.Entity.Receipt)
