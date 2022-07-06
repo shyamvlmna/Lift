@@ -1,27 +1,26 @@
 package models
 
 import (
-	"strconv"
-
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type Driver struct {
 	gorm.Model
-	DriverId    uint64       `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
-	PhoneNumber string       `gorm:"not null;unique" json:"phonenumber"`
-	FirstName   string       `gorm:"not null" json:"firstname"`
-	LastName    string       `json:"lastname"`
-	Email       string       `gorm:"not null;unique" json:"email"`
-	Password    string       `gorm:"not null" json:"password"`
-	City        string       `json:"city"`
-	LicenceNum  string       `json:"licence"`
-	Rating      int          `gorm:"default:0" json:"driver_rating"`
-	Approved    bool         `gorm:"default:false" json:"approved"`
-	Active      bool         `gorm:"default:true" json:"status"`
-	Cab         *Vehicle     `json:"cab" gorm:"embedded"`
-	Wallet      DriverWallet `json:"driverwallet" gorm:"foreignKey:DriverId"`
+	DriverId      uint     `gorm:"primaryKey;unique;autoIncrement;" json:"driverid"`
+	PhoneNumber   string   `gorm:"not null;unique" json:"phonenumber"`
+	FirstName     string   `gorm:"not null" json:"firstname"`
+	LastName      string   `json:"lastname"`
+	Email         string   `gorm:"not null;unique" json:"email"`
+	Password      string   `gorm:"not null" json:"password"`
+	City          string   `json:"city"`
+	LicenceNum    string   `json:"licence"`
+	Rating        int      `gorm:"default:0" json:"driver_rating"`
+	Approved      bool     `gorm:"default:false" json:"approved"`
+	Active        bool     `gorm:"default:true" json:"status"`
+	Cab           *Vehicle `json:"cab" gorm:"embedded"`
+	WalletBalance uint     `json:"driverwallet"  gorm:"default:0;"`
 }
 
 // Add new driver to database
@@ -36,7 +35,7 @@ func (d *Driver) Add() error {
 	return result.Error
 }
 
-//get driver by key
+// Get driver by key
 func (d *Driver) Get(key, value string) (Driver, bool) {
 	db := database.Db
 
@@ -55,7 +54,7 @@ func (d *Driver) Get(key, value string) (Driver, bool) {
 	}
 }
 
-//get all drivers in the database
+// GetAll drivers in the database
 func (d *Driver) GetAll() *[]Driver {
 	db := database.Db
 
@@ -65,7 +64,7 @@ func (d *Driver) GetAll() *[]Driver {
 	return drivers
 }
 
-//update a driver by getting updated driver fields
+// Update a driver by getting updated driver fields
 //only update the not null driver fields
 func (*Driver) Update(d Driver) error {
 	db := database.Db
@@ -77,7 +76,14 @@ func (*Driver) Update(d Driver) error {
 	db.Where("id=?", id).First(&driver)
 
 	result := db.Model(&driver).Updates(Driver{
-		Cab: d.Cab,
+		PhoneNumber: d.PhoneNumber,
+		FirstName:   d.FirstName,
+		LastName:    d.LastName,
+		Email:       d.Email,
+		Password:    d.Password,
+		City:        d.City,
+		LicenceNum:  d.LicenceNum,
+		Cab:         d.Cab,
 	})
 
 	db.Save(&driver)
@@ -85,16 +91,19 @@ func (*Driver) Update(d Driver) error {
 	return result.Error
 }
 
-//delete driver by id
+// Delete driver by id
 func (d *Driver) Delete(id uint64) error {
 	db := database.Db
-	db.AutoMigrate(&Driver{})
+	err := db.AutoMigrate(&Driver{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Delete(&Driver{}, id)
 	return result.Error
 }
 
-//block/unblock driver by toggling driver approved field
+// BlockUnblock driver by toggling driver approved field
 func (d *Driver) BlockUnblock(id uint64) error {
 	db := database.Db
 

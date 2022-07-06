@@ -3,20 +3,41 @@ package trip
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
-	maps "googlemaps.github.io/maps"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"googlemaps.github.io/maps"
 )
 
 func Fare(d int) float32 {
 
 	fare := float32(d) * 0.05
 	return fare
+}
+
+type MapsResponse struct {
+	DestinationAddresses []string `json:"destination_addresses"`
+	OriginAddresses      []string `json:"origin_addresses"`
+	Rows                 []struct {
+		Elements []struct {
+			Distance struct {
+				Text  string `json:"text"`
+				Value int    `json:"value"`
+			} `json:"distance"`
+			Duration struct {
+				Text  string `json:"text"`
+				Value int    `json:"value"`
+			} `json:"duration"`
+			Status string `json:"status"`
+		} `json:"elements"`
+	} `json:"rows"`
+	Status string `json:"status"`
 }
 
 type Ride struct {
@@ -105,13 +126,15 @@ type Dist struct {
 	Val  int    `json:"value"`
 }
 
+var googlemapskey = os.Getenv("GMAPSKEY")
+
 func DistanceAPI(r *Ride) *Result {
 	// https://api.distancematrix.ai/maps/api/distancematrix/json?origins=51.4822656,-0.1933769&destinations=51.4994794,-0.1269979
 	// &key=<your_access_token>
 
 	origins := fmt.Sprintf("%s,%s", strconv.FormatFloat(r.Source.Lat, 'f', -1, 64), strconv.FormatFloat(r.Source.Lng, 'f', -1, 64))
 	destinations := fmt.Sprintf("%s,%s", strconv.FormatFloat(r.Destination.Lat, 'f', -1, 64), strconv.FormatFloat(r.Destination.Lng, 'f', -1, 64))
-	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/distancematrix/json?origins=%s&destinations=%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj", origins, destinations)
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/distancematrix/json?origins=%s&destinations=%s&key=%s", origins, destinations, googlemapskey)
 	method := "GET"
 
 	client := &http.Client{}
@@ -126,7 +149,12 @@ func DistanceAPI(r *Ride) *Result {
 		fmt.Println(err)
 
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(res.Body)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -136,7 +164,10 @@ func DistanceAPI(r *Ride) *Result {
 
 	fmt.Println(string(body))
 	result := &Result{}
-	json.Unmarshal([]byte(body), &result)
+	err = json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return nil
+	}
 	return result
 }
 
@@ -144,7 +175,7 @@ func GeoCodeApi(l LatLng) *Result {
 
 	lat := strconv.FormatFloat(l.Lat, 'f', -1, 64)
 	lng := strconv.FormatFloat(l.Lng, 'f', -1, 64)
-	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/geocode/json?latlng=%s,%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj"+lat, lng)
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/geocode/json?latlng=%s,%s&key=%s"+lat, lng, googlemapskey)
 	method := "GET"
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, nil)
@@ -158,7 +189,12 @@ func GeoCodeApi(l LatLng) *Result {
 		fmt.Println(err)
 
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(res.Body)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -168,7 +204,10 @@ func GeoCodeApi(l LatLng) *Result {
 
 	fmt.Println(string(body))
 	result := &Result{}
-	json.Unmarshal([]byte(body), &result)
+	err = json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return nil
+	}
 	return result
 }
 
@@ -213,7 +252,7 @@ func GetRide() models.Ride {
 	}
 }
 
-func GetTripHistory(role string, id uint64) *[]models.Trip {
+func GetTripHistory(role string, id uint) *[]models.Trip {
 	return database.GetTrips(role, id)
 }
 
@@ -226,37 +265,8 @@ func RegisterTrip(ride *models.Ride) error {
 	trip.Fare = ride.Fare
 	trip.ETA = ride.ETA
 	trip.PaymentMethod = ride.PaymentMethod
-	trip.DrvrId = ride.DriverId
-	trip.UsrId = ride.UserId
+	trip.DriverId = ride.DriverId
+	trip.UserId = ride.UserId
 
 	return trip.Add(trip)
 }
-
-// type Pool struct {
-// 	BookTrip chan *models.User
-// 	GetTrip  chan *models.Driver
-// 	Trips    chan models.Trip
-// }
-
-// func NewPool() *Pool {
-// 	return &Pool{
-// 		BookTrip: make(chan *models.User),
-// 		GetTrip:  make(chan *models.Driver),
-// 		Trips:    make(chan models.Trip),
-// 	}
-// }
-
-// func (pool *Pool) Start() {
-// 	for {
-// 		select {
-// 		// case trip:=<-pool.BookTrip:
-
-// 		}
-// 	}
-// }
-
-// func CreateNewTrip() {
-// 	// pool := &NewPool()
-// }
-
-// func ProcessTrip(models.Trip)

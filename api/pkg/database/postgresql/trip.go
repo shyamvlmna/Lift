@@ -21,7 +21,7 @@ func OpenTripDb() (*gorm.DB, error) {
 	return Db, nil
 }
 
-func GetTrips(role string, id uint64) *[]models.Trip {
+func GetTrips(role string, id uint) *[]models.Trip {
 
 	db, _ := OpenTripDb()
 	rides := []models.Trip{}

@@ -24,14 +24,14 @@ func GenerateJWT(role, usrphone string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	key := []byte(os.Getenv("SECRET_KEY"))
+	key := []byte(os.Getenv("JWT-SECRET_KEY"))
 
 	claims := Claims{
 		Usrphone:   usrphone,
 		Role:       role,
 		Authorized: true,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Minute * 25)},
+			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour)},
 		},
 	}
 
@@ -52,7 +52,7 @@ func ParseJWT(tokenString string) (string, string) {
 	if err != nil {
 		return "", ""
 	}
-	key := []byte(os.Getenv("SECRET_KEY"))
+	key := []byte(os.Getenv("JWT-SECRET_KEY"))
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 

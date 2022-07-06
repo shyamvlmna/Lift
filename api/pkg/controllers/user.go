@@ -1,17 +1,20 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
+	"io"
+	"io/ioutil"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/payment"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // UserAuth Check if the user already exist in the system.
@@ -60,6 +63,7 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 // UserSignupPage render the signup page to submit the details of the new user
 func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "submit user data",
@@ -99,15 +103,21 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newUser := models.User{}
+
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		return
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
 
 	if err := user.RegisterUser(&newUser); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "signup failed",
@@ -145,7 +155,12 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
 
 	password := newUser.Password
 
@@ -171,8 +186,8 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	//validate the entered password with stored hash password
 	if err := validPassword(password, User.Password); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
+
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "password authentication failed",
@@ -224,12 +239,16 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
-	c, _ := r.Cookie("jwt-token")
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	user := user.GetUser("phonenumber", phone)
+	user, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
 
 	userData := &models.UserData{
 		Id:          user.UserId,
@@ -245,7 +264,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 		ResponseData:    userData,
 	}
 
-	err := json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
@@ -271,6 +290,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 	c.Value = ""
 	c.Path = "/"
 	c.MaxAge = -1
+
 	http.SetCookie(w, c)
 
 	response := &models.Response{
@@ -288,11 +308,24 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	params := mux.Vars(r)
-	id := params["id"]
-	user := user.GetUser("id", id)
+	w.Header().Set("Content-Type", "application/json")
 
-	err := json.NewEncoder(w).Encode(&user)
+	user, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	userdata := &models.UserData{
+		Phonenumber: user.Phonenumber,
+	}
+
+	err = json.NewEncoder(w).Encode(&userdata)
 	if err != nil {
 		return
 	}
@@ -302,6 +335,7 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
 	newUser := models.User{}
+
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		return
@@ -318,22 +352,24 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-//match the entered password with
-//the hash password stored in the database
-func validPassword(password, hashPassword string) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
-		return err
-	}
-	return nil
-}
-
 // BookTrip get the pickup point and destination from the booktrip call from the user
 func BookTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	user, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
 	newRide := &trip.Ride{}
 
-	err := json.NewDecoder(r.Body).Decode(&newRide)
+	err = json.NewDecoder(r.Body).Decode(&newRide)
 	if err != nil {
 		return
 	}
@@ -348,36 +384,52 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 		Fare:          newTrip.Fare,
 		PaymentMethod: "",
 	}
+
+	if user.WalletBalance < newTrip.Fare {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "not enough balance in wallet",
+			ResponseData:    &ride,
+		}
+		if err = json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "trip created successfully",
 		ResponseData:    &ride,
 	}
-
-	err = json.NewEncoder(w).Encode(&response)
-	if err != nil {
+	if err = json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}
 }
 
-var OTPchan = make(chan int)
+//var OTPchan = make(chan int)
 
 //ConfirmTrip returns the trip code to match with the driver to start the ride
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	cnftrip := &models.Ride{}
+
 	err := json.NewDecoder(r.Body).Decode(&cnftrip)
 	if err != nil {
 		return
 	}
 
-	c, _ := r.Cookie("jwt-token")
-	tokenString := c.Value
-
-	_, phone := auth.ParseJWT(tokenString)
-
-	curUser := user.GetUser("phone_number", phone)
+	curUser, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
 
 	cnftrip.UserId = curUser.UserId
 	go trip.FindCab(&cnftrip)
@@ -397,25 +449,173 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//TripHistory returns saved trips for the user
+// UserTripHistory returns saved trips of the user
 func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	c, _ := r.Cookie("jwt-token")
-	tokenString := c.Value
 
-	_, phone := auth.ParseJWT(tokenString)
+	user, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
 
-	user := user.GetUser("phonenumber", phone)
-
-	tripHistory := trip.GetTripHistory("usr_id", user.UserId)
+	tripHistory := trip.GetTripHistory("user_id", user.UserId)
 
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched trip history",
 		ResponseData:    tripHistory,
 	}
-	err := json.NewEncoder(w).Encode(&response)
+	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
+}
+
+func UserWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	user, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "user wallet",
+		ResponseData:    user.WalletBalance,
+	}
+	if err := json.NewEncoder(w).Encode(&response); err != nil {
+		return
+	}
+}
+
+func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	curUser, err := GetUserFromCookie(r)
+	if err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	pmt := &payment.Payment{}
+
+	err = json.NewDecoder(r.Body).Decode(&pmt)
+	if err != nil {
+		return
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(r.Body)
+
+	resp := payment.AddMoney(curUser.UserId, pmt.Amount)
+
+	//tmp, _ := template.ParseFiles("/home/shyamjith/cab-booking-app/api/pkg/service/payment/app.html")
+	//tmp.Execute(w, nil)
+
+	if err = json.NewEncoder(w).Encode(&resp); err != nil {
+		return
+	}
+}
+
+func RazorpayCallback(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	fmt.Println("successss")
+
+	err := json.NewEncoder(w).Encode(&models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "amount added to wallet",
+		ResponseData:    nil,
+	})
+	if err != nil {
+		return
+	}
+}
+
+func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	signature := r.Header.Get("X-Razorpay-Signature")
+
+	msg, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	r.Body.Close()
+
+	if ok := payment.ValidateWebhook(msg, signature); !ok {
+		fmt.Println("unauthorized webhook call")
+		return
+	}
+
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(msg))
+
+	fmt.Println("webhook called")
+
+	wh := &payment.Webhook{}
+	if err = json.NewDecoder(r.Body).Decode(&wh); err != nil {
+		fmt.Println(err)
+	}
+	r.Body.Close()
+
+	fmt.Println(wh.Event)
+
+	if wh.Event == "order.paid" {
+		payment.UpdatePayment((*payment.Order)(&wh.Payload.Order))
+	}
+	fmt.Println(wh.Payload.Payment.Entity.Amount)
+	fmt.Println(wh.Payload.Order.Entity.Receipt)
+	if err = json.NewEncoder(w).Encode(wh); err != nil {
+		return
+	}
+}
+
+// GetUserFromCookie returns the logged-in user from the stored cookie in session
+func GetUserFromCookie(r *http.Request) (*models.User, error) {
+	c, err := r.Cookie("jwt-token")
+
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return &models.User{}, err
+		}
+		return &models.User{}, err
+	}
+
+	tokenString := c.Value
+
+	_, phone := auth.ParseJWT(tokenString)
+
+	u := user.GetUser("phonenumber", phone)
+
+	return u, nil
+}
+
+//match the entered password with
+//the hash password stored in the database
+func validPassword(password, hashPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
+		return err
+	}
+	return nil
 }

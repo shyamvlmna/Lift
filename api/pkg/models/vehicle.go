@@ -13,13 +13,16 @@ type Vehicle struct {
 	Category     string `json:"type"`
 	VehicleModel string `json:"model"`
 	Colour       string `json:"colour"`
-	DriverId     uint64
+	DriverId     uint
 }
 
-//add new vehicle into database
+// Add new vehicle into database
 func (v *Vehicle) Add() error {
 	db := database.Db
-	db.AutoMigrate(&Vehicle{})
+	err := db.AutoMigrate(&Vehicle{})
+	if err != nil {
+		return err
+	}
 
 	result := db.Create(&v)
 	return result.Error

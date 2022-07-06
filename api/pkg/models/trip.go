@@ -8,14 +8,14 @@ import (
 type Trip struct {
 	gorm.Model
 	Id            uint64 `gorm:"primaryKey;autoIncrement;unique" json:"tripid"`
+	UserId        uint   `json:"userid" gorm:"foreignKey"`
+	DriverId      uint   `json:"driverid" gorm:"foreignKey"`
 	Source        string `json:"source"`
 	Destination   string `json:"destination"`
 	Distance      string `json:"distance"`
 	Fare          uint   `json:"fare"`
 	ETA           string `json:"timeduration"`
 	PaymentMethod string `json:"paymentmethod"`
-	UsrId         uint64 `json:"userid"`
-	DrvrId        uint64 `json:"driverid"`
 	Rating        uint8  `json:"triprating"`
 }
 
@@ -59,7 +59,7 @@ type Ride struct {
 	ETA           string `json:"eta"`
 	Fare          uint   `json:"fare"`
 	PaymentMethod string `json:"paymentmethod"`
-	UserId        uint64 `json:"userid"`
-	DriverId      uint64 `json:"driverid"`
+	UserId        uint   `json:"userid"`
+	DriverId      uint   `json:"driverid"`
 	Rating        int    `json:"rating"`
 }

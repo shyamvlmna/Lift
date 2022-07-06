@@ -16,7 +16,6 @@ func OpenRDb() *redis.Client {
 		Password: "",
 		DB:       0,
 	})
-	fmt.Print("rdb opened", rdb)
 	return rdb
 }
 
@@ -84,6 +83,7 @@ func StoreTrip(key string, trip *models.Ride) error {
 	}
 	return nil
 }
+
 func GetTrip(key string) (*models.Ride, error) {
 	rdb := OpenRDb()
 	p, err := rdb.Get(context.Background(), key).Result()

@@ -41,10 +41,10 @@ func TripCode() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := redis.Set("tripcode", otp); err != nil {
-		fmt.Println(err)
-		return "", err
-	}
+	// if err := redis.Set("tripcode", otp); err != nil {
+	// 	fmt.Println(err)
+	// 	return "", err
+	// }
 	return otp, nil
 }
 
@@ -58,12 +58,18 @@ func ValidateOTP(phone, otp string) error {
 	if value != otp {
 		return errors.New("invalid otp")
 	}
-	redis.DeleteData(phone)
+	err = redis.DeleteData(phone)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func StorePhone(phone string) {
-	redis.Set("phone", phone)
+	err := redis.Set("phone", phone)
+	if err != nil {
+		return
+	}
 }
 
 func GetPhone() string {

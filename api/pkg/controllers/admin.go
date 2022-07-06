@@ -2,90 +2,128 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
-	driver "github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
-	user "github.com/shayamvlmna/cab-booking-app/pkg/service/user"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	admin := models.Admin{}
-	json.NewDecoder(r.Body).Decode(&admin)
-	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(admin.Password), bcrypt.DefaultCost)
-	admin.Password = string(hashPassword)
-	database.AddAdmin(&admin)
 
-	json.NewEncoder(w).Encode(&models.Response{
+	admin := models.Admin{}
+
+	err := json.NewDecoder(r.Body).Decode(&admin)
+	if err != nil {
+		return
+	}
+
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(admin.Password), bcrypt.DefaultCost)
+
+	admin.Password = string(hashPassword)
+	err = database.AddAdmin(&admin)
+	if err != nil {
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "created admin",
 		ResponseData:    nil,
 	})
+	if err != nil {
+		return
+	}
 }
 
 func AdminIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	response := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "admin index",
 		ResponseData:    nil,
 	}
-	json.NewEncoder(w).Encode(&response)
+
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
 }
 
 func AdminLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	admin := models.Admin{}
-	json.NewDecoder(r.Body).Decode(&admin)
+
+	err := json.NewDecoder(r.Body).Decode(&admin)
+	if err != nil {
+		return
+	}
 
 	Admin, _ := database.GetAdmin(admin.Username)
 
 	if err := validPassword(admin.Password, Admin.Password); err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(&models.Response{
+
+		err := json.NewEncoder(w).Encode(&models.Response{
 			ResponseStatus:  "fail",
 			ResponseMessage: "password authentication failed",
 			ResponseData:    nil,
 		})
+		if err != nil {
+			return
+		}
 		return
 	}
 
-	json.NewEncoder(w).Encode(&models.Response{
+	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "admin login success",
 		ResponseData:    Admin,
 	})
+	if err != nil {
+		return
+	}
 }
 
 type Data struct {
 	Id uint64 `json:"driver_id"`
 }
 
-func Managedrivers(w http.ResponseWriter, r *http.Request) {
+func ManageDrivers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	drivers := []models.Driver{}
+
 	drivers = driver.GetAllDrivers()
-	json.NewEncoder(w).Encode(&models.Response{
+
+	err := json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched drivers data",
 		ResponseData:    &drivers,
 	})
+	if err != nil {
+		return
+	}
 }
 
 func ManageUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	users := user.GetUsers()
-	json.NewEncoder(w).Encode(&models.Response{
+
+	err := json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched users data",
 		ResponseData:    users,
 	})
+	if err != nil {
+		return
+	}
 }
 
 func DriveRequest(w http.ResponseWriter, r *http.Request) {
@@ -93,20 +131,46 @@ func DriveRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApproveDriver(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	data := &Data{}
 
-	json.NewDecoder(r.Body).Decode(&data)
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		return
+	}
 
 	id := data.Id
-	fmt.Println(id)
 
-	driver.ApproveDriver(id)
+	if err := driver.ApproveDriver(id); err != nil {
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error approving driver",
+			ResponseData:    nil,
+		}
+
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			return
+		}
+		return
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "driver approval success",
+		ResponseData:    nil,
+	}
+
+	if err := json.NewEncoder(w).Encode(&response); err != nil {
+		return
+	}
 }
 
 func BlockDriver(w http.ResponseWriter, r *http.Request) {
 	data := &Data{}
 	id := data.Id
-	driver.BlockDriver(id)
+	if err := driver.BlockDriver(id); err != nil {
+		return
+	}
 
 	//RESP
 }
@@ -114,7 +178,9 @@ func BlockDriver(w http.ResponseWriter, r *http.Request) {
 func UnBlockDriver(w http.ResponseWriter, r *http.Request) {
 	data := &Data{}
 	id := data.Id
-	driver.UnBlockDriver(id)
+	if err := driver.UnBlockDriver(id); err != nil {
+		return
+	}
 
 	//RESP
 

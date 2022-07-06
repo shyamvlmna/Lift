@@ -12,13 +12,14 @@ import (
 )
 
 func DriverRoutes(r *mux.Router) {
+	//subrouter for driver routes
 	driverRouter := r.PathPrefix("/driver").Subrouter()
 
-	//check wheather phonenumber already registerd or is a new entry
-	driverRouter.HandleFunc("/auth", controllers.DriverAuth).Methods("POST")
+	//check whether phone-number already registerd or is a new entry
+	driverRouter.HandleFunc("/auth", controllers.DriverAuth).Methods(http.MethodPost)
 
-	//insert data to the database
-	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods("POST")
+	//register new driver
+	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods(http.MethodPost)
 
 	//render enter otp page
 	driverRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
@@ -28,36 +29,58 @@ func DriverRoutes(r *mux.Router) {
 			ResponseMessage: "new driver",
 			ResponseData:    nil,
 		}
-		json.NewEncoder(w).Encode(&response)
-	}).Methods("GET")
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
+	}).Methods(http.MethodGet)
 
-	//validate submited otp
-	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods("POST")
+	//validate submitted otp
+	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods(http.MethodPost)
 
-	//render login page to enter password since phonenumber alredy exist
-	driverRouter.HandleFunc("/loginpage", controllers.DriverLoginPage).Methods("GET")
+	//render login page to enter password since phone-number already exist
+	driverRouter.HandleFunc("/loginpage", controllers.DriverLoginPage).Methods(http.MethodGet)
 
-	//validate entered password with phonenumber and render home page
-	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods("POST")
+	//validate entered password with phone-number then redirect to home page
+	driverRouter.HandleFunc("/login", controllers.DriverLogin).Methods(http.MethodPost)
 
 	//remove stored cookie and remove data from redis
-	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods("GET")
+	driverRouter.HandleFunc("/logout", controllers.DriverLogout).Methods(http.MethodGet)
 
 	//render homepage only if authorized with JWT
-	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods("GET")
+	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods(http.MethodGet)
 
-	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterDriver)).Methods("POST")
-	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods("POST")
+	//add cab to the driver profile
+	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods(http.MethodPost)
+
+	//get current driver details to update
+	driverRouter.Handle("/editprofile", middleware.IsAuthorized(controllers.EditDriverProfile)).Methods(http.MethodGet)
+
+	//update driver details in to the database
+	driverRouter.Handle("/updateprofile", middleware.IsAuthorized(controllers.UpdateDriverProfile)).Methods(http.MethodPost)
+
+	//get current cab details to update
+	driverRouter.Handle("/editcab", middleware.IsAuthorized(controllers.EditCab)).Methods(http.MethodGet)
+
+	//update the cab details in to the database
+	driverRouter.Handle("/updatecab", middleware.IsAuthorized(controllers.UpdateCab)).Methods(http.MethodPost)
 
 	//get ride from the channel
-	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods("GET")
+	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods(http.MethodGet)
 
 	//accept the trip and register it
-	driverRouter.Handle("/acceptrip", middleware.IsAuthorized(controllers.AcceptTrip)).Methods("POST")
+	driverRouter.Handle("/acceptrip", middleware.IsAuthorized(controllers.AcceptTrip)).Methods(http.MethodPost)
 
-	driverRouter.Handle("/matchtripcode", middleware.IsAuthorized(controllers.MatchTripCode)).Methods("POST")
+	//match trip code with user trip code
+	driverRouter.Handle("/matchtripcode", middleware.IsAuthorized(controllers.MatchTripCode)).Methods(http.MethodPost)
 
-	driverRouter.Handle("/startrip", middleware.IsAuthorized(controllers.StartTrip)).Methods("GET")
+	//start trip after matching trip code
+	driverRouter.Handle("/startrip", middleware.IsAuthorized(controllers.StartTrip)).Methods(http.MethodGet)
 
-	driverRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.DriverTripHistory)).Methods("GET")
+	//end trip after trip completion and get payment
+	driverRouter.Handle("/endtrip", middleware.IsAuthorized(controllers.EndTrip))
+
+	//list driver trip history
+	driverRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.DriverTripHistory)).Methods(http.MethodGet)
+
 }
