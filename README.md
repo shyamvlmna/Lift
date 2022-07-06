@@ -1,35 +1,21 @@
-# cab-booking-app
 
-First project in Brocamp<br>
-Online cab booking app using Go<br>
+# Cab Booking App
 
-USL : Unified Signup and Login
+Created the complete backend of an online cab booking app. Design and and functionalities are mostly inspired from Uber. 
 
-<h1>Project overview</h1>
+## Technologies and tools used
 
-<p></p>
+ - The Go Programming Language
+ - Gorilla web toolkit
+ - PostgreSQL
+ - Redis
+ - JWT
+ - GORM
+ - Distance Matrix API
+ - Razorpay Payment Gateway
 
-<h2></h2>
-<h3>User side</h3>
-Registration<br>
-Login<br>
 
-<h3>Driver side</h3>
-Registration<br>
-Driver login<br>
-Add vehicle details<br>
+## Created by
 
-<h3>Admin side</h3>
-Approve driver registration requests<br>
-block/unblock users and drivers
+- [@shyamvlmna](https://www.github.com/shyamvlmna)
 
-<h2>Week 2</h2>
-Map
-
-<h2>Week 3</h2>
-Local wallet<br>
-Payment setup
-
-<h2>Week 4</h2>
-Bug fixes
-Add extra features: Coupons...
