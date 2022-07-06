@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
@@ -80,12 +82,16 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(&models.Response{
+	token, err := auth.GenerateJWT("admin", Admin.Username)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "admin login success",
-		ResponseData:    Admin,
-	})
-	if err != nil {
+		ResponseData:    token,
+	}); err != nil {
 		return
 	}
 }

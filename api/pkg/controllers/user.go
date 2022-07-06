@@ -583,7 +583,10 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 
 	if wh.Event == "order.paid" {
 		payment.UpdatePayment((*payment.Order)(&wh.Payload.Order))
+	} else if wh.Event == "payment.failed" {
+		fmt.Println("payment failed")
 	}
+	//
 	fmt.Println(wh.Payload.Payment.Entity.Amount)
 	fmt.Println(wh.Payload.Order.Entity.Receipt)
 	if err = json.NewEncoder(w).Encode(wh); err != nil {
