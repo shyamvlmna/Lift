@@ -1,7 +1,7 @@
 
 # Cab Booking App
 
-Created the complete backend of an online cab booking app. Design and and functionalities are mostly inspired from Uber. 
+Created the complete backend of an online cab booking app. Design and functionalities are mostly inspired from Uber. 
 
 ## Technologies and tools used
 
