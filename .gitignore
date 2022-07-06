@@ -1,2 +1,4 @@
 app.html
 api/.env
+.vscode
+.idea
