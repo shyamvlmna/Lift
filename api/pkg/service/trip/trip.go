@@ -6,12 +6,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	models "github.com/shayamvlmna/cab-booking-app/pkg/models"
-	maps "googlemaps.github.io/maps"
+	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"googlemaps.github.io/maps"
 )
 
 func Fare(d int) float32 {
@@ -125,13 +126,15 @@ type Dist struct {
 	Val  int    `json:"value"`
 }
 
+var googlemapskey = os.Getenv("GMAPSKEY")
+
 func DistanceAPI(r *Ride) *Result {
 	// https://api.distancematrix.ai/maps/api/distancematrix/json?origins=51.4822656,-0.1933769&destinations=51.4994794,-0.1269979
 	// &key=<your_access_token>
 
 	origins := fmt.Sprintf("%s,%s", strconv.FormatFloat(r.Source.Lat, 'f', -1, 64), strconv.FormatFloat(r.Source.Lng, 'f', -1, 64))
 	destinations := fmt.Sprintf("%s,%s", strconv.FormatFloat(r.Destination.Lat, 'f', -1, 64), strconv.FormatFloat(r.Destination.Lng, 'f', -1, 64))
-	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/distancematrix/json?origins=%s&destinations=%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj", origins, destinations)
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/distancematrix/json?origins=%s&destinations=%s&key=%s", origins, destinations, googlemapskey)
 	method := "GET"
 
 	client := &http.Client{}
@@ -149,7 +152,7 @@ func DistanceAPI(r *Ride) *Result {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(res.Body)
 
@@ -172,7 +175,7 @@ func GeoCodeApi(l LatLng) *Result {
 
 	lat := strconv.FormatFloat(l.Lat, 'f', -1, 64)
 	lng := strconv.FormatFloat(l.Lng, 'f', -1, 64)
-	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/geocode/json?latlng=%s,%s&key=JNDApQ6vaPwL3zBFbMNegII9BnNEj"+lat, lng)
+	url := fmt.Sprintf("https://api.distancematrix.ai/maps/api/geocode/json?latlng=%s,%s&key=%s"+lat, lng, googlemapskey)
 	method := "GET"
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, nil)
@@ -189,7 +192,7 @@ func GeoCodeApi(l LatLng) *Result {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(res.Body)
 
@@ -267,32 +270,3 @@ func RegisterTrip(ride *models.Ride) error {
 
 	return trip.Add(trip)
 }
-
-// type Pool struct {
-// 	BookTrip chan *models.User
-// 	GetTrip  chan *models.Driver
-// 	Trips    chan models.Trip
-// }
-
-// func NewPool() *Pool {
-// 	return &Pool{
-// 		BookTrip: make(chan *models.User),
-// 		GetTrip:  make(chan *models.Driver),
-// 		Trips:    make(chan models.Trip),
-// 	}
-// }
-
-// func (pool *Pool) Start() {
-// 	for {
-// 		select {
-// 		// case trip:=<-pool.BookTrip:
-
-// 		}
-// 	}
-// }
-
-// func CreateNewTrip() {
-// 	// pool := &NewPool()
-// }
-
-// func ProcessTrip(models.Trip)

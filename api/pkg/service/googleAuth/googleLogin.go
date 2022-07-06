@@ -3,9 +3,11 @@ package googleauth
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -15,9 +17,11 @@ import (
 )
 
 var (
+	ID         = os.Getenv("OAUTHCLIENTID")
+	Key        = os.Getenv("OAUTHCLIENTSECRET")
 	authConfig = &oauth2.Config{
-		ClientID:     "662778233746-oeblr3vkk1om82nmjce90lqlac1p7fvq.apps.googleusercontent.com",
-		ClientSecret: "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",
+		ClientID:     ID,
+		ClientSecret: Key,
 		RedirectURL:  "http://localhost:8080/user/googleCallback",
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
@@ -58,11 +62,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	// if r.FormValue("state") != randomState {
-	// 	fmt.Println("not a valid state")
-	// 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-	// 	return
-	// }
+
 	code := r.URL.Query()["code"][0]
 	tok, err := authConfig.Exchange(context.Background(), code)
 	if err != nil {
@@ -93,7 +93,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(resp.Body)
 	content, err := ioutil.ReadAll(resp.Body)
@@ -132,27 +132,4 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	user.GoogleAuthUser(newUser)
 
-	// json.NewEncoder(w).Encode(&authContent)
-
-	// http.Redirect(w, r, "/user/signup", http.StatusSeeOther)
-
-	// fmt.Fprintln(w, string(content))
-	// {
-	// 	"id": "109429758760150763543",
-	// 	"email": "shyamvlmna@gmail.com",
-	// 	"verified_email": true,
-	// 	"name": "Shyamjith P Vilamana",
-	// 	"given_name": "Shyamjith",
-	// 	"family_name": "P Vilamana",
-	// 	"picture": "https://lh3.googleusercontent.com/a-/AOh14Gj4L240leqI64MfmshtoQsqLv_vm0RTPoZ4Z9yCHg=s96-c",
-	// 	"locale": "en"
-	//   }
-	// 	authContent := &AuthContent{}
-
-	// 	json.Unmarshal(content, &authContent)
-
-	// 	log.Println(authContent)
-	// 	json.NewEncoder(w).Encode(&authContent)
-
-	// fmt.Println(authContent.Email)
 }

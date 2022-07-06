@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/kr/pretty"
 	"googlemaps.github.io/maps"
 )
 
+var key = os.Getenv("MAPSKEY")
+
 //return the distance and estimate time of arrival from origin to destination
 func TripEstimate(origin, destination string) (int, int) {
-	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyCouPhivkPPHguv4I0j_3BYMUrV6EIcBBo"))
+	c, err := maps.NewClient(maps.WithAPIKey(key))
 	if err != nil {
 		log.Fatalf("fatal error: %s", err)
 	}
@@ -36,7 +39,7 @@ func TripEstimate(origin, destination string) (int, int) {
 }
 
 func GeoCode(g *maps.LatLng) string {
-	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyCouPhivkPPHguv4I0j_3BYMUrV6EIcBBo"))
+	c, err := maps.NewClient(maps.WithAPIKey(key))
 	if err != nil {
 		log.Fatalf("fatal error: %s", err)
 	}

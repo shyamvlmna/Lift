@@ -28,7 +28,7 @@ func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handle
 			if err != nil {
 				return
 			}
-			key := []byte(os.Getenv("SECRET_KEY"))
+			key := []byte(os.Getenv("JWT-SECRET_KEY"))
 
 			claims := &auth.Claims{}
 

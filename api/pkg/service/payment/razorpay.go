@@ -56,8 +56,8 @@ func AddMoney(userid uint, amount uint) *OrderResponse {
 		return nil
 	}
 
-	key := os.Getenv("RPKEY")
-	secret := os.Getenv("RPSCRT")
+	key := os.Getenv("RAZORPAYPKEY")
+	secret := os.Getenv("RAZORPAYSECRET")
 
 	client := razorpay.NewClient(key, secret)
 
@@ -113,6 +113,9 @@ func GeneratePaymentId(id uint) string {
 	paymentId := strings.Split(payment.PaymentId, "-")
 
 	pid, err := strconv.Atoi(paymentId[0])
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// uid:=
 	// +"-"+uid
@@ -170,10 +173,8 @@ func ValidateWebhook(body []byte, signature string) bool {
 
 	sha := hex.EncodeToString(h.Sum(nil))
 
-	if signature != sha {
-		return false
-	}
-	return true
+	return signature == sha
+
 }
 
 //{

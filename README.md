@@ -5,9 +5,11 @@ Online cab booking app using Go<br>
 
 USL : Unified Signup and Login
 
-<h1>Project timeline</h1>
+<h1>Project overview</h1>
 
-<h2>Week 1</h2>
+<p></p>
+
+<h2></h2>
 <h3>User side</h3>
 Registration<br>
 Login<br>
