@@ -1,9 +1,10 @@
 package models
 
 import (
+	"strconv"
+
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type Driver struct {
@@ -21,6 +22,16 @@ type Driver struct {
 	Active        bool     `gorm:"default:true" json:"status"`
 	Cab           *Vehicle `json:"cab" gorm:"embedded"`
 	WalletBalance uint     `json:"driverwallet"  gorm:"default:0;"`
+	BankAccount   *Bank    `json:"bank_account" gorm:"embedded"`
+}
+
+type Bank struct {
+	gorm.Model
+	AccountId         string `gorm:"primaryKey;autoIncrement;unique"`
+	AccountHolderName string `json:"holder_name"`
+	BankName          string `json:"bank_name"`
+	AccountNumber     string `json:"account_number"`
+	IFSC              string `gorm:"ifsc" json:"ifsc"`
 }
 
 // Add new driver to database

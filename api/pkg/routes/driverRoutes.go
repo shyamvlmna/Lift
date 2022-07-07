@@ -53,6 +53,12 @@ func DriverRoutes(r *mux.Router) {
 	//add cab to the driver profile
 	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods(http.MethodPost)
 
+	//add bank details to checkout wallet balance get add //details page
+	driverRouter.Handle("/addbank", middleware.IsAuthorized(controllers.AddBankPage)).Methods(http.MethodGet)
+
+	//add bank details to checkout wallet balance //insert details
+	driverRouter.Handle("/addbank", middleware.IsAuthorized(controllers.AddBankAccount)).Methods(http.MethodPost)
+
 	//get current driver details to update
 	driverRouter.Handle("/editprofile", middleware.IsAuthorized(controllers.EditDriverProfile)).Methods(http.MethodGet)
 
@@ -82,5 +88,11 @@ func DriverRoutes(r *mux.Router) {
 
 	//list driver trip history
 	driverRouter.Handle("/triphistory", middleware.IsAuthorized(controllers.DriverTripHistory)).Methods(http.MethodGet)
+
+	//get driver wallet data
+	driverRouter.Handle("/wallet", middleware.IsAuthorized(controllers.DriverWallet)).Methods(http.MethodGet)
+
+	//payouth the money in the wallet
+	driverRouter.Handle("/payout", middleware.IsAuthorized(controllers.PayoutWallet)).Methods(http.MethodPost)
 
 }

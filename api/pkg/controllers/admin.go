@@ -13,6 +13,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//index page for admins to login
+func AdminIndex(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "admin index",
+		ResponseData:    nil,
+	}
+
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+}
+
+//create a new admin by the super admin
 func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -36,21 +53,6 @@ func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "created admin",
 		ResponseData:    nil,
 	})
-	if err != nil {
-		return
-	}
-}
-
-func AdminIndex(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	response := &models.Response{
-		ResponseStatus:  "success",
-		ResponseMessage: "admin index",
-		ResponseData:    nil,
-	}
-
-	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		return
 	}
@@ -94,6 +96,18 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		return
 	}
+}
+
+//admin home page to manage users and drivers
+func AdminHome(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "admin home page",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(&response)
 }
 
 type Data struct {
@@ -193,5 +207,13 @@ func UnBlockDriver(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlockUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UnBlockUser(w http.ResponseWriter, r *http.Request){
+
+}
+
+func PayoutRequests(w http.ResponseWriter, r *http.Request) {
 
 }

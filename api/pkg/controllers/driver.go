@@ -823,6 +823,55 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func AddBankPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "add bank account details",
+		ResponseData:    nil,
+	}
+
+	json.NewEncoder(w).Encode(&response)
+}
+
+func DriverWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	driver, err := GetDriverFromCookie(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "driver wallet data fetched",
+		ResponseData:    driver.WalletBalance,
+	}
+	json.NewEncoder(w).Encode(&response)
+}
+
+func PayoutWallet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	driver, err := GetDriverFromCookie(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+}
+
 // GetDriverFromCookie returns the logged-in user from the stored cookie in session
 func GetDriverFromCookie(r *http.Request) (*models.Driver, error) {
 	c, err := r.Cookie("jwt-token")
