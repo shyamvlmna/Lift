@@ -26,12 +26,18 @@ type Driver struct {
 }
 
 type Bank struct {
-	gorm.Model
-	AccountId         string `gorm:"primaryKey;autoIncrement;unique"`
 	AccountHolderName string `json:"holder_name"`
 	BankName          string `json:"bank_name"`
 	AccountNumber     string `json:"account_number"`
 	IFSC              string `gorm:"ifsc" json:"ifsc"`
+}
+
+type Payouts struct {
+	gorm.Model
+	DriverId uint   `gorm:"primaryKey;unique" json:"driver_id"`
+	Amount   string `json:"amount" gorm:"not null"`
+	Bank     *Bank  `gorm:"embedded" json:"bank"`
+	Status   string `json:"payout_status"`
 }
 
 // Add new driver to database
@@ -87,14 +93,17 @@ func (*Driver) Update(d Driver) error {
 	db.Where("id=?", id).First(&driver)
 
 	result := db.Model(&driver).Updates(Driver{
-		PhoneNumber: d.PhoneNumber,
-		FirstName:   d.FirstName,
-		LastName:    d.LastName,
-		Email:       d.Email,
-		Password:    d.Password,
-		City:        d.City,
-		LicenceNum:  d.LicenceNum,
-		Cab:         d.Cab,
+		PhoneNumber:   d.PhoneNumber,
+		FirstName:     d.FirstName,
+		LastName:      d.LastName,
+		Email:         d.Email,
+		Password:      d.Password,
+		City:          d.City,
+		LicenceNum:    d.LicenceNum,
+		Rating:        d.Rating,
+		Cab:           d.Cab,
+		WalletBalance: 0,
+		BankAccount:   d.BankAccount,
 	})
 
 	db.Save(&driver)

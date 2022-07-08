@@ -2,6 +2,7 @@ package driver
 
 import (
 	"encoding/json"
+
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	"golang.org/x/crypto/bcrypt"
 
@@ -68,6 +69,10 @@ func UpdateDriver(driver models.Driver) {
 	if err != nil {
 		return
 	}
+}
+
+func Payout(amount string, driverId uint) {
+
 }
 
 //delete driver from the database by the id
