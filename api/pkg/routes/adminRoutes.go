@@ -40,5 +40,5 @@ func AdminRoutes(r *mux.Router) {
 
 	adminRouter.Handle("/blockuser", middleware.IsAuthorized(controllers.BlockUser)).Methods(http.MethodPost)
 
-	adminRouter.Handle("/addcoupon", middleware.IsAuthorized(controllers.AddCoupon)).Methods(http.MethodPost)
+	adminRouter.Handle("/addcoupon", middleware.IsAuthorized(controllers.CreateCoupon)).Methods(http.MethodPost)
 }

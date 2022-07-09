@@ -232,7 +232,7 @@ func UpdatePayout(w http.ResponseWriter, r *http.Request) {
 	//TODO
 }
 
-func AddCoupon(w http.ResponseWriter, r *http.Request) {
+func CreateCoupon(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	c := &coupon.AmountCoupon{}

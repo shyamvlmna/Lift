@@ -62,4 +62,5 @@ type Ride struct {
 	UserId        uint    `json:"userid"`
 	DriverId      uint    `json:"driverid"`
 	Rating        int     `json:"rating"`
+	Coupon        string  `json:"coupon"`
 }

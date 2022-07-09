@@ -83,4 +83,8 @@ func UserRoutes(r *mux.Router) {
 
 	userRouter.HandleFunc("/razorpay/webhook", controllers.RazorpayWebhook)
 
+	//returns all available coupons
+	userRouter.Handle("/coupons", middleware.IsAuthorized(controllers.GetCoupons)).Methods(http.MethodGet)
+
+	userRouter.Handle("/applycoupon", middleware.IsAuthorized(controllers.ApplyCoupon)).Methods(http.MethodPost)
 }

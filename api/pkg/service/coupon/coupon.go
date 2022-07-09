@@ -40,3 +40,16 @@ func GetCoupon(code string) *AmountCoupon {
 	db.Where("coupon_code=?", code).First(&coupon)
 	return coupon
 }
+
+func GetCoupons() *[]AmountCoupon {
+	db := database.Db
+
+	db.AutoMigrate(&AmountCoupon{})
+
+	coupons := &[]AmountCoupon{}
+
+	db.Find(&coupons)
+
+	return coupons
+
+}
