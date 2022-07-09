@@ -185,9 +185,8 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//validate the entered password with stored hash password
-	if err := validPassword(password, User.Password); err != nil {
+	if !IsValidPassword(password, User.Password) {
 		w.WriteHeader(http.StatusUnauthorized)
-
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "password authentication failed",
@@ -614,11 +613,10 @@ func GetUserFromCookie(r *http.Request) (*models.User, error) {
 	return u, nil
 }
 
-//match the entered password with
-//the hash password stored in the database
-func validPassword(password, hashPassword string) error {
+// IsValidPassword match the entered password with the hash password stored in the database
+func IsValidPassword(password, hashPassword string) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
-		return err
+		return false
 	}
-	return nil
+	return true
 }

@@ -95,4 +95,6 @@ func DriverRoutes(r *mux.Router) {
 	//payouth the money in the wallet
 	driverRouter.Handle("/payout", middleware.IsAuthorized(controllers.PayoutWallet)).Methods(http.MethodPost)
 
+	//get status of submitted payout requests
+	driverRouter.Handle("/payoutstatus", middleware.IsAuthorized(controllers.PayoutStatus)).Methods(http.MethodGet)
 }

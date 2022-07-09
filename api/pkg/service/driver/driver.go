@@ -71,8 +71,17 @@ func UpdateDriver(driver models.Driver) {
 	}
 }
 
-func Payout(amount string, driverId uint) {
+func Payout(amount string, driverId uint) error {
 
+	err := models.AddPayout(amount, driverId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PayoutRequests(driverid uint) *models.Payouts {
+	return models.GetPayoutStatus(driverid)
 }
 
 //delete driver from the database by the id

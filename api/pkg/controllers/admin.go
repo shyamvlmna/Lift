@@ -70,7 +70,7 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 
 	Admin, _ := database.GetAdmin(admin.Username)
 
-	if err := validPassword(admin.Password, Admin.Password); err != nil {
+	if !IsValidPassword(admin.Password, Admin.Password) {
 		w.WriteHeader(http.StatusUnauthorized)
 
 		err := json.NewEncoder(w).Encode(&models.Response{
@@ -210,10 +210,18 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func UnBlockUser(w http.ResponseWriter, r *http.Request){
+func UnBlockUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
 func PayoutRequests(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	payouts := models.GetPayouts()
+
+	json.NewEncoder(w).Encode(&payouts)
+
+}
+func UpdatePayout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 }

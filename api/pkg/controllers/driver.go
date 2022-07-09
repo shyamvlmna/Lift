@@ -190,7 +190,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//validate the entered password with stored hash password
-	if err := validPassword(password, Driver.Password); err != nil {
+	if !IsValidPassword(password, Driver.Password) {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{
@@ -921,12 +921,73 @@ func PayoutWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if d.BankAccount.AccountNumber == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "bank account not added",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&resp)
+		return
+	}
+
 	amount := &payout{}
 	json.NewDecoder(r.Body).Decode(&amount)
 	r.Body.Close()
 
-	driver.Payout(amount.Amount, d.DriverId)
+	payoutAmount, _ := strconv.Atoi(amount.Amount)
 
+	if uint(payoutAmount) > d.WalletBalance {
+		w.WriteHeader(http.StatusBadRequest)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "invalid payout amount",
+			ResponseData:    fmt.Sprintf("availiable balance:%v", d.WalletBalance),
+		}
+		json.NewEncoder(w).Encode(&resp)
+		return
+	}
+	err = driver.Payout(amount.Amount, d.DriverId)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "checkout request failed",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&resp)
+		return
+	}
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "checkout request added",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(&resp)
+}
+
+func PayoutStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	d, err := GetDriverFromCookie(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error parsing cookie",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	payout := driver.PayoutRequests(d.DriverId)
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "payout request status",
+		ResponseData:    fmt.Sprintf("amount:%v   status:%v", payout.Amount, payout.Status),
+	}
+	json.NewEncoder(w).Encode(&resp)
 }
 
 // GetDriverFromCookie returns the logged-in user from the stored cookie in session
