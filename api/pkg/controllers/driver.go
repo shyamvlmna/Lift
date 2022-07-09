@@ -190,7 +190,7 @@ func DriverLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//validate the entered password with stored hash password
-	if !IsValidPassword(password, Driver.Password) {
+	if !ValidPassword(password, Driver.Password) {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusUnauthorized)
 		response := &models.Response{

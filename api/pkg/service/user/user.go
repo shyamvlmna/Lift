@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -97,3 +98,7 @@ func DeleteUser(id uint64) {
 // func AppendTrip(user *models.User, trip *models.Trip) error {
 // 	return database.AppendTrip(user, trip)
 // }
+
+func ApplyCoupon(c coupon.Coupon) {
+	//c.IsApplicable()
+}

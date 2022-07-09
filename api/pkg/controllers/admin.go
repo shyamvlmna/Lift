@@ -3,14 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"time"
 )
 
 //index page for admins to login
@@ -70,7 +71,7 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 
 	Admin, _ := database.GetAdmin(admin.Username)
 
-	if !IsValidPassword(admin.Password, Admin.Password) {
+	if !ValidPassword(admin.Password, Admin.Password) {
 		w.WriteHeader(http.StatusUnauthorized)
 
 		err := json.NewEncoder(w).Encode(&models.Response{
@@ -219,9 +220,40 @@ func PayoutRequests(w http.ResponseWriter, r *http.Request) {
 
 	payouts := models.GetPayouts()
 
-	json.NewEncoder(w).Encode(&payouts)
+	err := json.NewEncoder(w).Encode(&payouts)
+	if err != nil {
+		return
+	}
 
 }
 func UpdatePayout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	//TODO
+}
+
+func AddCoupon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c := &coupon.AmountCoupon{}
+	json.NewDecoder(r.Body).Decode(&c)
+	r.Body.Close()
+	c.FinishDate = time.Now().AddDate(0, 0, 20)
+	if err := c.CreateCoupon(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "creating coupon failed",
+			ResponseData:    c,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "successfully created new coupon",
+		ResponseData:    c,
+	}
+	json.NewEncoder(w).Encode(resp)
 }
