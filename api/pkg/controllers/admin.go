@@ -3,15 +3,18 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
-	"golang.org/x/crypto/bcrypt"
-	"net/http"
-	"time"
 )
 
 //index page for admins to login
@@ -112,7 +115,7 @@ func AdminHome(w http.ResponseWriter, r *http.Request) {
 }
 
 type Data struct {
-	Id uint64 `json:"driver_id"`
+	Id uint `json:"driver_id"`
 }
 
 func ManageDrivers(w http.ResponseWriter, r *http.Request) {
@@ -224,12 +227,38 @@ func PayoutRequests(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
 }
+
+type PayoutData struct {
+	PayoutId string `json:"payoutId"`
+	Status   string `json:"status"`
+}
+
 func UpdatePayout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	data := PayoutData{}
+	json.NewDecoder(r.Body).Decode(&data)
+	r.Body.Close()
 
-	//TODO
+	id, _ := strconv.Atoi(data.PayoutId)
+	status := data.Status
+	if err := models.UpdateCompletedPayoutRequest(uint(id), status); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "payout request update failed",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "updated payout request",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(resp)
 }
 
 func CreateCoupon(w http.ResponseWriter, r *http.Request) {

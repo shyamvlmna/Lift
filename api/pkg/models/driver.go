@@ -1,11 +1,11 @@
 package models
 
 import (
-	"errors"
 	"strconv"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 )
 
 type Driver struct {
@@ -31,14 +31,6 @@ type Bank struct {
 	BankName          string `json:"bank_name"`
 	AccountNumber     string `json:"account_number"`
 	IFSC              string `gorm:"ifsc" json:"ifsc"`
-}
-
-type Payouts struct {
-	gorm.Model
-	DriverId uint   `gorm:"primaryKey;unique" json:"driver_id"`
-	Amount   string `json:"amount" gorm:"not null"`
-	Bank     *Bank  `gorm:"embedded" json:"bank"`
-	Status   string `json:"payout_status"`
 }
 
 // Add new driver to database
@@ -125,7 +117,7 @@ func (d *Driver) Delete(id uint64) error {
 }
 
 // BlockUnblock driver by toggling driver approved field
-func (d *Driver) BlockUnblock(id uint64) error {
+func (d *Driver) BlockUnblock(id uint) error {
 	db := database.Db
 
 	driver := &Driver{}
@@ -145,53 +137,4 @@ func (d *Driver) BlockUnblock(id uint64) error {
 	driver.Approved = true
 	result := db.Save(&driver)
 	return result.Error
-}
-
-func AddPayout(amount string, driverId uint) error {
-	db := database.Db
-
-	d := &Driver{}
-	driver, er := d.Get("driver_id", strconv.Itoa(int(driverId)))
-	if er != true {
-		return errors.New("driver not found")
-	}
-
-	payout := &Payouts{
-		DriverId: driverId,
-		Amount:   amount,
-		Bank:     driver.BankAccount,
-		Status:   "requested",
-	}
-
-	err := db.AutoMigrate(&Payouts{})
-	if err != nil {
-		return err
-	}
-
-	result := db.Create(payout)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func GetPayouts() *[]Payouts {
-	db := database.Db
-	db.AutoMigrate(&Payouts{})
-
-	payouts := &[]Payouts{}
-
-	db.Find(&payouts)
-
-	return payouts
-}
-
-func GetPayoutStatus(id uint) *Payouts {
-	db := database.Db
-	db.AutoMigrate(&Payouts{})
-
-	payout := &Payouts{}
-
-	db.Where("driver_id=?", id).First(&payout)
-	return payout
 }

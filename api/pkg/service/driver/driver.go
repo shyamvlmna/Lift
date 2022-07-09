@@ -1,8 +1,9 @@
 package driver
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
@@ -77,7 +78,7 @@ func Payout(amount string, driverId uint) error {
 	return nil
 }
 
-func PayoutRequests(driverid uint) *models.Payouts {
+func PayoutRequests(driverid uint) *models.Payout {
 	return models.GetPayoutStatus(driverid)
 }
 
@@ -86,13 +87,13 @@ func DeleteDriver(id uint64) error {
 	return d.Delete(id)
 }
 
-func ApproveDriver(id uint64) error {
+func ApproveDriver(id uint) error {
 	return d.BlockUnblock(id)
 }
 
-func BlockDriver(id uint64) error {
+func BlockDriver(id uint) error {
 	return d.BlockUnblock(id)
 }
-func UnBlockDriver(id uint64) error {
+func UnBlockDriver(id uint) error {
 	return d.BlockUnblock(id)
 }

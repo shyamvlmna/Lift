@@ -896,7 +896,7 @@ func DriverWallet(w http.ResponseWriter, r *http.Request) {
 
 	response := &models.Response{
 		ResponseStatus:  "success",
-		ResponseMessage: "driver wallet data fetched",
+		ResponseMessage: "driver wallet balance",
 		ResponseData:    driver.WalletBalance,
 	}
 	json.NewEncoder(w).Encode(&response)

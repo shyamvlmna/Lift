@@ -23,7 +23,7 @@ func AdminRoutes(r *mux.Router) {
 
 	//
 
-	adminRouter.Handle("/managedrivers", middleware.IsAuthorized(controllers.ManageDrivers))
+	adminRouter.Handle("/managedrivers", middleware.IsAuthorized(controllers.ManageDrivers)).Methods(http.MethodGet)
 
 	adminRouter.Handle("/driverequst", middleware.IsAuthorized(controllers.DriveRequest)).Methods(http.MethodGet)
 
