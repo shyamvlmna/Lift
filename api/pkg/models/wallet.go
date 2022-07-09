@@ -23,7 +23,7 @@ type AdminWallet struct {
 	Balance  uint   `json:"balance"`
 }
 
-func WalletTransactions(userId, driverId uint, fare uint) error {
+func WalletTransactions(userId, driverId uint, fare float64) error {
 	db := database.Db
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
@@ -58,7 +58,7 @@ func WalletTransactions(userId, driverId uint, fare uint) error {
 	}
 	return nil
 }
-func CashTransactions(driverId uint, fare uint) error {
+func CashTransactions(driverId uint, fare float64) error {
 	db := database.Db
 
 	if err := db.Transaction(func(tx *gorm.DB) error {

@@ -593,6 +593,18 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ApplyCoupon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var couponCode string
+	var fare float64
+
+	ride := &models.Ride{}
+
+	dfare := user.ApplyCoupon(couponCode, fare)
+	ride.Fare = dfare
+
+}
+
 // GetUserFromCookie returns the logged-in user from the stored cookie in session
 func GetUserFromCookie(r *http.Request) (*models.User, error) {
 	c, err := r.Cookie("jwt-token")

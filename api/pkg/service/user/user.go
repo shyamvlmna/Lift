@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 
 	"golang.org/x/crypto/bcrypt"
@@ -99,6 +100,15 @@ func DeleteUser(id uint64) {
 // 	return database.AppendTrip(user, trip)
 // }
 
-func ApplyCoupon(c coupon.Coupon) {
-	//c.IsApplicable()
+func ApplyCoupon(code string, fare float64) float64 {
+
+	c := coupon.GetCoupon(code)
+
+	if !c.IsApplicable(fare) {
+		fmt.Println("coupon not applicable")
+
+		//TODO
+		return fare
+	}
+	return fare - c.Amount
 }

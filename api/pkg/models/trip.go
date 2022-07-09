@@ -7,16 +7,16 @@ import (
 
 type Trip struct {
 	gorm.Model
-	Id            uint64 `gorm:"primaryKey;autoIncrement;unique" json:"tripid"`
-	UserId        uint   `json:"userid" gorm:"foreignKey"`
-	DriverId      uint   `json:"driverid" gorm:"foreignKey"`
-	Source        string `json:"source"`
-	Destination   string `json:"destination"`
-	Distance      string `json:"distance"`
-	Fare          uint   `json:"fare"`
-	ETA           string `json:"timeduration"`
-	PaymentMethod string `json:"paymentmethod"`
-	Rating        uint8  `json:"triprating"`
+	Id            uint64  `gorm:"primaryKey;autoIncrement;unique" json:"tripid"`
+	UserId        uint    `json:"userid" gorm:"foreignKey"`
+	DriverId      uint    `json:"driverid" gorm:"foreignKey"`
+	Source        string  `json:"source"`
+	Destination   string  `json:"destination"`
+	Distance      string  `json:"distance"`
+	Fare          float64 `json:"fare"`
+	ETA           string  `json:"timeduration"`
+	PaymentMethod string  `json:"paymentmethod"`
+	Rating        uint8   `json:"triprating"`
 }
 
 func (t *Trip) Add(trip *Trip) error {
@@ -53,13 +53,13 @@ func (t *Trip) Update() error {
 // }
 
 type Ride struct {
-	Source        string `json:"source"`
-	Destination   string `json:"destination"`
-	Distance      string `json:"distance"`
-	ETA           string `json:"eta"`
-	Fare          uint   `json:"fare"`
-	PaymentMethod string `json:"paymentmethod"`
-	UserId        uint   `json:"userid"`
-	DriverId      uint   `json:"driverid"`
-	Rating        int    `json:"rating"`
+	Source        string  `json:"source"`
+	Destination   string  `json:"destination"`
+	Distance      string  `json:"distance"`
+	ETA           string  `json:"eta"`
+	Fare          float64 `json:"fare"`
+	PaymentMethod string  `json:"paymentmethod"`
+	UserId        uint    `json:"userid"`
+	DriverId      uint    `json:"driverid"`
+	Rating        int     `json:"rating"`
 }

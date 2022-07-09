@@ -27,7 +27,16 @@ func (ac AmountCoupon) CreateCoupon() error {
 	return db.Create(ac).Error
 }
 
-func (ac AmountCoupon) IsApplicable(cost int) bool {
+func (ac AmountCoupon) IsApplicable(cost float64) bool {
+	return cost >= ac.MinFare && ac.FinishDate.After(time.Now())
+}
+func GetCoupon(code string) *AmountCoupon {
+	db := database.Db
 
-	return true
+	db.AutoMigrate(&AmountCoupon{})
+
+	coupon := &AmountCoupon{}
+
+	db.Where("coupon_code=?", code).First(&coupon)
+	return coupon
 }
