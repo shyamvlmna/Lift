@@ -33,10 +33,12 @@ func AdminRoutes(r *mux.Router) {
 
 	adminRouter.Handle("/payouts", middleware.IsAuthorized(controllers.PayoutRequests)).Methods(http.MethodGet)
 
+	adminRouter.Handle("/updatepayout", middleware.IsAuthorized(controllers.UpdatePayout)).Methods(http.MethodPost)
 	//
 
 	adminRouter.Handle("/manageusers", middleware.IsAuthorized(controllers.ManageUsers)).Methods(http.MethodGet)
 
 	adminRouter.Handle("/blockuser", middleware.IsAuthorized(controllers.BlockUser)).Methods(http.MethodPost)
 
+	adminRouter.Handle("/addcoupon", middleware.IsAuthorized(controllers.CreateCoupon)).Methods(http.MethodPost)
 }

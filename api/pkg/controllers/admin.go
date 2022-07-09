@@ -3,16 +3,34 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"time"
 )
 
+//index page for admins to login
+func AdminIndex(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "admin index",
+		ResponseData:    nil,
+	}
+
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+}
+
+//create a new admin by the super admin
 func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -41,21 +59,6 @@ func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AdminIndex(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	response := &models.Response{
-		ResponseStatus:  "success",
-		ResponseMessage: "admin index",
-		ResponseData:    nil,
-	}
-
-	err := json.NewEncoder(w).Encode(&response)
-	if err != nil {
-		return
-	}
-}
-
 func AdminLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -68,7 +71,7 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 
 	Admin, _ := database.GetAdmin(admin.Username)
 
-	if err := validPassword(admin.Password, Admin.Password); err != nil {
+	if !ValidPassword(admin.Password, Admin.Password) {
 		w.WriteHeader(http.StatusUnauthorized)
 
 		err := json.NewEncoder(w).Encode(&models.Response{
@@ -94,6 +97,18 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		return
 	}
+}
+
+//admin home page to manage users and drivers
+func AdminHome(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "admin home page",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(&response)
 }
 
 type Data struct {
@@ -194,4 +209,51 @@ func UnBlockDriver(w http.ResponseWriter, r *http.Request) {
 
 func BlockUser(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func UnBlockUser(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func PayoutRequests(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	payouts := models.GetPayouts()
+
+	err := json.NewEncoder(w).Encode(&payouts)
+	if err != nil {
+		return
+	}
+
+}
+func UpdatePayout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//TODO
+}
+
+func CreateCoupon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c := &coupon.AmountCoupon{}
+	json.NewDecoder(r.Body).Decode(&c)
+	r.Body.Close()
+	c.FinishDate = time.Now().AddDate(0, 0, 20)
+	if err := c.CreateCoupon(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "creating coupon failed",
+			ResponseData:    c,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "successfully created new coupon",
+		ResponseData:    c,
+	}
+	json.NewEncoder(w).Encode(resp)
 }

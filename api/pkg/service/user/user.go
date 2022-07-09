@@ -1,11 +1,12 @@
 package user
 
 import (
-	"encoding/json"
+	"errors"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 )
@@ -59,20 +60,20 @@ func AddUser(newUser *models.User) error {
 // GetUser returns a user model by accepting a key and a value
 //eg:if searching using id, key is "id" and value is the id of the user to search
 func GetUser(key, value string) *models.User {
-	p, err := redis.GetData("data")
-	if err != nil {
-		user, _ := u.Get(key, value)
-		return &user
-	}
+	//p, err := redis.GetData("data")
+	//if err != nil {
+	user, _ := u.Get(key, value)
+	return &user
+	//}
 
-	user := &models.User{}
-
-	err = json.Unmarshal([]byte(p), &user)
-	if err != nil {
-		return nil
-	}
-
-	return user
+	//user := &models.User{}
+	//
+	//err = json.Unmarshal([]byte(p), &user)
+	//if err != nil {
+	//	return nil
+	//}
+	//
+	//return user
 }
 
 // GetUsers return all users in the database
@@ -97,3 +98,14 @@ func DeleteUser(id uint64) {
 // func AppendTrip(user *models.User, trip *models.Trip) error {
 // 	return database.AppendTrip(user, trip)
 // }
+
+func ApplyCoupon(code string, fare float64) (float64, error) {
+
+	c := coupon.GetCoupon(code)
+
+	if !c.IsApplicable(fare) {
+		err := errors.New("coupon not applicable")
+		return fare, err
+	}
+	return fare - c.Amount, nil
+}

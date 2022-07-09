@@ -7,14 +7,17 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/payment"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // UserAuth Check if the user already exist in the system.
@@ -111,7 +114,7 @@ func UserSignUp(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
@@ -158,7 +161,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			fmt.Println(err)
 		}
 	}(r.Body)
 
@@ -185,9 +188,8 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//validate the entered password with stored hash password
-	if err := validPassword(password, User.Password); err != nil {
+	if !ValidPassword(password, User.Password) {
 		w.WriteHeader(http.StatusUnauthorized)
-
 		response := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "password authentication failed",
@@ -413,9 +415,9 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	cnftrip := &models.Ride{}
+	confirmedTrip := &models.Ride{}
 
-	err := json.NewDecoder(r.Body).Decode(&cnftrip)
+	err := json.NewDecoder(r.Body).Decode(&confirmedTrip)
 	if err != nil {
 		return
 	}
@@ -431,22 +433,31 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cnftrip.UserId = curUser.UserId
-	go trip.FindCab(&cnftrip)
+	if confirmedTrip.Coupon != "" {
+		discountFare, err := user.ApplyCoupon(confirmedTrip.Coupon, confirmedTrip.Fare)
+		if err == nil {
+			confirmedTrip.Fare = discountFare
+			confirmedTrip.UserId = curUser.UserId
 
-	//otp, err := auth.TripCode()
-	//Tripcode, err := strconv.Atoi(otp)
+			go trip.FindCab(&confirmedTrip)
 
-	//redis.Set("tripcode"+strconv.Itoa(int(curUser.Id)), otp)
+			json.NewEncoder(w).Encode(&models.Response{
+				ResponseStatus:  "success",
+				ResponseMessage: "coupon applied. waiting to accept ride",
+				ResponseData:    confirmedTrip,
+			})
+			return
+		}
+	}
+	confirmedTrip.UserId = curUser.UserId
 
-	err = json.NewEncoder(w).Encode(&models.Response{
+	go trip.FindCab(&confirmedTrip)
+
+	json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "waiting to accept ride",
 		ResponseData:    nil,
 	})
-	if err != nil {
-		return
-	}
 }
 
 // UserTripHistory returns saved trips of the user
@@ -594,6 +605,54 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetCoupons(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	coupons := coupon.GetCoupons()
+
+	json.NewEncoder(w).Encode(&coupons)
+}
+
+type Amtcoupon struct {
+	Code string `json:"code"`
+	Fare string `json:"fare"`
+}
+
+func ApplyCoupon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c := &Amtcoupon{}
+	json.NewDecoder(r.Body).Decode(&c)
+	r.Body.Close()
+
+	couponCode := c.Code
+
+	fare, _ := strconv.ParseFloat(c.Fare, 64)
+	ride := &models.Ride{}
+
+	dfare, err := user.ApplyCoupon(couponCode, fare)
+	if err != nil {
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	ride.Fare = dfare
+
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "coupon applied",
+		ResponseData:    ride.Fare,
+	}
+
+	json.NewEncoder(w).Encode(resp)
+
+}
+
 // GetUserFromCookie returns the logged-in user from the stored cookie in session
 func GetUserFromCookie(r *http.Request) (*models.User, error) {
 	c, err := r.Cookie("jwt-token")
@@ -614,11 +673,10 @@ func GetUserFromCookie(r *http.Request) (*models.User, error) {
 	return u, nil
 }
 
-//match the entered password with
-//the hash password stored in the database
-func validPassword(password, hashPassword string) error {
+// ValidPassword match the entered password with the hash password stored in the database
+func ValidPassword(password, hashPassword string) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
-		return err
+		return false
 	}
-	return nil
+	return true
 }

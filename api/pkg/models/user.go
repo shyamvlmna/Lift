@@ -9,16 +9,16 @@ import (
 
 type User struct {
 	gorm.Model
-	UserId        uint   `gorm:"primaryKey;autoIncrement;unique" json:"userid"`
-	Picture       string `json:"picture"`
-	Phonenumber   string `gorm:"not null;unique;" json:"phonenumber"`
-	Firstname     string `gorm:"not null;" json:"firstname"`
-	Lastname      string `json:"lastname"`
-	Email         string `gorm:"not null;unique;" json:"email"`
-	Password      string `gorm:"not null;" json:"password"`
-	Rating        int    `gorm:"default:0" json:"user_rating"`
-	Active        bool   `gorm:"default:true;" json:"status"`
-	WalletBalance uint   `json:"userwallet" gorm:"default:0;"`
+	UserId        uint    `gorm:"primaryKey;autoIncrement;unique" json:"userid"`
+	Picture       string  `json:"picture"`
+	Phonenumber   string  `gorm:"not null;unique;" json:"phonenumber"`
+	Firstname     string  `gorm:"not null;" json:"firstname"`
+	Lastname      string  `json:"lastname"`
+	Email         string  `gorm:"not null;unique;" json:"email"`
+	Password      string  `gorm:"not null;" json:"password"`
+	Rating        int     `gorm:"default:0" json:"user_rating"`
+	Active        bool    `gorm:"default:true;" json:"status"`
+	WalletBalance float64 `json:"userwallet" gorm:"default:0;"`
 }
 
 // Add new user to database

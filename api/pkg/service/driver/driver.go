@@ -1,11 +1,9 @@
 package driver
 
 import (
-	"encoding/json"
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
@@ -39,20 +37,20 @@ func AddDriver(newDriver *models.Driver) error {
 //eg:if searching using id, key is "id" and value is the id of the driver to search
 func GetDriver(key, value string) *models.Driver {
 
-	p, err := redis.GetData("data")
-	if err != nil {
-		driver, _ := d.Get(key, value)
-		return &driver
-	}
+	//p, err := redis.GetData("data")
+	//if err != nil {
+	driver, _ := d.Get(key, value)
+	return &driver
+	//}
 
-	driver := &models.Driver{}
-
-	err = json.Unmarshal([]byte(p), &driver)
-	if err != nil {
-		return nil
-	}
-
-	return driver
+	//driver := &models.Driver{}
+	//
+	//err = json.Unmarshal([]byte(p), &driver)
+	//if err != nil {
+	//	return nil
+	//}
+	//
+	//return driver
 }
 
 // GetAllDrivers return all drivers in the database
@@ -68,6 +66,19 @@ func UpdateDriver(driver models.Driver) {
 	if err != nil {
 		return
 	}
+}
+
+func Payout(amount string, driverId uint) error {
+
+	err := models.AddPayout(amount, driverId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PayoutRequests(driverid uint) *models.Payouts {
+	return models.GetPayoutStatus(driverid)
 }
 
 //delete driver from the database by the id

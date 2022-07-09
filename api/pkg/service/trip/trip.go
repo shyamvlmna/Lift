@@ -15,9 +15,9 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-func Fare(d int) float32 {
+func Fare(d int) float64 {
 
-	fare := float32(d) * 0.05
+	fare := float64(d) * 0.05
 	return fare
 }
 
@@ -73,7 +73,7 @@ func CreateTrip(t *Ride) *models.Ride {
 		Source:      "geocoded source",
 		Destination: "geocoded destination",
 		Distance:    Kmdistance,
-		Fare:        uint(fare),
+		Fare:        fare,
 		ETA:         eta,
 	}
 
