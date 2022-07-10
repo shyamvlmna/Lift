@@ -60,6 +60,10 @@ func GetAllDrivers() []models.Driver {
 	return *d.GetAll()
 }
 
+func RegisterToDrive() {
+
+}
+
 // UpdateDriver update the driver by accepting the updated driver fields
 //only update fields with null values
 func UpdateDriver(driver models.Driver) {

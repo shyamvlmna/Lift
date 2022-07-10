@@ -50,6 +50,8 @@ func DriverRoutes(r *mux.Router) {
 	//render homepage only if authorized with JWT
 	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods(http.MethodGet)
 
+	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterToDrive)).Methods(http.MethodGet)
+
 	//add cab to the driver profile
 	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods(http.MethodPost)
 
@@ -97,4 +99,6 @@ func DriverRoutes(r *mux.Router) {
 
 	//get status of submitted payout requests
 	driverRouter.Handle("/payoutstatus", middleware.IsAuthorized(controllers.PayoutStatus)).Methods(http.MethodGet)
+
+	driverRouter.HandleFunc("/upload", controllers.UploadDocuments).Methods(http.MethodPost)
 }

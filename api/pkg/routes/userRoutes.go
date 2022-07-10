@@ -59,10 +59,10 @@ func UserRoutes(r *mux.Router) {
 	userRouter.Handle("/userhome", middleware.IsAuthorized(controllers.UserHome)).Methods(http.MethodGet)
 
 	//get current user profile details to update
-	userRouter.HandleFunc("/update/{id}", controllers.EditUserProfile).Methods(http.MethodGet)
+	userRouter.HandleFunc("/editprofile", controllers.EditUserProfile).Methods(http.MethodGet)
 
 	//update user profile details
-	userRouter.HandleFunc("/update/{id}", controllers.UpdateUserProfile).Methods(http.MethodPost)
+	userRouter.HandleFunc("/updateprofile", controllers.UpdateUserProfile).Methods(http.MethodPost)
 
 	//book new trip with location latitude and longitude from the frontend
 	userRouter.Handle("/booktrip", middleware.IsAuthorized(controllers.BookTrip)).Methods(http.MethodPost)
@@ -81,7 +81,7 @@ func UserRoutes(r *mux.Router) {
 
 	userRouter.HandleFunc("/razorpaycallback", controllers.RazorpayCallback)
 
-	userRouter.HandleFunc("/razorpay/webhook", controllers.RazorpayWebhook)
+	userRouter.HandleFunc("/razorpay/webhook", controllers.RazorpayWebhook).Methods(http.MethodPost)
 
 	//returns all available coupons
 	userRouter.Handle("/coupons", middleware.IsAuthorized(controllers.GetCoupons)).Methods(http.MethodGet)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -312,6 +313,42 @@ func DriverLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func RegisterToDrive(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//d, err := GetDriverFromCookie(r)
+	//
+	//driver.RegisterToDrive(d)
+
+	//TODO : complete driver request to drive
+}
+
+func UploadDocuments(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(20 << 30)
+
+	licence, licencehandler, err := r.FormFile("licence")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(licencehandler.Filename)
+	fmt.Println(licencehandler.Size)
+	fmt.Println(licencehandler.Header)
+
+	tmpFile, err := ioutil.TempFile("licence-doc", "licence-*.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer tmpFile.Close()
+
+	fileBytes, err := ioutil.ReadAll(licence)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	tmpFile.Write(fileBytes)
 }
 
 func EditDriverProfile(w http.ResponseWriter, r *http.Request) {

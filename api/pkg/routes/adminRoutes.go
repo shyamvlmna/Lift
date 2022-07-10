@@ -11,7 +11,7 @@ import (
 
 func AdminRoutes(r *mux.Router) {
 
-	r.HandleFunc("/admin", controllers.AdminIndex)
+	r.HandleFunc("/admin", controllers.AdminIndex).Methods(http.MethodGet)
 
 	adminRouter := r.PathPrefix("/admin").Subrouter()
 
