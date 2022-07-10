@@ -309,7 +309,6 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditUserProfile(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 	w.Header().Set("Content-Type", "application/json")
 
 	user, err := GetUserFromCookie(r)
@@ -324,7 +323,11 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userdata := &models.UserData{
+		Id:          user.UserId,
 		Phonenumber: user.Phonenumber,
+		Firstname:   user.Firstname,
+		Lastname:    user.Lastname,
+		Email:       user.Email,
 	}
 
 	err = json.NewEncoder(w).Encode(&userdata)
@@ -595,7 +598,7 @@ func RazorpayWebhook(w http.ResponseWriter, r *http.Request) {
 	if wh.Event == "order.paid" {
 		payment.UpdatePayment((*payment.Order)(&wh.Payload.Order))
 	} else if wh.Event == "payment.failed" {
-		fmt.Println("payment failed")
+		payment.PaymentFailed((*payment.Order)(&wh.Payload.Order))
 	}
 	//
 	fmt.Println(wh.Payload.Payment.Entity.Amount)

@@ -614,6 +614,20 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	if driver.Cab.Registration == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(&models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "cab not added",
+			ResponseData:    nil,
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
+
 	ride := trip.GetRide()
 	err = json.NewEncoder(w).Encode(&ride)
 	if err != nil {
