@@ -77,14 +77,23 @@ func GetUser(key, value string) *models.User {
 }
 
 // GetUsers return all users in the database
-func GetUsers() []models.User {
-	return *u.GetAll()
+func GetUsers() (*[]models.User, error) {
+
+	return u.GetAll()
 }
 
 // UpdateUser update a user by accepting the updated user fields
 //only update fields with null values
 func UpdateUser(user *models.User) error {
 	return user.Update()
+}
+
+func BlockUser(id uint) error {
+	return u.BlockUnblock(id)
+}
+
+func UnBlockUser(id uint) error {
+	return u.BlockUnblock(id)
 }
 
 // DeleteUser delete user from the database by the id
@@ -94,10 +103,6 @@ func DeleteUser(id uint64) {
 		return
 	}
 }
-
-// func AppendTrip(user *models.User, trip *models.Trip) error {
-// 	return database.AppendTrip(user, trip)
-// }
 
 func ApplyCoupon(code string, fare float64) (float64, error) {
 

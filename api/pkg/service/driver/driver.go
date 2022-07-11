@@ -55,13 +55,22 @@ func GetDriver(key, value string) *models.Driver {
 }
 
 // GetAllDrivers return all drivers in the database
-func GetAllDrivers() []models.Driver {
+func GetAllDrivers() ([]models.Driver, error) {
 
-	return *d.GetAll()
+	drivers, err := d.GetAll()
+
+	if err != nil {
+		return nil, err
+	}
+	return *drivers, nil
 }
 
 func RegisterToDrive() {
 
+}
+
+func DriverRequests() (*[]models.Driver, error) {
+	return models.DriverRequests()
 }
 
 // UpdateDriver update the driver by accepting the updated driver fields
@@ -92,7 +101,7 @@ func DeleteDriver(id uint64) error {
 }
 
 func ApproveDriver(id uint) error {
-	return d.BlockUnblock(id)
+	return d.ApproveToDrive(id)
 }
 
 func BlockDriver(id uint) error {

@@ -1,14 +1,12 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
 func DriverRoutes(r *mux.Router) {
@@ -22,18 +20,7 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods(http.MethodPost)
 
 	//render enter otp page
-	driverRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "new driver",
-			ResponseData:    nil,
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
-	}).Methods(http.MethodGet)
+	driverRouter.HandleFunc("/enterotp", controllers.EnterOTP).Methods(http.MethodGet)
 
 	//validate submitted otp
 	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods(http.MethodPost)

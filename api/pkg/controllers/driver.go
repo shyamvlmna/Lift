@@ -64,13 +64,26 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func EnterOTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	response := models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "new driver",
+		ResponseData:    "render enter otp page",
+	}
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+}
+
 func DriverSignUpPage(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	response := &models.Response{
 		ResponseStatus:  "OTP validation success",
 		ResponseMessage: "submit driver data",
-		ResponseData:    nil,
+		ResponseData:    "render signup page",
 	}
 
 	err := json.NewEncoder(w).Encode(&response)

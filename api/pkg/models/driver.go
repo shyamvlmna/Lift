@@ -65,13 +65,25 @@ func (d *Driver) Get(key, value string) (Driver, bool) {
 }
 
 // GetAll drivers in the database
-func (d *Driver) GetAll() *[]Driver {
+func (d *Driver) GetAll() (*[]Driver, error) {
 	db := database.Db
 
 	drivers := &[]Driver{}
-	db.Find(&drivers)
+	result := db.Find(&drivers)
 
-	return drivers
+	return drivers, result.Error
+}
+
+func DriverRequests() (*[]Driver, error) {
+	db := database.Db
+
+	db.AutoMigrate(&Driver{})
+
+	drivers := &[]Driver{}
+
+	result := db.Find(&drivers, "approved=?", false)
+
+	return drivers, result.Error
 }
 
 // Update a driver by getting updated driver fields
@@ -117,24 +129,35 @@ func (d *Driver) Delete(id uint64) error {
 }
 
 // BlockUnblock driver by toggling driver approved field
-func (d *Driver) BlockUnblock(id uint) error {
+func (*Driver) BlockUnblock(id uint) error {
 	db := database.Db
 
 	driver := &Driver{}
 
 	db.Where("driver_id=?", id).First(&driver)
 
-	// if !driver.Approved {
-	// 	return errors.New("accesDenied")
-	// }
-
-	if driver.Approved {
-		driver.Approved = false
-		result := db.Save(&driver)
+	if driver.Active {
+		result := db.Model(&driver).Update("active", false)
 		return result.Error
 	}
 
-	driver.Approved = true
-	result := db.Save(&driver)
+	result := db.Model(&driver).Update("active", true)
+	return result.Error
+}
+
+func (*Driver) ApproveToDrive(id uint) error {
+
+	db := database.Db
+
+	driver := &Driver{}
+
+	db.Where("driver_id=?", id).First(&driver)
+
+	if driver.Approved {
+		result := db.Model(&driver).Update("approved", false)
+		return result.Error
+	}
+
+	result := db.Model(&driver).Update("approved", true)
 	return result.Error
 }
