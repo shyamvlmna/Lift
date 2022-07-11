@@ -164,7 +164,7 @@ func ManageDrivers(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched drivers data",
-		ResponseData:    &drivers,
+		ResponseData:    drivers,
 	})
 	if err != nil {
 		return

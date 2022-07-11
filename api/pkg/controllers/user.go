@@ -63,6 +63,20 @@ func UserAuth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func EnterOTPUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "new user",
+		ResponseData:    "verify with otp",
+	}
+	err := json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+
+}
+
 // UserSignupPage render the signup page to submit the details of the new user
 func UserSignupPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -243,12 +257,7 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -313,12 +322,7 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -339,22 +343,37 @@ func EditUserProfile(w http.ResponseWriter, r *http.Request) {
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
+	u, err := GetUserFromCookie(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
+	}
+
 	newUser := models.User{}
 
-	err := json.NewDecoder(r.Body).Decode(&newUser)
+	err = json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	err = user.UpdateUser(&newUser)
+	err = user.UpdateUser(u.UserId, &newUser)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "error in updating user profile",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	fmt.Println("user updated successfully")
-	// w.Write([]byte("user updated successfully"))
-	w.WriteHeader(http.StatusOK)
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "user profile updated",
+		ResponseData:    newUser,
+	}
+	json.NewEncoder(w).Encode(resp)
 }
 
 // BookTrip get the pickup point and destination from the booktrip call from the user
@@ -363,12 +382,7 @@ func BookTrip(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -427,12 +441,7 @@ func ConfirmTrip(w http.ResponseWriter, r *http.Request) {
 
 	curUser, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -469,12 +478,7 @@ func UserTripHistory(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -496,12 +500,7 @@ func UserWallet(w http.ResponseWriter, r *http.Request) {
 
 	user, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -520,12 +519,7 @@ func AddMoneyToWallet(w http.ResponseWriter, r *http.Request) {
 
 	curUser, err := GetUserFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 

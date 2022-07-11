@@ -1,14 +1,12 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 	googleauth "github.com/shayamvlmna/cab-booking-app/pkg/service/googleAuth"
 )
 
@@ -35,19 +33,7 @@ func UserRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/logout", controllers.UserLogout)
 
 	//render enter otp page
-	userRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := &models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "new user",
-			ResponseData:    nil,
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
-
-	}).Methods(http.MethodGet)
+	userRouter.HandleFunc("/enterotp", controllers.EnterOTPUser).Methods(http.MethodGet)
 
 	//validate submited otp
 	userRouter.Handle("/otp", middleware.ValidateOtp(controllers.UserSignupPage)).Methods(http.MethodPost)

@@ -65,39 +65,22 @@ func GetAllDrivers() ([]models.Driver, error) {
 	return *drivers, nil
 }
 
-func RegisterToDrive() {
-
-}
-
 func DriverRequests() (*[]models.Driver, error) {
 	return models.DriverRequests()
 }
 
-// UpdateDriver update the driver by accepting the updated driver fields
-//only update fields with null values
-func UpdateDriver(driver models.Driver) {
-	err := d.Update(driver)
-	if err != nil {
-		return
-	}
-}
-
 func Payout(amount string, driverId uint) error {
 
-	err := models.AddPayout(amount, driverId)
-	if err != nil {
-		return err
-	}
-	return nil
+	return models.AddPayout(amount, driverId)
+
 }
 
-func PayoutRequests(driverid uint) *models.Payout {
+func PayoutRequests(driverid uint) []models.PayoutResponse {
 	return models.GetPayoutStatus(driverid)
 }
 
-//delete driver from the database by the id
-func DeleteDriver(id uint64) error {
-	return d.Delete(id)
+func PayoutHistory(id uint) []models.PayoutResponse {
+	return models.PayoutHistory(id)
 }
 
 func ApproveDriver(id uint) error {
@@ -109,4 +92,30 @@ func BlockDriver(id uint) error {
 }
 func UnBlockDriver(id uint) error {
 	return d.BlockUnblock(id)
+}
+
+func GetBankDetails(id uint) (*models.Bank, error) {
+	return models.GetBankDetails(id)
+}
+
+func UpdateBankDetails(id uint, bank *models.Bank) error {
+	return bank.UpdateBank(id, bank)
+}
+
+func RegisterToDrive() {
+
+}
+
+// UpdateDriver update the driver by accepting the updated driver fields
+//only update fields with null values
+func UpdateDriver(driver models.Driver) {
+	err := d.Update(driver)
+	if err != nil {
+		return
+	}
+}
+
+//delete driver from the database by the id
+func DeleteDriver(id uint64) error {
+	return d.Delete(id)
 }

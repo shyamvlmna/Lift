@@ -64,12 +64,12 @@ func DriverAuth(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func EnterOTP(w http.ResponseWriter, r *http.Request) {
+func EnterOTPDriver(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "new driver",
-		ResponseData:    "render enter otp page",
+		ResponseData:    "verify with otp",
 	}
 	err := json.NewEncoder(w).Encode(&response)
 	if err != nil {
@@ -261,12 +261,7 @@ func DriverHome(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -370,12 +365,7 @@ func EditDriverProfile(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -465,15 +455,7 @@ func AddCab(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -511,12 +493,7 @@ func EditCab(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -558,12 +535,7 @@ func UpdateCab(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -599,6 +571,115 @@ func UpdateCab(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func AddBankPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "add bank account details",
+		ResponseData:    nil,
+	}
+
+	json.NewEncoder(w).Encode(&response)
+}
+
+func AddBankAccount(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	bank := &models.Bank{}
+	json.NewDecoder(r.Body).Decode(&bank)
+	r.Body.Close()
+
+	d, err := GetDriverFromCookie(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
+		return
+	}
+
+	d.BankAccount = bank
+
+	err = d.Update(*d)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "bank account not added",
+			ResponseData:    nil,
+		}
+		err := json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			return
+		}
+		return
+	}
+	response := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "bank account successfully added",
+		ResponseData:    nil,
+	}
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		return
+	}
+}
+
+func EditBankDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	d, err := GetDriverFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
+		return
+	}
+
+	bankAccount, err := driver.GetBankDetails(d.DriverId)
+	if err != nil {
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "fetching bank account details failed",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "bank account details fetched",
+		ResponseData:    bankAccount,
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+func UpdateBankDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	d, err := GetDriverFromCookie(r)
+	if err != nil {
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
+		return
+	}
+
+	bankDetails := &models.Bank{}
+	json.NewDecoder(r.Body).Decode(&bankDetails)
+
+	if err := driver.UpdateBankDetails(d.DriverId, bankDetails); err != nil {
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "updating bank account failed",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "bank account successfully updated",
+		ResponseData:    bankDetails,
+	}
+	json.NewEncoder(w).Encode(resp)
+
+}
+
 //GetTrip returns the available trips booked by the users
 func GetTrip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -606,12 +687,7 @@ func GetTrip(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -668,12 +744,7 @@ func AcceptTrip(w http.ResponseWriter, r *http.Request) {
 	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -730,12 +801,7 @@ func MatchTripCode(w http.ResponseWriter, r *http.Request) {
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -779,12 +845,7 @@ func StartTrip(w http.ResponseWriter, r *http.Request) {
 	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -817,12 +878,7 @@ func EndTrip(w http.ResponseWriter, r *http.Request) {
 	curDriver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -858,12 +914,7 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 
 	d, err := GetDriverFromCookie(r)
 	if err != nil {
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    err,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -880,81 +931,13 @@ func DriverTripHistory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AddBankPage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	response := &models.Response{
-		ResponseStatus:  "success",
-		ResponseMessage: "add bank account details",
-		ResponseData:    nil,
-	}
-
-	json.NewEncoder(w).Encode(&response)
-}
-
-func AddBankAccount(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	bank := &models.Bank{}
-	json.NewDecoder(r.Body).Decode(&bank)
-	r.Body.Close()
-
-	d, err := GetDriverFromCookie(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    nil,
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	d.BankAccount = bank
-
-	err = d.Update(*d)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "bank account not added",
-			ResponseData:    nil,
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
-		return
-	}
-	response := &models.Response{
-		ResponseStatus:  "success",
-		ResponseMessage: "bank account successfully added",
-		ResponseData:    nil,
-	}
-	err = json.NewEncoder(w).Encode(&response)
-	if err != nil {
-		return
-	}
-}
-
 func DriverWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	driver, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -976,12 +959,7 @@ func PayoutWallet(w http.ResponseWriter, r *http.Request) {
 	d, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
@@ -1012,15 +990,14 @@ func PayoutWallet(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&resp)
 		return
 	}
-	err = driver.Payout(amount.Amount, d.DriverId)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	if err = driver.Payout(amount.Amount, d.DriverId); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		resp := &models.Response{
 			ResponseStatus:  "failed",
 			ResponseMessage: "checkout request failed",
-			ResponseData:    err,
+			ResponseData:    err.Error(),
 		}
-		json.NewEncoder(w).Encode(&resp)
+		json.NewEncoder(w).Encode(resp)
 		return
 	}
 	resp := &models.Response{
@@ -1031,25 +1008,48 @@ func PayoutWallet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&resp)
 }
 
+//PayoutStatus returns the latest payout request
 func PayoutStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	d, err := GetDriverFromCookie(r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		response := &models.Response{
-			ResponseStatus:  "failed",
-			ResponseMessage: "error parsing cookie",
-			ResponseData:    nil,
-		}
-		json.NewEncoder(w).Encode(&response)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
 		return
 	}
 
-	payout := driver.PayoutRequests(d.DriverId)
+	payouts := driver.PayoutRequests(d.DriverId)
+	if len(payouts) == 0 {
+		resp := &models.Response{
+			ResponseStatus:  "success",
+			ResponseMessage: "payout request status",
+			ResponseData:    "no pending payout requests",
+		}
+		json.NewEncoder(w).Encode(&resp)
+		return
+	}
 	resp := &models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "payout request status",
-		ResponseData:    fmt.Sprintf("amount:%v   status:%v", payout.Amount, payout.Status),
+		ResponseData:    &payouts,
+	}
+	json.NewEncoder(w).Encode(&resp)
+}
+
+//PayoutHistory returns the history of payouts requested by the driver
+func PayoutHistory(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	d, err := GetDriverFromCookie(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(&ErrorParsingCookie)
+		return
+	}
+	payouts := driver.PayoutHistory(d.DriverId)
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "payout request status",
+		ResponseData:    payouts,
 	}
 	json.NewEncoder(w).Encode(&resp)
 }
@@ -1069,4 +1069,10 @@ func GetDriverFromCookie(r *http.Request) (*models.Driver, error) {
 	d := driver.GetDriver("phone_number", phone)
 
 	return d, nil
+}
+
+var ErrorParsingCookie = &models.Response{
+	ResponseStatus:  "failed",
+	ResponseMessage: "error parsing cookie",
+	ResponseData:    "login to continue",
 }

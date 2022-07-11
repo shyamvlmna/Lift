@@ -1,8 +1,6 @@
 package models
 
 import (
-	"strconv"
-
 	"gorm.io/gorm"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
@@ -62,21 +60,18 @@ func (u *User) GetAll() (*[]User, error) {
 }
 
 // Update existing user by id
-func (u *User) Update() error {
+func (u *User) Update(id uint) error {
 	db := database.Db
 
 	user := &User{}
 
-	id := strconv.Itoa(int(u.UserId))
-
 	db.Where("user_id=?", id).First(&user)
 
 	result := db.Model(&user).Updates(&User{Phonenumber: "",
-		Firstname: "",
-		Lastname:  "",
-		Email:     "",
-		Password:  "",
-		Active:    false,
+		Firstname: u.Firstname,
+		Lastname:  u.Lastname,
+		Email:     u.Email,
+		Password:  u.Password,
 	})
 
 	return result.Error

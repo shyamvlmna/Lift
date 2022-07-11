@@ -84,8 +84,8 @@ func GetUsers() (*[]models.User, error) {
 
 // UpdateUser update a user by accepting the updated user fields
 //only update fields with null values
-func UpdateUser(user *models.User) error {
-	return user.Update()
+func UpdateUser(id uint, user *models.User) error {
+	return user.Update(id)
 }
 
 func BlockUser(id uint) error {

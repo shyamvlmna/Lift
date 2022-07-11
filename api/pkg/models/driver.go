@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -65,7 +66,7 @@ func (d *Driver) Get(key, value string) (Driver, bool) {
 }
 
 // GetAll drivers in the database
-func (d *Driver) GetAll() (*[]Driver, error) {
+func (*Driver) GetAll() (*[]Driver, error) {
 	db := database.Db
 
 	drivers := &[]Driver{}
@@ -95,7 +96,7 @@ func (*Driver) Update(d Driver) error {
 
 	id := strconv.Itoa(int(d.DriverId))
 
-	db.Where("id=?", id).First(&driver)
+	db.Where("driver_id=?", id).First(&driver)
 
 	result := db.Model(&driver).Updates(Driver{
 		PhoneNumber:   d.PhoneNumber,
@@ -159,5 +160,37 @@ func (*Driver) ApproveToDrive(id uint) error {
 	}
 
 	result := db.Model(&driver).Update("approved", true)
+	return result.Error
+}
+
+func GetBankDetails(id uint) (*Bank, error) {
+	db := database.Db
+
+	db.AutoMigrate(&Driver{})
+
+	driver := &Driver{}
+
+	db.Where("driver_id=?", id).First(&driver)
+
+	bank := driver.BankAccount
+
+	if bank.AccountNumber == "" {
+		return nil, errors.New("bank account not added")
+	}
+	return bank, nil
+}
+
+func (b *Bank) UpdateBank(id uint, bank *Bank) error {
+
+	db := database.Db
+	db.AutoMigrate(&Driver{})
+
+	driver := &Driver{}
+
+	db.Where("driver_id=?", id).First(&driver)
+	result := db.Model(&driver).Updates(Driver{
+		BankAccount: bank,
+	})
+	db.Save(&driver)
 	return result.Error
 }
