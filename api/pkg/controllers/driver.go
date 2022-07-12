@@ -904,6 +904,7 @@ func EndTrip(w http.ResponseWriter, r *http.Request) {
 		ResponseMessage: "trip completed",
 		ResponseData:    nil,
 	}
+	//go user.TripEnd()
 	if err = json.NewEncoder(w).Encode(&response); err != nil {
 		return
 	}

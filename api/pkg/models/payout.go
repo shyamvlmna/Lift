@@ -14,7 +14,7 @@ import (
 
 type Payout struct {
 	gorm.Model
-	DriverId uint   `gorm:"primaryKey;unique" json:"driver_id"`
+	DriverId uint   `json:"driver_id"`
 	Amount   string `json:"amount" gorm:"not null"`
 	Bank     *Bank  `gorm:"embedded" json:"bank"`
 	Status   string `json:"payout_status"`
@@ -50,14 +50,13 @@ func AddPayout(amount string, driverId uint) error {
 	}
 
 	result := db.Create(payout)
-
-	pgerr := result.Error.(*pgconn.PgError)
-
-	if pgerr.Code == "23505" {
-
-		return errors.New("pending request exist")
+	if result.Error != nil {
+		if result.Error.(*pgconn.PgError) != nil {
+			if result.Error.(*pgconn.PgError).Code == "23505" {
+				return errors.New("pending request exist")
+			}
+		}
 	}
-
 	if err := db.AutoMigrate(&Driver{}); err != nil {
 		return err
 	}

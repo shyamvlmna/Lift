@@ -6,8 +6,8 @@ Created the complete backend of an online cab booking app. Design and functional
 ## Technologies and tools used
 
  - The Go Programming Language
- - Gorilla web toolkit
  - PostgreSQL
+ - Gorilla web toolkit
  - Redis
  - JWT
  - GORM
@@ -18,4 +18,4 @@ Created the complete backend of an online cab booking app. Design and functional
 ## Created by
 
 - [@shyamvlmna](https://www.github.com/shyamvlmna)
-
+   4831
