@@ -2,11 +2,10 @@ package models
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"strconv"
 	"time"
 
-	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
@@ -14,7 +13,7 @@ import (
 
 type Payout struct {
 	gorm.Model
-	DriverId uint   `json:"driver_id"`
+	DriverId uint   `gorm:"index:driver_id" json:"driver_id"`
 	Amount   string `json:"amount" gorm:"not null"`
 	Bank     *Bank  `gorm:"embedded" json:"bank"`
 	Status   string `json:"payout_status"`
@@ -28,7 +27,7 @@ type DriverWalletPayout struct {
 	Status    string      `json:"payout_status"`
 }
 
-func AddPayout(amount string, driverId uint) error {
+func AddPayoutRequest(amount string, driverId uint) error {
 	db := database.Db
 
 	d := &Driver{}
@@ -42,30 +41,43 @@ func AddPayout(amount string, driverId uint) error {
 		return err
 	}
 
-	payout := &Payout{
-		DriverId: driverId,
-		Amount:   amount,
-		Bank:     driver.BankAccount,
-		Status:   "pending",
-	}
+	payouts := []Payout{}
+	result := db.Where("driver_id = ? AND status = ?", driverId, "pending").Find(&payouts)
+	//db.Where("driver_id <> ?", driverId).Find(&payouts)
 
-	result := db.Create(payout)
-	if result.Error != nil {
-		if result.Error.(*pgconn.PgError) != nil {
-			if result.Error.(*pgconn.PgError).Code == "23505" {
-				return errors.New("pending request exist")
+	//check whether if there is an existing payout request to proceed
+	//if exists no new payout request to be allowed
+	if len(payouts) == 0 {
+
+		payout := &Payout{
+			DriverId: driverId,
+			Amount:   amount,
+			Bank:     driver.BankAccount,
+			Status:   "pending",
+		}
+
+		result = db.Create(payout)
+		if result.Error != nil {
+			if result.Error != nil {
+				log.Println(result.Error)
+				return errors.New("something went wrong")
 			}
 		}
-	}
-	if err := db.AutoMigrate(&Driver{}); err != nil {
-		return err
-	}
 
-	if err := db.Model(&Driver{}).Where("driver_id=?", driverId).UpdateColumn("wallet_balance", gorm.Expr("wallet_balance - ?", amount)).Error; err != nil {
-		return err
-	}
+		if err := db.AutoMigrate(&Driver{}); err != nil {
+			log.Println(err)
+			return errors.New("something went wrong")
+		}
 
-	return nil
+		if err := db.Model(&Driver{}).Where("driver_id=?", driverId).UpdateColumn("wallet_balance", gorm.Expr("wallet_balance - ?", amount)).Error; err != nil {
+			log.Println(err)
+			return errors.New("something went wrong")
+		}
+
+		return nil
+	}
+	return errors.New("pending request exist")
+
 }
 
 func GetPayouts() *[]DriverWalletPayout {
@@ -125,23 +137,25 @@ type PayoutResponse struct {
 	RequestDate time.Time `json:"requestdate"`
 	Amount      string    `json:"amount"`
 	Status      string    `json:"status"`
+	Bank        *Bank     `json:"bank"`
 }
 
-func GetPayoutStatus(id uint) []PayoutResponse {
+func GetPayoutStatus(id uint) ([]PayoutResponse, error) {
 	db := database.Db
 
-	db.AutoMigrate(&Payout{})
+	err := db.AutoMigrate(&Payout{})
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("something went wrong")
+	}
 
 	payouts := []Payout{}
 
 	db.Find(&payouts)
 
-	fmt.Println(payouts)
-
 	pendingPayouts := []PayoutResponse{}
 
 	for _, p := range payouts {
-		fmt.Println(p.Amount)
 		if p.DriverId != id || p.Status == "paid" {
 			continue
 		}
@@ -149,10 +163,11 @@ func GetPayoutStatus(id uint) []PayoutResponse {
 		payoutresp.RequestDate = p.CreatedAt
 		payoutresp.Amount = p.Amount
 		payoutresp.Status = p.Status
+		payoutresp.Bank = p.Bank
 		pendingPayouts = append(pendingPayouts, payoutresp)
 	}
 
-	return pendingPayouts
+	return pendingPayouts, nil
 }
 
 func PayoutHistory(id uint) []PayoutResponse {
@@ -174,6 +189,7 @@ func PayoutHistory(id uint) []PayoutResponse {
 			RequestDate: p.CreatedAt,
 			Amount:      p.Amount,
 			Status:      p.Status,
+			Bank:        p.Bank,
 		}
 
 		payoutHistory = append(payoutHistory, payoutresp)

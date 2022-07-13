@@ -1019,7 +1019,17 @@ func PayoutStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payouts := driver.PayoutRequests(d.DriverId)
+	payouts, err := driver.PayoutRequests(d.DriverId)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "payout request fetching failed",
+			ResponseData:    err,
+		}
+		json.NewEncoder(w).Encode(&resp)
+		return
+	}
 	if len(payouts) == 0 {
 		resp := &models.Response{
 			ResponseStatus:  "success",

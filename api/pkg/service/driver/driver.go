@@ -71,11 +71,11 @@ func DriverRequests() (*[]models.Driver, error) {
 
 func Payout(amount string, driverId uint) error {
 
-	return models.AddPayout(amount, driverId)
+	return models.AddPayoutRequest(amount, driverId)
 
 }
 
-func PayoutRequests(driverid uint) []models.PayoutResponse {
+func PayoutRequests(driverid uint) ([]models.PayoutResponse, error) {
 	return models.GetPayoutStatus(driverid)
 }
 

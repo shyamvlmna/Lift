@@ -34,6 +34,13 @@ type Bank struct {
 	IFSC              string `gorm:"ifsc" json:"ifsc"`
 }
 
+type DriverTransaction struct {
+	gorm.Model
+	DriverId uint   `gorm:"index:driver_id" json:"driver_id"`
+	Type     string `gorm:"" json:"type"`
+	Amount   string `json:"amount"`
+}
+
 // Add new driver to database
 func (d *Driver) Add() error {
 	db := database.Db
