@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -31,6 +32,13 @@ type Bank struct {
 	BankName          string `json:"bank_name"`
 	AccountNumber     string `json:"account_number"`
 	IFSC              string `gorm:"ifsc" json:"ifsc"`
+}
+
+type DriverTransaction struct {
+	gorm.Model
+	DriverId uint   `gorm:"index:driver_id" json:"driver_id"`
+	Type     string `gorm:"" json:"type"`
+	Amount   string `json:"amount"`
 }
 
 // Add new driver to database
@@ -65,13 +73,25 @@ func (d *Driver) Get(key, value string) (Driver, bool) {
 }
 
 // GetAll drivers in the database
-func (d *Driver) GetAll() *[]Driver {
+func (*Driver) GetAll() (*[]Driver, error) {
 	db := database.Db
 
 	drivers := &[]Driver{}
-	db.Find(&drivers)
+	result := db.Find(&drivers)
 
-	return drivers
+	return drivers, result.Error
+}
+
+func DriverRequests() (*[]Driver, error) {
+	db := database.Db
+
+	db.AutoMigrate(&Driver{})
+
+	drivers := &[]Driver{}
+
+	result := db.Find(&drivers, "approved=?", false)
+
+	return drivers, result.Error
 }
 
 // Update a driver by getting updated driver fields
@@ -83,7 +103,7 @@ func (*Driver) Update(d Driver) error {
 
 	id := strconv.Itoa(int(d.DriverId))
 
-	db.Where("id=?", id).First(&driver)
+	db.Where("driver_id=?", id).First(&driver)
 
 	result := db.Model(&driver).Updates(Driver{
 		PhoneNumber:   d.PhoneNumber,
@@ -117,24 +137,67 @@ func (d *Driver) Delete(id uint64) error {
 }
 
 // BlockUnblock driver by toggling driver approved field
-func (d *Driver) BlockUnblock(id uint) error {
+func (*Driver) BlockUnblock(id uint) error {
 	db := database.Db
 
 	driver := &Driver{}
 
 	db.Where("driver_id=?", id).First(&driver)
 
-	// if !driver.Approved {
-	// 	return errors.New("accesDenied")
-	// }
-
-	if driver.Approved {
-		driver.Approved = false
-		result := db.Save(&driver)
+	if driver.Active {
+		result := db.Model(&driver).Update("active", false)
 		return result.Error
 	}
 
-	driver.Approved = true
-	result := db.Save(&driver)
+	result := db.Model(&driver).Update("active", true)
+	return result.Error
+}
+
+func (*Driver) ApproveToDrive(id uint) error {
+
+	db := database.Db
+
+	driver := &Driver{}
+
+	db.Where("driver_id=?", id).First(&driver)
+
+	if driver.Approved {
+		result := db.Model(&driver).Update("approved", false)
+		return result.Error
+	}
+
+	result := db.Model(&driver).Update("approved", true)
+	return result.Error
+}
+
+func GetBankDetails(id uint) (*Bank, error) {
+	db := database.Db
+
+	db.AutoMigrate(&Driver{})
+
+	driver := &Driver{}
+
+	db.Where("driver_id=?", id).First(&driver)
+
+	bank := driver.BankAccount
+
+	if bank.AccountNumber == "" {
+		return nil, errors.New("bank account not added")
+	}
+	return bank, nil
+}
+
+func (b *Bank) UpdateBank(id uint, bank *Bank) error {
+
+	db := database.Db
+	db.AutoMigrate(&Driver{})
+
+	driver := &Driver{}
+
+	db.Where("driver_id=?", id).First(&driver)
+	result := db.Model(&driver).Updates(Driver{
+		BankAccount: bank,
+	})
+	db.Save(&driver)
 	return result.Error
 }

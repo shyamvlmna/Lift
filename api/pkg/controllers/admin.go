@@ -17,7 +17,7 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
 )
 
-//index page for admins to login
+// AdminIndex render index page for admins to login
 func AdminIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -33,7 +33,7 @@ func AdminIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//create a new admin by the super admin
+// CreateAdmin create a new admin by the super admin
 func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -102,7 +102,7 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//admin home page to manage users and drivers
+// AdminHome admin home page to manage users and drivers
 func AdminHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -114,50 +114,93 @@ func AdminHome(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&response)
 }
 
-type Data struct {
+type DrvrData struct {
 	Id uint `json:"driver_id"`
 }
 
+func CreateCoupon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	c := &coupon.AmountCoupon{}
+	json.NewDecoder(r.Body).Decode(&c)
+	r.Body.Close()
+	c.FinishDate = time.Now().AddDate(0, 0, 20)
+	if err := c.CreateCoupon(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "creating coupon failed",
+			ResponseData:    c,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "successfully created new coupon",
+		ResponseData:    c,
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+//ManageDrivers fetch the drivers details for the admin
 func ManageDrivers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	drivers := []models.Driver{}
 
-	drivers = driver.GetAllDrivers()
+	drivers, err := driver.GetAllDrivers()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 
-	err := json.NewEncoder(w).Encode(&models.Response{
+		json.NewEncoder(w).Encode(&models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "fetching drivers data failed",
+			ResponseData:    nil,
+		})
+		return
+	}
+	err = json.NewEncoder(w).Encode(&models.Response{
 		ResponseStatus:  "success",
 		ResponseMessage: "fetched drivers data",
-		ResponseData:    &drivers,
+		ResponseData:    drivers,
 	})
 	if err != nil {
 		return
 	}
 }
 
-func ManageUsers(w http.ResponseWriter, r *http.Request) {
+//DriveRequest fetch the not approved drivers details
+func DriveRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	users := user.GetUsers()
+	requests, err := driver.DriverRequests()
 
-	err := json.NewEncoder(w).Encode(&models.Response{
-		ResponseStatus:  "success",
-		ResponseMessage: "fetched users data",
-		ResponseData:    users,
-	})
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "fetching driver requests failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(resp)
 		return
 	}
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "fetched driver requests",
+		ResponseData:    requests,
+	}
+	json.NewEncoder(w).Encode(resp)
+
 }
 
-func DriveRequest(w http.ResponseWriter, r *http.Request) {
-
-}
-
+//ApproveDriver approves a driver to accept trips
 func ApproveDriver(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	data := &Data{}
+	data := &DrvrData{}
 
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		return
@@ -190,32 +233,48 @@ func ApproveDriver(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlockDriver(w http.ResponseWriter, r *http.Request) {
-	data := &Data{}
+	w.Header().Set("Content-Type", "application/json")
+	data := &DrvrData{}
 	id := data.Id
 	if err := driver.BlockDriver(id); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "blocking driver failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(resp)
 		return
 	}
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "successfully blocked driver",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(resp)
 
-	//RESP
 }
 
 func UnBlockDriver(w http.ResponseWriter, r *http.Request) {
-	data := &Data{}
+	w.Header().Set("Content-Type", "application/json")
+	data := &DrvrData{}
 	id := data.Id
 	if err := driver.UnBlockDriver(id); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "unblock driver failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(resp)
 		return
 	}
-
-	//RESP
-
-}
-
-func BlockUser(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func UnBlockUser(w http.ResponseWriter, r *http.Request) {
-
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "successfully unblocked driver",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(resp)
 }
 
 func PayoutRequests(w http.ResponseWriter, r *http.Request) {
@@ -261,28 +320,84 @@ func UpdatePayout(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func CreateCoupon(w http.ResponseWriter, r *http.Request) {
+type UsrData struct {
+	Id uint `json:"user_id"`
+}
+
+//ManageUsers fetch the users details for the admin
+func ManageUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	c := &coupon.AmountCoupon{}
-	json.NewDecoder(r.Body).Decode(&c)
-	r.Body.Close()
-	c.FinishDate = time.Now().AddDate(0, 0, 20)
-	if err := c.CreateCoupon(); err != nil {
+	users := &[]models.User{}
+
+	users, err := user.GetUsers()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(&models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "fetching users data faiiled",
+			ResponseData:    nil,
+		})
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(&models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "fetched users data",
+		ResponseData:    users,
+	})
+	if err != nil {
+		return
+	}
+}
+
+func BlockUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	data := &UsrData{}
+	json.NewDecoder(r.Body).Decode(&data)
+
+	id := data.Id
+
+	if err := user.BlockUser(id); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		resp := &models.Response{
 			ResponseStatus:  "failed",
-			ResponseMessage: "creating coupon failed",
-			ResponseData:    c,
+			ResponseMessage: "blocking user failed",
+			ResponseData:    nil,
 		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-
 	resp := &models.Response{
 		ResponseStatus:  "success",
-		ResponseMessage: "successfully created new coupon",
-		ResponseData:    c,
+		ResponseMessage: "successfully blocked user",
+		ResponseData:    nil,
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+func UnBlockUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	data := &UsrData{}
+	json.NewDecoder(r.Body).Decode(&data)
+
+	id := data.Id
+
+	if err := user.UnBlockUser(id); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := &models.Response{
+			ResponseStatus:  "failed",
+			ResponseMessage: "unblocking user failed",
+			ResponseData:    nil,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	resp := &models.Response{
+		ResponseStatus:  "success",
+		ResponseMessage: "successfully unblocked user",
+		ResponseData:    nil,
 	}
 	json.NewEncoder(w).Encode(resp)
 }

@@ -55,9 +55,55 @@ func GetDriver(key, value string) *models.Driver {
 }
 
 // GetAllDrivers return all drivers in the database
-func GetAllDrivers() []models.Driver {
+func GetAllDrivers() ([]models.Driver, error) {
 
-	return *d.GetAll()
+	drivers, err := d.GetAll()
+
+	if err != nil {
+		return nil, err
+	}
+	return *drivers, nil
+}
+
+func DriverRequests() (*[]models.Driver, error) {
+	return models.DriverRequests()
+}
+
+func Payout(amount string, driverId uint) error {
+
+	return models.AddPayoutRequest(amount, driverId)
+
+}
+
+func PayoutRequests(driverid uint) ([]models.PayoutResponse, error) {
+	return models.GetPayoutStatus(driverid)
+}
+
+func PayoutHistory(id uint) []models.PayoutResponse {
+	return models.PayoutHistory(id)
+}
+
+func ApproveDriver(id uint) error {
+	return d.ApproveToDrive(id)
+}
+
+func BlockDriver(id uint) error {
+	return d.BlockUnblock(id)
+}
+func UnBlockDriver(id uint) error {
+	return d.BlockUnblock(id)
+}
+
+func GetBankDetails(id uint) (*models.Bank, error) {
+	return models.GetBankDetails(id)
+}
+
+func UpdateBankDetails(id uint, bank *models.Bank) error {
+	return bank.UpdateBank(id, bank)
+}
+
+func RegisterToDrive() {
+
 }
 
 // UpdateDriver update the driver by accepting the updated driver fields
@@ -69,31 +115,7 @@ func UpdateDriver(driver models.Driver) {
 	}
 }
 
-func Payout(amount string, driverId uint) error {
-
-	err := models.AddPayout(amount, driverId)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func PayoutRequests(driverid uint) *models.Payout {
-	return models.GetPayoutStatus(driverid)
-}
-
 //delete driver from the database by the id
 func DeleteDriver(id uint64) error {
 	return d.Delete(id)
-}
-
-func ApproveDriver(id uint) error {
-	return d.BlockUnblock(id)
-}
-
-func BlockDriver(id uint) error {
-	return d.BlockUnblock(id)
-}
-func UnBlockDriver(id uint) error {
-	return d.BlockUnblock(id)
 }

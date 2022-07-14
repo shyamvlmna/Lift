@@ -10,9 +10,10 @@ import (
 	"strconv"
 	"time"
 
+	"googlemaps.github.io/maps"
+
 	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"googlemaps.github.io/maps"
 )
 
 func Fare(d int) float64 {
@@ -88,8 +89,7 @@ func CreateTrip(t *Ride) *models.Ride {
 	// 	Lng: t.Destination.Lng,
 	// }
 
-	//TODO :
-	//complete the distance matrix api part
+	//TODO : complete the distance matrix api part
 
 	// distance, eta := maps.TripEstimate(source.String(), destination.String())
 

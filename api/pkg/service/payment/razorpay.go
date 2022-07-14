@@ -12,9 +12,10 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/razorpay/razorpay-go"
+	"gorm.io/gorm"
+
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"gorm.io/gorm"
 )
 
 type Order struct {
@@ -164,7 +165,13 @@ func UpdatePayment(order *Order) {
 	db.Model(&models.User{}).Where("user_id=?", userid[1]).UpdateColumn("wallet_balance", gorm.Expr("wallet_balance + ?", order.Entity.Amount/100))
 
 }
+func PaymentFailed(order *Order) {
+	db := database.Db
 
+	if err := db.AutoMigrate(&Payment{}); err != nil {
+		db.Model(&Payment{}).Where("payment_id=?", order.Entity.Receipt).Update("status", "failed")
+	}
+}
 func ValidateWebhook(body []byte, signature string) bool {
 
 	h := hmac.New(sha256.New, []byte("funnyhow"))

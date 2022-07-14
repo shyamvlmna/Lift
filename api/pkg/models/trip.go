@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 	"gorm.io/gorm"
+
+	"github.com/shayamvlmna/cab-booking-app/pkg/database"
 )
 
 type Trip struct {
@@ -17,6 +18,15 @@ type Trip struct {
 	ETA           string  `json:"timeduration"`
 	PaymentMethod string  `json:"paymentmethod"`
 	Rating        uint8   `json:"triprating"`
+}
+
+type TripTransaction struct {
+	gorm.Model
+	DriverId      uint    `json:"driver_id"`
+	UserId        uint    `json:"user_id"`
+	Amount        float64 `json:"amount"`
+	PaymentMethod string  `json:"payment_method"`
+	Commission    float64 `json:"commission"`
 }
 
 func (t *Trip) Add(trip *Trip) error {

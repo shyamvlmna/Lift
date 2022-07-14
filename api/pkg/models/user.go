@@ -1,10 +1,9 @@
 package models
 
 import (
-	"strconv"
+	"gorm.io/gorm"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
-	"gorm.io/gorm"
 )
 
 type User struct {
@@ -51,38 +50,35 @@ func (u *User) Get(key, value string) (User, bool) {
 }
 
 // GetAll users in the database
-func (u *User) GetAll() *[]User {
+func (u *User) GetAll() (*[]User, error) {
 	db := database.Db
 
 	users := &[]User{}
-	db.Find(&users)
+	result := db.Find(&users)
 
-	return users
+	return users, result.Error
 }
 
 // Update existing user by id
-func (u *User) Update() error {
+func (u *User) Update(id uint) error {
 	db := database.Db
 
 	user := &User{}
 
-	id := strconv.Itoa(int(u.UserId))
-
 	db.Where("user_id=?", id).First(&user)
 
 	result := db.Model(&user).Updates(&User{Phonenumber: "",
-		Firstname: "",
-		Lastname:  "",
-		Email:     "",
-		Password:  "",
-		Active:    false,
+		Firstname: u.Firstname,
+		Lastname:  u.Lastname,
+		Email:     u.Email,
+		Password:  u.Password,
 	})
 
 	return result.Error
 }
 
 // Delete user by id
-func (u *User) Delete(id uint64) error {
+func (*User) Delete(id uint64) error {
 	db := database.Db
 
 	result := db.Delete(&User{}, id)
@@ -91,23 +87,18 @@ func (u *User) Delete(id uint64) error {
 }
 
 // BlockUnblock user by changing user active field
-func (u *User) BlockUnblock(id uint64) error {
+func (*User) BlockUnblock(id uint) error {
 	db := database.Db
-	err := db.AutoMigrate(&User{})
-	if err != nil {
-		return err
-	}
 
 	user := &User{}
 
-	db.Where("id=?", id).First(&user)
+	db.Where("user_id=?", id).First(&user)
 
-	if !user.Active {
-		user.Active = true
-		result := db.Save(&user)
+	if user.Active {
+		result := db.Model(&user).Update("active", false)
 		return result.Error
 	}
-	user.Active = false
-	result := db.Save(&user)
+
+	result := db.Model(&user).Update("active", true)
 	return result.Error
 }

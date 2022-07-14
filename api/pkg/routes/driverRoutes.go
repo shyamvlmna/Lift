@@ -1,14 +1,12 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
 	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
 func DriverRoutes(r *mux.Router) {
@@ -22,18 +20,7 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.HandleFunc("/signup", controllers.DriverSignUp).Methods(http.MethodPost)
 
 	//render enter otp page
-	driverRouter.HandleFunc("/enterotp", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "new driver",
-			ResponseData:    nil,
-		}
-		err := json.NewEncoder(w).Encode(&response)
-		if err != nil {
-			return
-		}
-	}).Methods(http.MethodGet)
+	driverRouter.HandleFunc("/enterotp", controllers.EnterOTPDriver).Methods(http.MethodGet)
 
 	//validate submitted otp
 	driverRouter.Handle("/otp", middleware.ValidateOtp(controllers.DriverSignUpPage)).Methods(http.MethodPost)
@@ -50,6 +37,8 @@ func DriverRoutes(r *mux.Router) {
 	//render homepage only if authorized with JWT
 	driverRouter.Handle("/driverhome", middleware.IsAuthorized(controllers.DriverHome)).Methods(http.MethodGet)
 
+	driverRouter.Handle("/regtodrive", middleware.IsAuthorized(controllers.RegisterToDrive)).Methods(http.MethodGet)
+
 	//add cab to the driver profile
 	driverRouter.Handle("/addcab", middleware.IsAuthorized(controllers.AddCab)).Methods(http.MethodPost)
 
@@ -58,6 +47,10 @@ func DriverRoutes(r *mux.Router) {
 
 	//add bank details to checkout wallet balance //insert details
 	driverRouter.Handle("/addbank", middleware.IsAuthorized(controllers.AddBankAccount)).Methods(http.MethodPost)
+
+	driverRouter.Handle("/editbank", middleware.IsAuthorized(controllers.EditBankDetails)).Methods(http.MethodGet)
+
+	driverRouter.Handle("/updatebank", middleware.IsAuthorized(controllers.UpdateBankDetails)).Methods(http.MethodPost)
 
 	//get current driver details to update
 	driverRouter.Handle("/editprofile", middleware.IsAuthorized(controllers.EditDriverProfile)).Methods(http.MethodGet)
@@ -97,4 +90,8 @@ func DriverRoutes(r *mux.Router) {
 
 	//get status of submitted payout requests
 	driverRouter.Handle("/payoutstatus", middleware.IsAuthorized(controllers.PayoutStatus)).Methods(http.MethodGet)
+
+	driverRouter.Handle("/payouthistory", middleware.IsAuthorized(controllers.PayoutHistory)).Methods(http.MethodGet)
+
+	driverRouter.HandleFunc("/upload", controllers.UploadDocuments).Methods(http.MethodPost)
 }
