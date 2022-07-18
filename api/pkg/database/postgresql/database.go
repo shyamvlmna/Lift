@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -17,7 +18,7 @@ func openDB() (*gorm.DB, error) {
 	}
 
 	// dbHost := os.Getenv("dbHost")
-	dbHost := "postgresdb"
+	dbHost := "sculift_pg"
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
@@ -26,6 +27,7 @@ func openDB() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable port=%s", dbHost, dbUser, dbPassword, dbName, dbPort)
 	Db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
