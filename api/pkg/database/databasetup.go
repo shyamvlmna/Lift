@@ -15,13 +15,14 @@ func DBSet() *gorm.DB {
 		log.Fatal(err)
 	}
 
-	dbHost := os.Getenv("DB_HOST")
+	// dbHost := os.Getenv("DB_HOST")
+	dbHost := "postgresdb"
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
-	// dbPassword := os.Getenv("DB_PASSWORD")
+	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 
-	dsn := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable port=%s", dbHost, dbUser, dbName, dbPort)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable port=%s", dbHost, dbUser, dbPassword, dbName, dbPort)
 	Db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})

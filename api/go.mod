@@ -3,6 +3,7 @@ module github.com/shayamvlmna/cab-booking-app
 go 1.18
 
 require (
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-redis/redis/v9 v9.0.0-beta.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/gorilla/mux v1.8.0
