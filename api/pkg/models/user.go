@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"github.com/shayamvlmna/cab-booking-app/pkg/database"
@@ -35,8 +37,8 @@ func (u *User) Add() error {
 // Get a user by key
 func (u *User) Get(key, value string) (User, bool) {
 	db := database.Db
-	err := db.AutoMigrate(&User{})
-	if err != nil {
+	if err := db.AutoMigrate(&User{}); err != nil {
+		fmt.Println("error migrating")
 		return User{}, false
 	}
 

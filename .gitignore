@@ -3,6 +3,6 @@ upload.html
 api/.env
 .vscode
 .idea
-
+.env
 api/licence-doc
 upload.html
