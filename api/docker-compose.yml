@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  app:
+    container_name: golang_container
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+      - JWT-SECRET_KEY=${JWT-SECRET_KEY}
+    build: .
+    ports:
+      - 8080:8080
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - postgresdb
+    networks:
+      - sculiftapp
+
+  postgresdb:
+    image: postgres:latest
+    container_name: "postgres_container"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - sculiftapp
+
+  redisdb:
+    image: redis:latest
+    container_name: "redis_container"
+    command: redis-server
+
+    networks:
+      - sculiftapp
+
+volumes:
+  pg_data:
+
+networks:
+  sculiftapp:
+    driver: bridge
