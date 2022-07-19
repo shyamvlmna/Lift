@@ -5,8 +5,6 @@ ADD . /app
 WORKDIR /app
 RUN go build -o main .
 
-CMD ["/app/main"]
-
 #Production image to run the app
 FROM alpine:latest
 COPY --from=builder /app/main .

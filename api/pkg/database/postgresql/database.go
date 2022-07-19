@@ -17,8 +17,8 @@ func openDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// dbHost := os.Getenv("dbHost")
-	dbHost := "sculift_pg"
+	dbHost := os.Getenv("DB_HOST")
+	// dbHost := "sculift_pg"
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
