@@ -15,8 +15,8 @@ func DBSet() *gorm.DB {
 		log.Fatal(err)
 	}
 
-	// dbHost := os.Getenv("DB_HOST")
-	dbHost := "sculift_pg"
+	dbHost := os.Getenv("DB_HOST")
+	// dbHost := "sculift_pg"
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")

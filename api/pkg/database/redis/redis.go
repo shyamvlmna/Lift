@@ -12,7 +12,7 @@ import (
 
 func OpenRDb() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redisdb:6379",
+		Addr:     "sculift_rdb:6379",
 		Password: "",
 		DB:       0,
 	})
