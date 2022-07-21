@@ -14,7 +14,7 @@ Created the complete backend of an online cab booking app. Design and functional
    <br>
  
 **Redis**
-   >as a message brocker
+   >middleware layer as a message brocker
    <br>
  
 **Gorilla web toolkit**
