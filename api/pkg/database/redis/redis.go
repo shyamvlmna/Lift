@@ -4,15 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
+var(
+	redisHost = os.Getenv("REDIS_HOST")
+	redisPort = os.Getenv("REDIS_PORT")
+
+)
+
 func OpenRDb() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "sculift_rdb:6379",
+		Addr:     redisHost+":"+redisPort,
 		Password: "",
 		DB:       0,
 	})
