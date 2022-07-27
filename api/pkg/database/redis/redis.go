@@ -11,15 +11,14 @@ import (
 	"github.com/shayamvlmna/cab-booking-app/pkg/models"
 )
 
-var(
+var (
 	redisHost = os.Getenv("REDIS_HOST")
 	redisPort = os.Getenv("REDIS_PORT")
-
 )
 
 func OpenRDb() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     redisHost+":"+redisPort,
+		Addr:     redisHost + ":" + redisPort,
 		Password: "",
 		DB:       0,
 	})

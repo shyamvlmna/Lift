@@ -43,3 +43,16 @@ Containarized  the complete project using **Docker** and hosted in **AWS Cloud**
 ## Created by
 
 - [@shyamvlmna](https://www.github.com/shyamvlmna)
+
+
+<!-- 
+
+    • Users can book a ride from their location to a destination
+    • Distance and estimated time from the source to destination is calculated using the  Distance Matrix API and calculate the fare using this data
+    • User confirm the trip created and wait for a driver to accept it
+    • Drivers can accept/reject the trip
+    • This project is designed and developed with scalability & maintainability in mind.
+    • The project is containerized using docker compose
+    • Deployed in AWS EC2 instance with Nginx reverse proxy
+    • Payment gateways integrated:  Razorpay Payment Gateway
+       Technologies and tools used:  golang, PostgreSQL, Redis, JWT, Gorilla web toolkit, Distance Matrix API, GORM, Docker, AWS EC2, Nginx -->
