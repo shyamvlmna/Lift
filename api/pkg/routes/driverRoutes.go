@@ -50,7 +50,7 @@ func DriverRoutes(r *mux.Router) {
 
 	driverRouter.Handle("/editbank", middleware.IsAuthorized(controllers.EditBankDetails)).Methods(http.MethodGet)
 
-	driverRouter.Handle("/updatebank", middleware.IsAuthorized(controllers.UpdateBankDetails)).Methods(http.MethodPost)
+	driverRouter.Handle("/updatebank", middleware.IsAuthorized(controllers.UpdateBankDetails)).Methods(http.MethodPut)
 
 	//get current driver details to update
 	driverRouter.Handle("/editprofile", middleware.IsAuthorized(controllers.EditDriverProfile)).Methods(http.MethodGet)
@@ -62,7 +62,7 @@ func DriverRoutes(r *mux.Router) {
 	driverRouter.Handle("/editcab", middleware.IsAuthorized(controllers.EditCab)).Methods(http.MethodGet)
 
 	//update the cab details in to the database
-	driverRouter.Handle("/updatecab", middleware.IsAuthorized(controllers.UpdateCab)).Methods(http.MethodPost)
+	driverRouter.Handle("/updatecab", middleware.IsAuthorized(controllers.UpdateCab)).Methods(http.MethodPut)
 
 	//get ride from the channel
 	driverRouter.Handle("/getride", middleware.IsAuthorized(controllers.GetTrip)).Methods(http.MethodGet)

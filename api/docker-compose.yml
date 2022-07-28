@@ -39,6 +39,7 @@ services:
 
   redisdb:
     image: redis:latest
+    restart: always
     container_name: "sculift_rdb"
     ports:
       - "9736:6379"

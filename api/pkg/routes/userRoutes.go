@@ -48,7 +48,7 @@ func UserRoutes(r *mux.Router) {
 	userRouter.HandleFunc("/editprofile", controllers.EditUserProfile).Methods(http.MethodGet)
 
 	//update user profile details
-	userRouter.HandleFunc("/updateprofile", controllers.UpdateUserProfile).Methods(http.MethodPost)
+	userRouter.HandleFunc("/updateprofile", controllers.UpdateUserProfile).Methods(http.MethodPut)
 
 	//book new trip with location latitude and longitude from the frontend
 	userRouter.Handle("/booktrip", middleware.IsAuthorized(controllers.BookTrip)).Methods(http.MethodPost)
