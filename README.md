@@ -120,7 +120,7 @@ To run this project, you will need to add the following environment variables to
 - Drivers can request payout to debit money from wallet to their bank account
 - Users can add money to the wallet using Razorpay Payment Gateway
 
-## Lessons Learned
+##
 
 I have created **Lift** as a study project. The main objective of building this project was learn how to build real world working applications using **Go** with other technologies and tools I have learned so far. 
 
