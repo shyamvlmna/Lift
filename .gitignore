@@ -1,8 +1,10 @@
 app.html
 upload.html
-api/.env
+.env
 .vscode
 .idea
 .env
 api/licence-doc
 upload.html
+tls.key
+tls.crt
