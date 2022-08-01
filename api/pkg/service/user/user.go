@@ -3,12 +3,12 @@ package user
 import (
 	"errors"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
+	"github.com/shayamvlmna/lift/pkg/service/coupon"
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
 )
 
 var u = &models.User{}

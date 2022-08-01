@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
 )
 
 type Otp struct {

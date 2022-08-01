@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	"github.com/shayamvlmna/lift/pkg/database"
 	"gorm.io/gorm"
 )
 

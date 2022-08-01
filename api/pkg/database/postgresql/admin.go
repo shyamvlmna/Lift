@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/models"
 	"gorm.io/gorm"
 )
 

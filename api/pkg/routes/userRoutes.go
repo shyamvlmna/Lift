@@ -5,9 +5,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
-	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
-	googleauth "github.com/shayamvlmna/cab-booking-app/pkg/service/googleAuth"
+	"github.com/shayamvlmna/lift/pkg/controllers"
+	"github.com/shayamvlmna/lift/pkg/middleware"
+	googleauth "github.com/shayamvlmna/lift/pkg/service/googleAuth"
 )
 
 func UserRoutes(r *mux.Router) {

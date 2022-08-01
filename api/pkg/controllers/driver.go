@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
+	"github.com/shayamvlmna/lift/pkg/database/redis"
+	"github.com/shayamvlmna/lift/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/service/driver"
+	"github.com/shayamvlmna/lift/pkg/service/trip"
 )
 
 // DriverAuth Check if the driver already exist in the system.

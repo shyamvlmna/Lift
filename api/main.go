@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
-	"github.com/shayamvlmna/cab-booking-app/pkg/routes"
+	"github.com/shayamvlmna/lift/pkg/database"
+	"github.com/shayamvlmna/lift/pkg/routes"
 
 )
 

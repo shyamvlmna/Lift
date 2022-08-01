@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"strconv"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
+	"github.com/shayamvlmna/lift/pkg/database/redis"
 )
 
 // GenerateOTP generate and return a 4 digit random otp using crypto/rand

@@ -11,13 +11,13 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database/redis"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/payment"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/trip"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
+	"github.com/shayamvlmna/lift/pkg/database/redis"
+	"github.com/shayamvlmna/lift/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/service/coupon"
+	"github.com/shayamvlmna/lift/pkg/service/payment"
+	"github.com/shayamvlmna/lift/pkg/service/trip"
+	"github.com/shayamvlmna/lift/pkg/service/user"
 )
 
 // UserAuth Check if the user already exist in the system.

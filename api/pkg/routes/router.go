@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
+	"github.com/shayamvlmna/lift/pkg/controllers"
 )
 
 func Router() *mux.Router {

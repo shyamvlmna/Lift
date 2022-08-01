@@ -1,0 +1,26 @@
+<html>
+<button id="rzp-button1">Pay</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key": "rzp_test_1vwFv5eIxCHZY2",
+        "amount": "10000",
+        "currency": "INR",
+        "name": "Cab Booking App",
+        "description": "Test Transaction",
+        "order_id": "order_JzN3Xl3DDtGYyh",
+        "callback_url": "http://localhost:8080/user/razorpaycallback",
+        "prefill": {
+            "name": "Test user",
+            "email": "user@test.com",
+            "contact": "9876543210"
+        },
+    };
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button1').onclick = function (e) {
+        rzp1.open();
+        e.preventDefault();
+    }
+</script>
+
+</html>

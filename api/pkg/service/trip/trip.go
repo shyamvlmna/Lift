@@ -12,8 +12,8 @@ import (
 
 	"googlemaps.github.io/maps"
 
-	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	database "github.com/shayamvlmna/lift/pkg/database/postgresql"
+	"github.com/shayamvlmna/lift/pkg/models"
 )
 
 func Fare(d int) float64 {

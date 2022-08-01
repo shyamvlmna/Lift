@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {

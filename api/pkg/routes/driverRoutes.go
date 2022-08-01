@@ -5,8 +5,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/controllers"
-	"github.com/shayamvlmna/cab-booking-app/pkg/middleware"
+	"github.com/shayamvlmna/lift/pkg/controllers"
+	"github.com/shayamvlmna/lift/pkg/middleware"
 )
 
 func DriverRoutes(r *mux.Router) {

@@ -3,9 +3,9 @@ package driver
 import (
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/models"
 )
 
 var d = &models.Driver{}

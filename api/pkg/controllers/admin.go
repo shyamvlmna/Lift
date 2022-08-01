@@ -9,12 +9,12 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	database "github.com/shayamvlmna/cab-booking-app/pkg/database/postgresql"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/coupon"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/driver"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/user"
+	database "github.com/shayamvlmna/lift/pkg/database/postgresql"
+	"github.com/shayamvlmna/lift/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/service/coupon"
+	"github.com/shayamvlmna/lift/pkg/service/driver"
+	"github.com/shayamvlmna/lift/pkg/service/user"
 )
 
 // AdminIndex render index page for admins to login

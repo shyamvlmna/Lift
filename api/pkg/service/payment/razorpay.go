@@ -14,8 +14,8 @@ import (
 	"github.com/razorpay/razorpay-go"
 	"gorm.io/gorm"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/database"
+	"github.com/shayamvlmna/lift/pkg/models"
 )
 
 type Order struct {

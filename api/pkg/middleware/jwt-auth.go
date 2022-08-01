@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/models"
+	"github.com/shayamvlmna/lift/pkg/models"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
-	"github.com/shayamvlmna/cab-booking-app/pkg/service/auth"
+	"github.com/shayamvlmna/lift/pkg/service/auth"
 )
 
 func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {

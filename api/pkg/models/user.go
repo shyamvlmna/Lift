@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/shayamvlmna/cab-booking-app/pkg/database"
+	"github.com/shayamvlmna/lift/pkg/database"
 )
 
 type User struct {
