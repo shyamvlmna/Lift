@@ -8,3 +8,5 @@ api/licence-doc
 upload.html
 tls.key
 tls.crt
+go.mod
+go.sum
