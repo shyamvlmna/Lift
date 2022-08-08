@@ -1,7 +1,7 @@
 
 # Lift
 
-Lift is designed as an online taxi booking app which have all the nessesary features of a cab booking app. Design and functionalities are mostly inspired from Uber. The lift package provides the REST API endpoints to build a web app or a mobile app. The two main parts of Lift are the user who can book a trip from their location to a destination and the driver.  
+Lift is designed as an online taxi booking app which have all the necessary features of a cab booking app. Design and functionalities are mostly inspired from Uber. The lift package provides the REST API endpoints to build a web app or a mobile app. The two main parts of Lift are the user who can book a trip from their location to a destination and the driver.  
 
 
 
