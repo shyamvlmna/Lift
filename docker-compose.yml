@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  app:
+    image: shyamvlmna/lift-app:live
+    container_name: sculift_app
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+      - JWT-SECRET_KEY=${JWT-SECRET_KEY}
+    ports:
+      - 8080:8080
+    networks:
+      - postgres-go
+      - redis-go
+      
+    restart: on-failure
+    depends_on:
+      - postgresdb
+      - redisdb
+
+  postgresdb:
+    image: postgres:latest
+    restart: always
+    container_name: "sculift_pg"
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=lift
+    ports:
+      - "2345:5432"
+    networks:
+      - postgres-go
+    volumes:
+      - "${DB_VOLUME}:/var/lib/postgresql/data"
+
+  redisdb:
+    image: redis:latest
+    restart: always
+    container_name: "sculift_rdb"
+    ports:
+      - "9736:6379"
+    networks:
+      - redis-go
+networks:
+  redis-go:
+  postgres-go:
+volumes:
+  postgresdb:
