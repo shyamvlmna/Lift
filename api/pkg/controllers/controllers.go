@@ -1,16 +1,18 @@
 package controllers
 
 import (
-	"encoding/json"
+	"html/template"
+	"log"
 	"net/http"
 
-	"github.com/shayamvlmna/lift/pkg/models"
 	"github.com/shayamvlmna/lift/pkg/service/auth"
 )
 
+var temp, _ = template.ParseGlob("*.html")
+
 func Index(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
-	w.Header().Set("Content-Type", "application/json")
+	// w.Header().Set("Content-Type", "application/json")
 
 	c, err := r.Cookie("jwt-token")
 
@@ -27,14 +29,17 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		response := models.Response{
-			ResponseStatus:  "success",
-			ResponseMessage: "app index",
-			ResponseData:    nil,
-		}
-		err := json.NewEncoder(w).Encode(&response)
+		// response := models.Response{
+		// 	ResponseStatus:  "success",
+		// 	ResponseMessage: "app index",
+		// 	ResponseData:    nil,
+		// }
+
+		// err := json.NewEncoder(w).Encode(&response)
+		// tmp, err := template.ParseFiles("index.html")
+		err := temp.ExecuteTemplate(w, "index.html", nil)
 		if err != nil {
-			return
+			log.Fatal(err)
 		}
 	}
 }

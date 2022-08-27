@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   app:
-    image: shyamvlmna/lift-app:live
+    image: shyamvlmna/lift-app:latest
     container_name: sculift_app
     environment:
       - POSTGRES_USER=${DB_USER}
