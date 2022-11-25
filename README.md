@@ -3,7 +3,9 @@
 
 Lift is designed as an online taxi booking app which have all the necessary features of a cab booking app. Design and functionalities are mostly inspired from Uber. Provides REST API endpoints to build a web app or a mobile app. The two main parts of Lift are the user who can book a trip from their location to a destination and the driver.  
 
+##
 
+**Lift** is a study project. The main objective of building this project was to learn how to build real world working applications using **Go** integrated with other technologies and tools. 
 
 ## API Reference
 
@@ -119,10 +121,6 @@ To run this project, you will need to add the following environment variables to
 - Trip trip reward will credited to driver wallet after commission amount
 - Drivers can request payout to debit money from wallet to their bank account
 - Users can add money to the wallet using Razorpay Payment Gateway
-
-##
-
-I have created **Lift** as a study project. The main objective of building this project was learn how to build real world working applications using **Go** with other technologies and tools I have learned so far. 
 
 
 ## Feedback
