@@ -1,3 +1,4 @@
+lift
 app.html
 upload.html
 api/.env
@@ -5,6 +6,5 @@ api/.env
 .idea
 .env
 api/licence-doc
-upload.html
 tls.crt
 tls.key
